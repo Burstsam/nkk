@@ -7,7 +7,6 @@ import android.view.ViewGroup
 import android.widget.ArrayAdapter
 import android.widget.ImageView
 import android.widget.TextView
-import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
 import org.mosad.teapod.R
 
@@ -20,7 +19,7 @@ class CustomAdapter(context: Context, private val media: ArrayList<GUIMedia>) : 
         val imagePoster = view.findViewById<ImageView>(R.id.image_poster)
 
         textTitle.text = media[position].title
-        Glide.with(context).load(media[position].imageLink).into(imagePoster)
+        Glide.with(context).load(media[position].posterLink).into(imagePoster)
 
         return view
     }

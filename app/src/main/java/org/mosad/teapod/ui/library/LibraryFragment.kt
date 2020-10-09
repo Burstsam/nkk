@@ -14,6 +14,8 @@ import org.mosad.teapod.util.GUIMedia
 
 class LibraryFragment : Fragment() {
 
+    private val parser = AoDParser()
+
     private var mediaList = arrayListOf<GUIMedia>()
     private lateinit var adapter : CustomAdapter
 
@@ -24,19 +26,31 @@ class LibraryFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-
         GlobalScope.launch {
-            val parser = AoDParser()
-            mediaList = parser.listAnime()
+            mediaList = parser.listAnimes()
 
             // create and set the adapter, needs context
             withContext(Dispatchers.Main) {
-                adapter = CustomAdapter(requireContext(), mediaList)//ArrayAdapter(requireContext(), R.layout.linear_media, R.id.text_title, mediaList)
+                adapter = CustomAdapter(requireContext(), mediaList)
                 list_library.adapter = adapter
                 //adapter.notifyDataSetChanged()
             }
-
         }
+
+        initActions()
+    }
+
+    private fun initActions() {
+        list_library.setOnItemClickListener { parent, view, position, id ->
+            println("selected item is: ${mediaList[position]}")
+            showDetailFragment(mediaList[position])
+        }
+    }
+
+    private fun showDetailFragment(media: GUIMedia) {
+        parser.loadDetails(media.link)
+
+        println("done")
     }
 
 }
