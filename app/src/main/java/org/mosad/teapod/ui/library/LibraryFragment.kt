@@ -29,14 +29,12 @@ class LibraryFragment : Fragment() {
             val parser = AoDParser()
             mediaList = parser.listAnime()
 
-            println("setting adapter")
+            // create and set the adapter, needs context
             withContext(Dispatchers.Main) {
                 adapter = CustomAdapter(requireContext(), mediaList)//ArrayAdapter(requireContext(), R.layout.linear_media, R.id.text_title, mediaList)
-
                 list_library.adapter = adapter
-                adapter.notifyDataSetChanged()
+                //adapter.notifyDataSetChanged()
             }
-
 
         }
     }
