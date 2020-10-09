@@ -9,14 +9,13 @@ import android.widget.ImageView
 import android.widget.TextView
 import com.bumptech.glide.Glide
 import org.mosad.teapod.R
+import org.mosad.teapod.ui.components.MediaLinearLayout
 
-class CustomAdapter(context: Context, private val layoutInflater: LayoutInflater, private val media: ArrayList<GUIMedia>) : ArrayAdapter<GUIMedia>(context, R.layout.linear_media) {
+class CustomAdapter(context: Context, private val media: ArrayList<GUIMedia>) : ArrayAdapter<GUIMedia>(context, R.layout.linear_media, media) {
 
     override fun getView(position: Int, convertView: View?, parent: ViewGroup): View {
-        println("view")
-
         return if (convertView == null) {
-            val guiMedia = layoutInflater.inflate(R.layout.linear_media, null)
+            val guiMedia = LayoutInflater.from(context).inflate(R.layout.linear_media, parent, false)
 
             val textTitle = guiMedia.findViewById<TextView>(R.id.text_title)
             val imagePoster = guiMedia.findViewById<ImageView>(R.id.image_poster)
