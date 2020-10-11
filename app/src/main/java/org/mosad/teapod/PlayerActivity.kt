@@ -1,0 +1,107 @@
+package org.mosad.teapod
+
+import android.net.Uri
+import android.os.Bundle
+import android.view.View
+import androidx.appcompat.app.AppCompatActivity
+import com.google.android.exoplayer2.ExoPlayer
+import com.google.android.exoplayer2.MediaItem
+import com.google.android.exoplayer2.Player
+import com.google.android.exoplayer2.SimpleExoPlayer
+import com.google.android.exoplayer2.source.hls.HlsMediaSource
+import com.google.android.exoplayer2.upstream.DataSource
+import com.google.android.exoplayer2.upstream.DefaultDataSourceFactory
+import com.google.android.exoplayer2.util.Util
+import kotlinx.android.synthetic.main.activity_player.*
+
+
+class PlayerActivity : AppCompatActivity() {
+
+    private lateinit var player: SimpleExoPlayer
+    private lateinit var dataSourceFactory: DataSource.Factory
+
+    private var streamUrl = ""
+
+    private var playWhenReady = true
+    private var currentWindow = 0
+    private var playbackPosition: Long = 0
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        setContentView(R.layout.activity_player)
+
+        streamUrl = intent.getStringExtra("streamUrl").toString()
+    }
+
+
+    override fun onStart() {
+        super.onStart()
+        if (Util.SDK_INT > 23) {
+            initPlayer()
+            if (video_view != null) video_view.onResume()
+        }
+    }
+
+    override fun onResume() {
+        super.onResume()
+        if (Util.SDK_INT <= 23) {
+            initPlayer()
+            if (video_view != null) video_view.onResume()
+        }
+    }
+
+    override fun onPause() {
+        super.onPause()
+        if (Util.SDK_INT <= 23) {
+            if (video_view != null) video_view.onPause()
+            releasePlayer()
+        }
+    }
+
+    override fun onStop() {
+        super.onStop()
+        if (Util.SDK_INT > 23) {
+            if (video_view != null) video_view.onPause()
+            releasePlayer()
+        }
+    }
+
+    private fun initPlayer() {
+        if (streamUrl.isEmpty()) {
+            println("no streamUrl set")
+            return
+        }
+
+        player = SimpleExoPlayer.Builder(this).build()
+        dataSourceFactory = DefaultDataSourceFactory(this, Util.getUserAgent(this, "Teapod"))
+
+        val mediaSource = HlsMediaSource.Factory(dataSourceFactory)
+            .createMediaSource(MediaItem.fromUri(Uri.parse(streamUrl)))
+
+        player.setMediaSource(mediaSource)
+        player.prepare()
+        player.play()
+
+        player.addListener(object : Player.EventListener {
+            override fun onPlaybackStateChanged(state: Int) {
+                super.onPlaybackStateChanged(state)
+
+                loading.visibility = when (state) {
+                    ExoPlayer.STATE_READY ->  View.GONE
+                    ExoPlayer.STATE_BUFFERING -> View.VISIBLE
+                    else -> View.GONE
+                }
+            }
+        })
+
+        video_view.player = player
+    }
+
+    private fun releasePlayer(){
+        playbackPosition = player.currentPosition
+        currentWindow = player.currentWindowIndex
+        playWhenReady = player.playWhenReady
+        player.release()
+    }
+
+}

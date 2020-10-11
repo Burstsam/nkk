@@ -1,6 +1,8 @@
 package org.mosad.teapod
 
+import android.content.Intent
 import android.os.Bundle
+import android.util.Log
 import android.view.MenuItem
 import com.google.android.material.bottomnavigation.BottomNavigationView
 import androidx.appcompat.app.AppCompatActivity
@@ -8,6 +10,7 @@ import androidx.fragment.app.Fragment
 import androidx.fragment.app.commit
 import kotlinx.android.synthetic.main.activity_main.*
 import org.mosad.teapod.parser.AoDParser
+import org.mosad.teapod.preferences.EncryptedPreferences
 import org.mosad.teapod.ui.MediaFragment
 import org.mosad.teapod.ui.account.AccountFragment
 import org.mosad.teapod.ui.home.HomeFragment
@@ -69,7 +72,14 @@ class MainActivity : AppCompatActivity(), BottomNavigationView.OnNavigationItemS
     }
 
     private fun load() {
-        // TODO
+        EncryptedPreferences.readCredentials(this)
+
+        if (EncryptedPreferences.password.isEmpty()) {
+            Log.i(javaClass.name, "please login!")
+
+            // TODO show login dialog
+            //EncryptedPreferences.saveCredentials("", "", this)
+        }
     }
 
     fun showDetailFragment(media: GUIMedia) {
@@ -84,5 +94,12 @@ class MainActivity : AppCompatActivity(), BottomNavigationView.OnNavigationItemS
 
         println("visible !!!: " + mediaFragment.isVisible)
         println(supportFragmentManager.backStackEntryCount)
+    }
+
+    fun startPlayer(streamUrl: String) {
+        val intent = Intent(this, PlayerActivity::class.java).apply {
+            putExtra("streamUrl", streamUrl)
+        }
+        startActivity(intent)
     }
 }

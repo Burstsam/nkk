@@ -4,16 +4,14 @@ import com.google.gson.JsonParser
 import kotlinx.coroutines.*
 import org.jsoup.Connection
 import org.jsoup.Jsoup
+import org.mosad.teapod.preferences.EncryptedPreferences
 import org.mosad.teapod.util.GUIMedia
 
 class AoDParser {
 
     private val baseURL = "https://www.anime-on-demand.de"
     private val loginPath = "/users/sign_in"
-
-    // TODO
-    private val login = ""
-    private val pwd = ""
+    private val libraryPath = "/animes"
 
     companion object {
         private var sessionCookies = mutableMapOf<String, String>()
@@ -39,8 +37,8 @@ class AoDParser {
             println("cookies: $cookies")
 
             val data = mapOf(
-                Pair("user[login]", login),
-                Pair("user[password]", pwd),
+                Pair("user[login]", EncryptedPreferences.login),
+                Pair("user[password]", EncryptedPreferences.password),
                 Pair("user[remember_me]", "1"),
                 Pair("commit", "Einloggen"),
                 Pair("authenticity_token", authenticityToken)
@@ -67,7 +65,7 @@ class AoDParser {
         if (sessionCookies.isEmpty()) login()
 
         withContext(Dispatchers.Default) {
-            val resAnimes = Jsoup.connect("$baseURL/animes")
+            val resAnimes = Jsoup.connect(baseURL + libraryPath)
                 .cookies(sessionCookies)
                 .get()
 
@@ -147,7 +145,7 @@ class AoDParser {
                 .get("sources").asJsonArray
 
             return@withContext sources.toList().map {
-                it.asJsonObject.get("file").toString()
+                it.asJsonObject.get("file").asString
             }
         }
     }

@@ -7,8 +7,11 @@ import android.view.View
 import android.view.ViewGroup
 import com.bumptech.glide.Glide
 import kotlinx.android.synthetic.main.fragment_media.*
+import org.mosad.teapod.MainActivity
 import org.mosad.teapod.R
 import org.mosad.teapod.util.GUIMedia
+import java.net.URL
+import java.net.URLEncoder
 
 class MediaFragment(val media: GUIMedia, val streams: List<String>) : Fragment() {
 
@@ -36,7 +39,8 @@ class MediaFragment(val media: GUIMedia, val streams: List<String>) : Fragment()
     private fun onClickButtonPlay() {
         println("play ${streams.first()}")
 
-
+        val mainActivity = activity as MainActivity
+        mainActivity.startPlayer(streams.first())
     }
 
 }
