@@ -36,7 +36,13 @@ class PlayerActivity : AppCompatActivity() {
         setContentView(R.layout.activity_player)
         hideBars() // Initial hide the bars
 
-        streamUrl = intent.getStringExtra("streamUrl").toString()
+        savedInstanceState?.let {
+            currentWindow = it.getInt(getString(R.string.state_resume_window))
+            playbackPosition = it.getLong(getString(R.string.state_resume_position))
+            playWhenReady = it.getBoolean(getString(R.string.state_is_playing))
+        }
+
+        streamUrl = intent.getStringExtra(getString(R.string.intent_stream_url)).toString()
     }
 
 
@@ -72,6 +78,13 @@ class PlayerActivity : AppCompatActivity() {
         }
     }
 
+    override fun onSaveInstanceState(outState: Bundle) {
+        outState.putInt(getString(R.string.state_resume_window), currentWindow)
+        outState.putLong(getString(R.string.state_resume_position), playbackPosition)
+        outState.putBoolean(getString(R.string.state_is_playing), playWhenReady)
+        super.onSaveInstanceState(outState)
+    }
+
     private fun initPlayer() {
         if (streamUrl.isEmpty()) {
             Log.e(javaClass.name, "No stream url was set.")
@@ -84,9 +97,11 @@ class PlayerActivity : AppCompatActivity() {
         val mediaSource = HlsMediaSource.Factory(dataSourceFactory)
             .createMediaSource(MediaItem.fromUri(Uri.parse(streamUrl)))
 
+        player.playWhenReady = playWhenReady
         player.setMediaSource(mediaSource)
+        player.seekTo(playbackPosition)
         player.prepare()
-        player.play()
+
 
         player.addListener(object : Player.EventListener {
             override fun onPlaybackStateChanged(state: Int) {
@@ -127,8 +142,12 @@ class PlayerActivity : AppCompatActivity() {
             }
         } else {
             @Suppress("deprecation")
-            window.decorView.systemUiVisibility =
-                (View.SYSTEM_UI_FLAG_FULLSCREEN or View.SYSTEM_UI_FLAG_HIDE_NAVIGATION)
+            window.decorView.systemUiVisibility = (View.SYSTEM_UI_FLAG_IMMERSIVE
+                    or View.SYSTEM_UI_FLAG_LAYOUT_STABLE
+                    or View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
+                    or View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
+                    or View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
+                    or View.SYSTEM_UI_FLAG_FULLSCREEN)
         }
     }
 }

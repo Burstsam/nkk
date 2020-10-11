@@ -18,4 +18,10 @@
     <string name="encrypted_preference_file_key" translatable="false">org.mosad.teapod.encrypted_preferences</string>
     <string name="save_key_user_login" translatable="false">org.mosad.teapod.user_login</string>
     <string name="save_key_user_password" translatable="false">org.mosad.teapod.user_password</string>
+
+    <!-- intents & states -->
+    <string name="intent_stream_url" translatable="false">intent_stream_url</string>
+    <string name="state_resume_window" translatable="false">state_resume_window</string>
+    <string name="state_resume_position" translatable="false">state_resume_position</string>
+    <string name="state_is_playing" translatable="false">state_is_playing</string>
 </resources>

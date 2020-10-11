@@ -103,7 +103,7 @@ class MainActivity : AppCompatActivity(), BottomNavigationView.OnNavigationItemS
 
     fun startPlayer(streamUrl: String) {
         val intent = Intent(this, PlayerActivity::class.java).apply {
-            putExtra("streamUrl", streamUrl)
+            putExtra(getString(R.string.intent_stream_url), streamUrl)
         }
         startActivity(intent)
     }
