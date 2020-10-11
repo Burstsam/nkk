@@ -5,6 +5,9 @@
     <string name="title_search">Search</string>
     <string name="title_account">Account</string>
 
+    <!-- search fragment -->
+    <string name="search_hint">Search for movies and series</string>
+
     <!-- dialogs -->
     <string name="save">save</string>
     <string name="cancel">@android:string/cancel</string>

@@ -24,5 +24,6 @@
         android:id="@+id/image_poster"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:minHeight="223dp"
         tools:srcCompat="@drawable/ic_launcher_background" />
 </LinearLayout>
