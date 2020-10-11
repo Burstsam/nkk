@@ -1,7 +1,7 @@
 package org.mosad.teapod.parser
 
+import com.google.gson.JsonParser
 import kotlinx.coroutines.*
-import org.json.JSONObject
 import org.jsoup.Connection
 import org.jsoup.Jsoup
 import org.mosad.teapod.util.GUIMedia
@@ -15,8 +15,12 @@ class AoDParser {
     private val login = ""
     private val pwd = ""
 
-    private var sessionCookies = mutableMapOf<String, String>()
-    private var loginSuccess = false
+    companion object {
+        private var sessionCookies = mutableMapOf<String, String>()
+        private var loginSuccess = false
+
+        val mediaList = arrayListOf<GUIMedia>()
+    }
 
     private fun login() = runBlocking {
 
@@ -63,14 +67,14 @@ class AoDParser {
         if (sessionCookies.isEmpty()) login()
 
         withContext(Dispatchers.Default) {
-            val res = Jsoup.connect("$baseURL/animes")
+            val resAnimes = Jsoup.connect("$baseURL/animes")
                 .cookies(sessionCookies)
                 .get()
 
-            //println(res)
+            //println(resAnimes)
 
-            val animes = arrayListOf<GUIMedia>()
-            res.select("div.animebox").forEach {
+            mediaList.clear()
+            resAnimes.select("div.animebox").forEach {
                 val media = GUIMedia(
                     it.select("h3.animebox-title").text(),
                     it.select("p.animebox-image").select("img").attr("src"),
@@ -78,25 +82,27 @@ class AoDParser {
                     it.select("p.animebox-link").select("a").attr("href")
                 )
 
-                animes.add(media)
+                mediaList.add(media)
             }
 
-            println("got ${animes.size} anime")
+            println("got ${mediaList.size} anime")
 
-            return@withContext animes
+            return@withContext mediaList
         }
     }
 
-    fun loadDetails(mediaPath: String) = runBlocking {
+    /**
+     * load streams for the media path
+     */
+    fun loadStreams(mediaPath: String): List<String> = runBlocking {
         if (sessionCookies.isEmpty()) login()
 
         if (!loginSuccess) {
-            println("please log in")
-            return@runBlocking
+            println("please log in") // TODO
+            return@runBlocking listOf()
         }
 
         withContext(Dispatchers.Default) {
-            println(baseURL + mediaPath)
 
             val res = Jsoup.connect(baseURL + mediaPath)
                 .cookies(sessionCookies)
@@ -105,19 +111,20 @@ class AoDParser {
             //println(res)
 
             val playlists = res.select("input.streamstarter_html5").eachAttr("data-playlist")
-            println(playlists.first())
-
             val csrfToken = res.select("meta[name=csrf-token]").attr("content")
-            println("csrf token is: $csrfToken")
 
-            loadStreamInfo(playlists.first(), csrfToken)
+            //println("first entry: ${playlists.first()}")
+            //println("csrf token is: $csrfToken")
+
+            return@withContext loadStreamInfo(playlists.first(), csrfToken)
         }
     }
 
-    private fun loadStreamInfo(playlistPath: String, csrfToken: String) = runBlocking {
+    /**
+     * load the playlist path and parse it, read the stream info from json
+     */
+    private fun loadStreamInfo(playlistPath: String, csrfToken: String): List<String> = runBlocking {
         withContext(Dispatchers.Default) {
-            println(baseURL + playlistPath)
-
             val headers = mutableMapOf(
                 Pair("Accept", "application/json, text/javascript, */*; q=0.01"),
                 Pair("Accept-Language", "de,en-US;q=0.7,en;q=0.3"),
@@ -125,7 +132,6 @@ class AoDParser {
                 Pair("X-CSRF-Token", csrfToken),
                 Pair("X-Requested-With", "XMLHttpRequest"),
             )
-
 
             val res = Jsoup.connect(baseURL + playlistPath)
                 .ignoreContentType(true)
@@ -135,14 +141,13 @@ class AoDParser {
 
             //println(res.body())
 
-            // TODO replace with gson
-            val jsonObject = JSONObject(res.body())
-            val sourcesObject = jsonObject.getJSONArray("playlist").get(0).toString()
+            // TODO if it's a series there sources for each episode
+            val sources = JsonParser.parseString(res.body()).asJsonObject
+                .get("playlist").asJsonArray.first().asJsonObject
+                .get("sources").asJsonArray
 
-            val sourcesArray = JSONObject(sourcesObject).getJSONArray("sources")
-
-            for (i in 0 until sourcesArray.length()) {
-                println(sourcesArray[i].toString())
+            return@withContext sources.toList().map {
+                it.asJsonObject.get("file").toString()
             }
         }
     }
