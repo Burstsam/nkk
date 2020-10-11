@@ -1,8 +1,12 @@
 package org.mosad.teapod
 
 import android.net.Uri
+import android.os.Build
 import android.os.Bundle
+import android.util.Log
 import android.view.View
+import android.view.WindowInsets
+import android.view.WindowInsetsController
 import androidx.appcompat.app.AppCompatActivity
 import com.google.android.exoplayer2.ExoPlayer
 import com.google.android.exoplayer2.MediaItem
@@ -26,9 +30,11 @@ class PlayerActivity : AppCompatActivity() {
     private var currentWindow = 0
     private var playbackPosition: Long = 0
 
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_player)
+        hideBars() // Initial hide the bars
 
         streamUrl = intent.getStringExtra("streamUrl").toString()
     }
@@ -68,7 +74,7 @@ class PlayerActivity : AppCompatActivity() {
 
     private fun initPlayer() {
         if (streamUrl.isEmpty()) {
-            println("no streamUrl set")
+            Log.e(javaClass.name, "No stream url was set.")
             return
         }
 
@@ -87,12 +93,17 @@ class PlayerActivity : AppCompatActivity() {
                 super.onPlaybackStateChanged(state)
 
                 loading.visibility = when (state) {
-                    ExoPlayer.STATE_READY ->  View.GONE
+                    ExoPlayer.STATE_READY -> View.GONE
                     ExoPlayer.STATE_BUFFERING -> View.VISIBLE
                     else -> View.GONE
                 }
             }
         })
+
+        // when the player controls get hidden, hide the bars too
+        video_view.setControllerVisibilityListener {
+            if (it == View.GONE) hideBars()
+        }
 
         video_view.player = player
     }
@@ -104,4 +115,20 @@ class PlayerActivity : AppCompatActivity() {
         player.release()
     }
 
+    /**
+     * hide the status and navigation bar
+     */
+    private fun hideBars() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+            window.setDecorFitsSystemWindows(false)
+            window.insetsController?.apply {
+                hide(WindowInsets.Type.statusBars() or WindowInsets.Type.navigationBars())
+                systemBarsBehavior = WindowInsetsController.BEHAVIOR_SHOW_BARS_BY_SWIPE
+            }
+        } else {
+            @Suppress("deprecation")
+            window.decorView.systemUiVisibility =
+                (View.SYSTEM_UI_FLAG_FULLSCREEN or View.SYSTEM_UI_FLAG_HIDE_NAVIGATION)
+        }
+    }
 }
