@@ -5,6 +5,15 @@
     <string name="title_search">Search</string>
     <string name="title_account">Account</string>
 
+    <!-- dialogs -->
+    <string name="save">save</string>
+    <string name="cancel">@android:string/cancel</string>
+
+    <!-- etc -->
+    <string name="login">Login</string>
+    <string name="login_desc">You need to login before you can use Teapod. Your Login-Data will be stored encrypted on your device.</string>
+    <string name="password">Password</string>
+
     <!-- save keys -->
     <string name="encrypted_preference_file_key" translatable="false">org.mosad.teapod.encrypted_preferences</string>
     <string name="save_key_user_login" translatable="false">org.mosad.teapod.user_login</string>

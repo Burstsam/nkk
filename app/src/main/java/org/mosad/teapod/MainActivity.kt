@@ -13,6 +13,7 @@ import org.mosad.teapod.parser.AoDParser
 import org.mosad.teapod.preferences.EncryptedPreferences
 import org.mosad.teapod.ui.MediaFragment
 import org.mosad.teapod.ui.account.AccountFragment
+import org.mosad.teapod.ui.components.LoginDialog
 import org.mosad.teapod.ui.home.HomeFragment
 import org.mosad.teapod.ui.library.LibraryFragment
 import org.mosad.teapod.ui.search.SearchFragment
@@ -77,8 +78,12 @@ class MainActivity : AppCompatActivity(), BottomNavigationView.OnNavigationItemS
         if (EncryptedPreferences.password.isEmpty()) {
             Log.i(javaClass.name, "please login!")
 
-            // TODO show login dialog
-            //EncryptedPreferences.saveCredentials("", "", this)
+            LoginDialog(this).positiveButton {
+                EncryptedPreferences.saveCredentials(email, password, context)
+            }.negativeButton {
+                Log.i(javaClass.name, "Login canceled, exiting.")
+                finish()
+            }.show()
         }
     }
 
