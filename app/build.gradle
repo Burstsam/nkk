@@ -14,6 +14,7 @@ android {
         versionName "0.1-alpha1"
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
+        resValue "string", "build_time", buildTime()
         setProperty("archivesBaseName", "teapod-$versionName")
     }
 
@@ -62,4 +63,8 @@ dependencies {
     androidTestImplementation 'androidx.test.ext:junit:1.1.2'
     androidTestImplementation 'androidx.test.espresso:espresso-core:3.3.0'
 
+}
+
+static def buildTime() {
+    return new Date().format("yyyy-MM-dd", TimeZone.getTimeZone("UTC"))
 }

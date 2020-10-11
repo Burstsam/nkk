@@ -48,10 +48,8 @@ class SearchFragment : Fragment() {
             }
 
             override fun onQueryTextChange(newText: String?): Boolean {
-                println("new text is: $newText")
                 adapter.filter.filter(newText)
                 adapter.notifyDataSetChanged()
-
                 return false
             }
         })

@@ -79,7 +79,7 @@ class MainActivity : AppCompatActivity(), BottomNavigationView.OnNavigationItemS
             Log.i(javaClass.name, "please login!")
 
             LoginDialog(this).positiveButton {
-                EncryptedPreferences.saveCredentials(email, password, context)
+                EncryptedPreferences.saveCredentials(login, password, context)
             }.negativeButton {
                 Log.i(javaClass.name, "Login canceled, exiting.")
                 finish()
@@ -88,17 +88,14 @@ class MainActivity : AppCompatActivity(), BottomNavigationView.OnNavigationItemS
     }
 
     fun showDetailFragment(media: GUIMedia) {
-        val streams = AoDParser().loadStreams(media.link) // load the streams for the selected media
+        val streamMedia = AoDParser().loadStreams(media.link) // load the streams for the selected media
 
-        val mediaFragment = MediaFragment(media, streams)
+        val mediaFragment = MediaFragment(media, streamMedia)
         supportFragmentManager.commit {
             add(R.id.nav_host_fragment, mediaFragment, "MediaFragment")
             addToBackStack(null)
             show(mediaFragment)
         }
-
-        println("visible !!!: " + mediaFragment.isVisible)
-        println(supportFragmentManager.backStackEntryCount)
     }
 
     fun startPlayer(streamUrl: String) {

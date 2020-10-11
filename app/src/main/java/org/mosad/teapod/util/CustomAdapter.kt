@@ -20,10 +20,6 @@ class CustomAdapter(val context: Context, private val originalMedia: ArrayList<G
     private var filteredMedia = originalMedia.map { it.copy() }
     private val customFilter = CustomFilter()
 
-    init {
-        println("initial filtered size is: ${filteredMedia.size}")
-    }
-
     override fun getView(position: Int, convertView: View?, parent: ViewGroup): View {
         val view = convertView ?: LayoutInflater.from(context).inflate(R.layout.linear_media, parent, false)
 
@@ -67,8 +63,6 @@ class CustomAdapter(val context: Context, private val originalMedia: ArrayList<G
 
             results.values = filteredList
             results.count = filteredList.size
-
-            println("filtered size is: ${results.count}")
 
             return results
         }

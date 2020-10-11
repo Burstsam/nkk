@@ -19,7 +19,5 @@ class HomeFragment : Fragment() {
         super.onViewCreated(view, savedInstanceState)
 
         text_home.text = "This is the home fragment"
-
-        println("HomeFragment created")
     }
 }

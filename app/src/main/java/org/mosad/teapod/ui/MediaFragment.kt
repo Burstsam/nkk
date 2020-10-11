@@ -1,19 +1,23 @@
 package org.mosad.teapod.ui
 
 import android.os.Bundle
+import android.util.Log
 import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.ArrayAdapter
 import com.bumptech.glide.Glide
 import kotlinx.android.synthetic.main.fragment_media.*
 import org.mosad.teapod.MainActivity
 import org.mosad.teapod.R
+import org.mosad.teapod.util.DataTypes.MediaType
 import org.mosad.teapod.util.GUIMedia
-import java.net.URL
-import java.net.URLEncoder
+import org.mosad.teapod.util.StreamMedia
 
-class MediaFragment(val media: GUIMedia, val streams: List<String>) : Fragment() {
+class MediaFragment(private val guiMedia: GUIMedia, private val streamMedia: StreamMedia) : Fragment() {
+
+    private lateinit var adapterEpisodes: ArrayAdapter<String>
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
         return inflater.inflate(R.layout.fragment_media, container, false)
@@ -22,25 +26,51 @@ class MediaFragment(val media: GUIMedia, val streams: List<String>) : Fragment()
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        // load poster
-        Glide.with(requireContext()).load(media.posterLink).into(image_poster)
-        text_title.text = media.title
-        text_desc.text = media.shortDesc
+        // generic gui
+        Glide.with(requireContext()).load(guiMedia.posterLink).into(image_poster)
+        text_title.text = guiMedia.title
+        text_desc.text = guiMedia.shortDesc
 
-        println("media streams: $streams")
+        // specific gui
+        if (streamMedia.type == MediaType.TVSHOW) {
+            val episodes = streamMedia.streams.mapIndexed { index, _ ->
+                "${guiMedia.title} - Ep. ${index + 1}"
+            }
+
+            adapterEpisodes = ArrayAdapter(requireContext(), android.R.layout.simple_list_item_1, episodes)
+            list_episodes.adapter = adapterEpisodes
+
+        } else if (streamMedia.type == MediaType.MOVIE) {
+            list_episodes.visibility = View.GONE
+        }
+
+
+        println("media streams: ${streamMedia.streams}")
 
         initActions()
     }
 
     private fun initActions() {
-        button_play.setOnClickListener { onClickButtonPlay() }
+        button_play.setOnClickListener {
+            onClickButtonPlay()
+        }
+
+        list_episodes.setOnItemClickListener { _, _, position, _ ->
+            playStream(streamMedia.streams[position])
+        }
     }
 
     private fun onClickButtonPlay() {
-        println("play ${streams.first()}")
+        when (streamMedia.type) {
+            MediaType.MOVIE -> playStream(streamMedia.streams.first())
+            MediaType.TVSHOW -> playStream(streamMedia.streams.first())
+            MediaType.OTHER -> Log.e(javaClass.name, "Wrong Type, please report this issue.")
+        }
+    }
 
+    private fun playStream(url: String) {
         val mainActivity = activity as MainActivity
-        mainActivity.startPlayer(streams.first())
+        mainActivity.startPlayer(url)
     }
 
 }

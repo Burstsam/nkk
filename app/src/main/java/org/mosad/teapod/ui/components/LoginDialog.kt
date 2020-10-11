@@ -25,8 +25,6 @@ package org.mosad.teapod.ui.components
 import android.content.Context
 import android.widget.EditText
 import com.afollestad.materialdialogs.MaterialDialog
-import com.afollestad.materialdialogs.WhichButton
-import com.afollestad.materialdialogs.actions.getActionButton
 import com.afollestad.materialdialogs.bottomsheets.BottomSheet
 import com.afollestad.materialdialogs.bottomsheets.setPeekHeight
 import com.afollestad.materialdialogs.customview.customView
@@ -40,7 +38,7 @@ class LoginDialog(val context: Context) {
     private val editTextLogin: EditText
     private val editTextPassword: EditText
 
-    var email = ""
+    var login = ""
     var password = ""
 
     init {
@@ -61,7 +59,7 @@ class LoginDialog(val context: Context) {
 
     fun positiveButton(func: LoginDialog.() -> Unit): LoginDialog = apply {
         dialog.positiveButton {
-            email = editTextLogin.text.toString()
+            login = editTextLogin.text.toString()
             password = editTextPassword.text.toString()
 
             func()
@@ -81,7 +79,7 @@ class LoginDialog(val context: Context) {
     fun show(func: LoginDialog.() -> Unit): LoginDialog = apply {
         func()
 
-        editTextLogin.setText(email)
+        editTextLogin.setText(login)
         editTextPassword.setText(password)
 
         show()

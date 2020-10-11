@@ -1,11 +1,15 @@
 package org.mosad.teapod.parser
 
+import android.util.Log
 import com.google.gson.JsonParser
 import kotlinx.coroutines.*
 import org.jsoup.Connection
 import org.jsoup.Jsoup
 import org.mosad.teapod.preferences.EncryptedPreferences
+import org.mosad.teapod.util.DataTypes.MediaType
 import org.mosad.teapod.util.GUIMedia
+import org.mosad.teapod.util.StreamMedia
+import kotlin.collections.ArrayList
 
 class AoDParser {
 
@@ -60,7 +64,9 @@ class AoDParser {
         }
     }
 
-    // https://www.anime-on-demand.de/animes
+    /**
+     * list all animes from the website
+     */
     fun listAnimes(): ArrayList<GUIMedia>  = runBlocking {
         if (sessionCookies.isEmpty()) login()
 
@@ -92,12 +98,12 @@ class AoDParser {
     /**
      * load streams for the media path
      */
-    fun loadStreams(mediaPath: String): List<String> = runBlocking {
+    fun loadStreams(mediaPath: String): StreamMedia = runBlocking {
         if (sessionCookies.isEmpty()) login()
 
         if (!loginSuccess) {
             println("please log in") // TODO
-            return@runBlocking listOf()
+            return@runBlocking StreamMedia(MediaType.OTHER)
         }
 
         withContext(Dispatchers.Default) {
@@ -114,14 +120,20 @@ class AoDParser {
             //println("first entry: ${playlists.first()}")
             //println("csrf token is: $csrfToken")
 
-            return@withContext loadStreamInfo(playlists.first(), csrfToken)
+            val type = if (res.select("h2").eachText().filter { it == "Episoden" }.any()) {
+                MediaType.TVSHOW
+            } else {
+                MediaType.MOVIE
+            }
+
+            return@withContext loadStreamInfo(playlists.first(), csrfToken, type)
         }
     }
 
     /**
      * load the playlist path and parse it, read the stream info from json
      */
-    private fun loadStreamInfo(playlistPath: String, csrfToken: String): List<String> = runBlocking {
+    private fun loadStreamInfo(playlistPath: String, csrfToken: String, type: MediaType): StreamMedia = runBlocking {
         withContext(Dispatchers.Default) {
             val headers = mutableMapOf(
                 Pair("Accept", "application/json, text/javascript, */*; q=0.01"),
@@ -139,13 +151,37 @@ class AoDParser {
 
             //println(res.body())
 
-            // TODO if it's a series there sources for each episode
-            val sources = JsonParser.parseString(res.body()).asJsonObject
-                .get("playlist").asJsonArray.first().asJsonObject
-                .get("sources").asJsonArray
+            println(type)
+            return@withContext when (type) {
+                MediaType.MOVIE -> {
+                    val movie = JsonParser.parseString(res.body()).asJsonObject
+                        .get("playlist").asJsonArray
 
-            return@withContext sources.toList().map {
-                it.asJsonObject.get("file").asString
+                    val streamList = arrayListOf<String>()
+                    movie.first().asJsonObject.get("sources").asJsonArray.toList().forEach {
+                        streamList.add(it.asJsonObject.get("file").asString)
+                    }
+
+                    StreamMedia(MediaType.MOVIE, streamList)
+                }
+                MediaType.TVSHOW -> {
+                    val episodes = JsonParser.parseString(res.body()).asJsonObject
+                        .get("playlist").asJsonArray
+
+                    val streamList = arrayListOf<String>()
+                    episodes.forEach {
+                        val streamUrl = it.asJsonObject.get("sources").asJsonArray
+                            .first().asJsonObject
+                            .get("file").asString
+                        streamList.add(streamUrl)
+                    }
+
+                    StreamMedia(MediaType.TVSHOW, streamList)
+                }
+                else -> {
+                    Log.e(javaClass.name, "Wrong Type, please report this issue.")
+                    StreamMedia(MediaType.OTHER)
+                }
             }
         }
     }

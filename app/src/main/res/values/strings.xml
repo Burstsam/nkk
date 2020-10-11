@@ -8,6 +8,18 @@
     <!-- search fragment -->
     <string name="search_hint">Search for movies and series</string>
 
+    <!-- media fragment -->
+    <string name="button_play">Play</string>
+
+    <!-- settings fragment -->
+    <string name="account">Account</string>
+    <string name="account_login_ex">user@example.com</string>
+    <string name="account_login_desc">Tap to edit</string>
+    <string name="info">Info</string>
+    <string name="info_about">Teapod by @Seil0</string>
+    <string name="info_about_desc" translatable="false">Version %1$s (%2$s)</string>
+    <string name="info_about_dialog" translatable="false">This software is published under the terms and conditions of GPL 3. For further information visit git.mosad.xyz/Seil0 \n\n© 2020 seil0@mosad.xyz</string>
+
     <!-- dialogs -->
     <string name="save">save</string>
     <string name="cancel">@android:string/cancel</string>
