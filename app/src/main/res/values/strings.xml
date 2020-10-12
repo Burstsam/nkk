@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">Teapod</string>
+    <string name="app_name" translatable="false">Teapod</string>
     <string name="title_home">Home</string>
     <string name="title_library">Library</string>
     <string name="title_search">Search</string>
@@ -10,17 +10,17 @@
 
     <!-- media fragment -->
     <string name="button_play">Play</string>
-    <string name="text_title_ex">A Silent Voice</string>
-    <string name="text_overview_ex">Shouya Ishida ist ein sehr aktives Kind. Mit seinen Freunden …</string>
+    <string name="text_title_ex" translatable="false">A Silent Voice</string>
+    <string name="text_overview_ex" translatable="false">Shouya Ishida starts bullying the new girl in class …</string>
 
     <!-- settings fragment -->
     <string name="account">Account</string>
-    <string name="account_login_ex">user@example.com</string>
+    <string name="account_login_ex" translatable="false">user@example.com</string>
     <string name="account_login_desc">Tap to edit</string>
     <string name="info">Info</string>
-    <string name="info_about">Teapod by @Seil0</string>
+    <string name="info_about" translatable="false">Teapod by @Seil0</string>
     <string name="info_about_desc" translatable="false">Version %1$s (%2$s)</string>
-    <string name="info_about_dialog" translatable="false">This software is published under the terms and conditions of GPL 3. For further information visit git.mosad.xyz/Seil0 \n\n© 2020 seil0@mosad.xyz</string>
+    <string name="info_about_dialog" translatable="false">This software is published under the terms and conditions of GPL 3. For further information visit: \ngit.mosad.xyz/Seil0/teapod \n\n© 2020 seil0@mosad.xyz</string>
 
     <!-- dialogs -->
     <string name="save">save</string>
@@ -28,7 +28,8 @@
 
     <!-- etc -->
     <string name="login">Login</string>
-    <string name="login_desc">You need to login before you can use Teapod. Your Login-Data will be stored encrypted on your device.</string>
+    <string name="login_desc">You need to login before you can use Teapod. The Login-Data will be stored encrypted on your device.</string>
+    <string name="login_failed_desc">Could not login. Please try again.</string>
     <string name="password">Password</string>
 
     <!-- save keys -->

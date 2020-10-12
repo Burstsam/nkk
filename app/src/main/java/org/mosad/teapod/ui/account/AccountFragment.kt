@@ -1,6 +1,7 @@
 package org.mosad.teapod.ui.account
 
 import android.os.Bundle
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -9,6 +10,7 @@ import com.afollestad.materialdialogs.MaterialDialog
 import kotlinx.android.synthetic.main.fragment_account.*
 import org.mosad.teapod.BuildConfig
 import org.mosad.teapod.R
+import org.mosad.teapod.parser.AoDParser
 import org.mosad.teapod.preferences.EncryptedPreferences
 import org.mosad.teapod.ui.components.LoginDialog
 
@@ -29,12 +31,7 @@ class AccountFragment : Fragment() {
 
     private fun initActions() {
         linear_account_login.setOnClickListener {
-            LoginDialog(requireContext()).positiveButton {
-                EncryptedPreferences.saveCredentials(login, password, context)
-            }.show {
-                login = EncryptedPreferences.login
-                password = ""
-            }
+            showLoginDialog(true)
         }
 
         linear_about.setOnClickListener {
@@ -42,6 +39,20 @@ class AccountFragment : Fragment() {
                 .title(R.string.info_about)
                 .message(R.string.info_about_dialog)
                 .show()
+        }
+    }
+
+    private fun showLoginDialog(firstTry: Boolean) {
+        LoginDialog(requireContext(), firstTry).positiveButton {
+            EncryptedPreferences.saveCredentials(login, password, context)
+
+            if (!AoDParser().login()) {
+                showLoginDialog(false)
+                Log.w(javaClass.name, "Login failed, please try again.")
+            }
+        }.show {
+            login = EncryptedPreferences.login
+            password = ""
         }
     }
 }

@@ -76,15 +76,11 @@ class MainActivity : AppCompatActivity(), BottomNavigationView.OnNavigationItemS
     private fun load() {
         EncryptedPreferences.readCredentials(this)
 
+        // make sure credentials are set and valid
         if (EncryptedPreferences.password.isEmpty()) {
-            Log.i(javaClass.name, "please login!")
-
-            LoginDialog(this).positiveButton {
-                EncryptedPreferences.saveCredentials(login, password, context)
-            }.negativeButton {
-                Log.i(javaClass.name, "Login canceled, exiting.")
-                finish()
-            }.show()
+            showLoginDialog(true)
+        } else if (!AoDParser().login()) {
+            showLoginDialog(false)
         }
     }
 
@@ -106,5 +102,19 @@ class MainActivity : AppCompatActivity(), BottomNavigationView.OnNavigationItemS
             putExtra(getString(R.string.intent_stream_url), streamUrl)
         }
         startActivity(intent)
+    }
+
+    private fun showLoginDialog(firstTry: Boolean) {
+        LoginDialog(this, firstTry).positiveButton {
+            EncryptedPreferences.saveCredentials(login, password, context)
+
+            if (!AoDParser().login()) {
+                showLoginDialog(false)
+                Log.w(javaClass.name, "Login failed, please try again.")
+            }
+        }.negativeButton {
+            Log.i(javaClass.name, "Login canceled, exiting.")
+            finish()
+        }.show()
     }
 }

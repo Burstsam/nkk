@@ -31,7 +31,7 @@ import com.afollestad.materialdialogs.customview.customView
 import com.afollestad.materialdialogs.customview.getCustomView
 import org.mosad.teapod.R
 
-class LoginDialog(val context: Context) {
+class LoginDialog(val context: Context, firstTry: Boolean) {
 
     private val dialog = MaterialDialog(context, BottomSheet())
 
@@ -43,7 +43,7 @@ class LoginDialog(val context: Context) {
 
     init {
         dialog.title(R.string.login)
-            .message(R.string.login_desc)
+            .message(if (firstTry) R.string.login_desc else R.string.login_failed_desc)
             .customView(R.layout.dialog_login)
             .positiveButton(R.string.save)
             .negativeButton(R.string.cancel)

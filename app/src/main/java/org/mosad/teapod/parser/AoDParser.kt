@@ -25,7 +25,7 @@ class AoDParser {
         val mediaList = arrayListOf<Media>()
     }
 
-    private fun login() = runBlocking {
+    fun login(): Boolean = runBlocking {
 
         val userAgent = "Mozilla/5.0 (X11; Linux x86_64; rv:80.0) Gecko/20100101 Firefox/80.0"
 
@@ -57,11 +57,12 @@ class AoDParser {
                 .execute()
 
             //println(resLogin.body())
-
-            loginSuccess = resLogin.body().contains("Hallo, du bist jetzt angemeldet.")
-            println("Status: ${resLogin.statusCode()} (${resLogin.statusMessage()}), login successful: $loginSuccess")
-
             sessionCookies = resLogin.cookies()
+            loginSuccess = resLogin.body().contains("Hallo, du bist jetzt angemeldet.")
+
+            Log.i(javaClass.name, "Status: ${resLogin.statusCode()} (${resLogin.statusMessage()}), login successful: $loginSuccess")
+
+            loginSuccess
         }
     }
 
@@ -96,7 +97,7 @@ class AoDParser {
                 mediaList.add(media)
             }
 
-            println("got ${mediaList.size} anime")
+            Log.i(javaClass.name, "Total library size is: ${mediaList.size}")
 
             return@withContext mediaList
         }
@@ -109,7 +110,7 @@ class AoDParser {
         if (sessionCookies.isEmpty()) login()
 
         if (!loginSuccess) {
-            println("please log in") // TODO
+            Log.w(javaClass.name, "Login, was not successful.")
             return@runBlocking listOf()
         }
 
@@ -127,7 +128,11 @@ class AoDParser {
             //println("first entry: ${playlists.first()}")
             //println("csrf token is: $csrfToken")
 
-            return@withContext loadStreamInfo(playlists.first(), csrfToken, media.type)
+            return@withContext if (playlists.size > 0) {
+                loadStreamInfo(playlists.first(), csrfToken, media.type)
+            } else {
+                listOf()
+            }
         }
     }
 
