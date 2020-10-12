@@ -39,25 +39,21 @@
 
             </FrameLayout>
 
-            <Button
+            <com.google.android.material.button.MaterialButton
                 android:id="@+id/button_play"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_gravity="center"
                 android:layout_marginStart="7dp"
                 android:layout_marginTop="24dp"
                 android:layout_marginEnd="7dp"
-                android:background="#4A4141"
-                android:drawableStart="@drawable/ic_baseline_play_arrow_24"
-                android:drawablePadding="10dp"
-                android:drawableTint="#FFFFFF"
-                android:gravity="start|center_vertical"
-                android:paddingStart="160dp"
-                android:paddingEnd="160dp"
-                android:text="@string/button_play"
+                android:gravity="center"
                 android:textAllCaps="false"
+                android:text="@string/button_play"
                 android:textColor="@android:color/primary_text_dark"
-                android:textSize="16sp" />
+                android:textSize="16sp"
+                app:backgroundTint="#4A4141"
+                app:icon="@drawable/ic_baseline_play_arrow_24"
+                app:iconGravity="textStart" />
 
             <TextView
                 android:id="@+id/text_title"
