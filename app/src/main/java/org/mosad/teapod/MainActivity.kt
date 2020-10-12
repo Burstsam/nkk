@@ -17,7 +17,7 @@ import org.mosad.teapod.ui.components.LoginDialog
 import org.mosad.teapod.ui.home.HomeFragment
 import org.mosad.teapod.ui.library.LibraryFragment
 import org.mosad.teapod.ui.search.SearchFragment
-import org.mosad.teapod.util.GUIMedia
+import org.mosad.teapod.util.Media
 
 class MainActivity : AppCompatActivity(), BottomNavigationView.OnNavigationItemSelectedListener {
 
@@ -87,10 +87,10 @@ class MainActivity : AppCompatActivity(), BottomNavigationView.OnNavigationItemS
         }
     }
 
-    fun showDetailFragment(media: GUIMedia) {
-        val streamMedia = AoDParser().loadStreams(media.link) // load the streams for the selected media
+    fun showDetailFragment(media: Media) {
+        media.episodes = AoDParser().loadStreams(media) // load the streams for the selected media
 
-        val mediaFragment = MediaFragment(media, streamMedia)
+        val mediaFragment = MediaFragment(media)
         supportFragmentManager.commit {
             add(R.id.nav_host_fragment, mediaFragment, "MediaFragment")
             addToBackStack(null)

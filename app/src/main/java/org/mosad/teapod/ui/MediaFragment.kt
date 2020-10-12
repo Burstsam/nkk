@@ -14,10 +14,9 @@ import org.mosad.teapod.MainActivity
 import org.mosad.teapod.R
 import org.mosad.teapod.util.DataTypes.MediaType
 import org.mosad.teapod.util.EpisodesAdapter
-import org.mosad.teapod.util.GUIMedia
-import org.mosad.teapod.util.StreamMedia
+import org.mosad.teapod.util.Media
 
-class MediaFragment(private val guiMedia: GUIMedia, private val streamMedia: StreamMedia) : Fragment() {
+class MediaFragment(private val media: Media) : Fragment() {
 
     private lateinit var adapterRecEpisodes: EpisodesAdapter
     private lateinit var viewManager: RecyclerView.LayoutManager
@@ -31,50 +30,44 @@ class MediaFragment(private val guiMedia: GUIMedia, private val streamMedia: Str
         super.onViewCreated(view, savedInstanceState)
 
         // generic gui
-        Glide.with(requireContext()).load(guiMedia.posterLink).into(image_poster)
-        text_title.text = guiMedia.title
-        text_desc.text = guiMedia.shortDesc
+        Glide.with(requireContext()).load(media.posterLink).into(image_poster)
+        text_title.text = media.title
+        text_desc.text = media.shortDesc
 
         // specific gui
-        if (streamMedia.type == MediaType.TVSHOW) {
-            val episodes = streamMedia.streams.mapIndexed { index, _ ->
-                "${guiMedia.title} - Ep. ${index + 1}"
-            }
+        if (media.type == MediaType.TVSHOW) {
+            // TODO
+            val episodeTitles = media.episodes.map { it.title }
 
-
-            adapterRecEpisodes = EpisodesAdapter(episodes)
+            adapterRecEpisodes = EpisodesAdapter(episodeTitles)
             viewManager = LinearLayoutManager(context)
             recycler_episodes.layoutManager = viewManager
             recycler_episodes.adapter = adapterRecEpisodes
 
-        } else if (streamMedia.type == MediaType.MOVIE) {
+        } else if (media.type == MediaType.MOVIE) {
             recycler_episodes.visibility = View.GONE
         }
 
 
-        println("media streams: ${streamMedia.streams}")
+        println("media streams: ${media.episodes}")
 
         initActions()
     }
 
     private fun initActions() {
         button_play.setOnClickListener {
-            onClickButtonPlay()
+            when (media.type) {
+                MediaType.MOVIE -> playStream(media.episodes.first().streamUrl)
+                MediaType.TVSHOW -> playStream(media.episodes.first().streamUrl)
+                MediaType.OTHER -> Log.e(javaClass.name, "Wrong Type, please report this issue.")
+            }
         }
 
         // set onItemClick only in adapter is initialized
         if (this::adapterRecEpisodes.isInitialized) {
             adapterRecEpisodes.onItemClick = { item, position ->
-                playStream(streamMedia.streams[position])
+                playStream(media.episodes[position].streamUrl)
             }
-        }
-    }
-
-    private fun onClickButtonPlay() {
-        when (streamMedia.type) {
-            MediaType.MOVIE -> playStream(streamMedia.streams.first())
-            MediaType.TVSHOW -> playStream(streamMedia.streams.first())
-            MediaType.OTHER -> Log.e(javaClass.name, "Wrong Type, please report this issue.")
         }
     }
 

@@ -8,11 +8,10 @@ class DataTypes {
     }
 }
 
-// TODO rework: add type, episodes list with episode title, if type == MOVIE the first episode will be the movie stream
-data class GUIMedia(val title: String, val posterLink: String, val shortDesc : String, val link: String) {
+data class Media(val title: String, val link: String, val type: DataTypes.MediaType, val posterLink: String, val shortDesc : String, var episodes: List<Episode> = listOf()) {
     override fun toString(): String {
         return title
     }
 }
 
-data class StreamMedia(val type: DataTypes.MediaType, val streams: ArrayList<String> = arrayListOf())
+data class Episode(val title: String = "", val streamUrl: String = "", var watched: Boolean = false)

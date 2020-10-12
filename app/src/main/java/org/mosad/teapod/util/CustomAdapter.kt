@@ -1,21 +1,15 @@
 package org.mosad.teapod.util
 
 import android.content.Context
-import android.graphics.Bitmap
-import android.graphics.drawable.Drawable
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.*
-import androidx.core.content.res.ResourcesCompat
 import com.bumptech.glide.Glide
-import com.bumptech.glide.request.target.CustomTarget
-import com.bumptech.glide.request.transition.Transition
 import org.mosad.teapod.R
 import java.util.*
-import kotlin.collections.ArrayList
 
-class CustomAdapter(val context: Context, private val originalMedia: ArrayList<GUIMedia>) : BaseAdapter(), Filterable {
+class CustomAdapter(val context: Context, private val originalMedia: ArrayList<Media>) : BaseAdapter(), Filterable {
 
     private var filteredMedia = originalMedia.map { it.copy() }
     private val customFilter = CustomFilter()
@@ -68,7 +62,7 @@ class CustomAdapter(val context: Context, private val originalMedia: ArrayList<G
         }
 
         override fun publishResults(constraint: CharSequence?, results: FilterResults?) {
-            filteredMedia = results?.values as ArrayList<GUIMedia>
+            filteredMedia = results?.values as ArrayList<Media>
             notifyDataSetChanged()
         }
 

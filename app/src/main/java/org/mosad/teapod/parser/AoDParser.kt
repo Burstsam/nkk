@@ -7,8 +7,9 @@ import org.jsoup.Connection
 import org.jsoup.Jsoup
 import org.mosad.teapod.preferences.EncryptedPreferences
 import org.mosad.teapod.util.DataTypes.MediaType
-import org.mosad.teapod.util.GUIMedia
-import org.mosad.teapod.util.StreamMedia
+import org.mosad.teapod.util.Episode
+import org.mosad.teapod.util.Media
+import java.util.*
 import kotlin.collections.ArrayList
 
 class AoDParser {
@@ -21,7 +22,7 @@ class AoDParser {
         private var sessionCookies = mutableMapOf<String, String>()
         private var loginSuccess = false
 
-        val mediaList = arrayListOf<GUIMedia>()
+        val mediaList = arrayListOf<Media>()
     }
 
     private fun login() = runBlocking {
@@ -67,7 +68,7 @@ class AoDParser {
     /**
      * list all animes from the website
      */
-    fun listAnimes(): ArrayList<GUIMedia>  = runBlocking {
+    fun listAnimes(): ArrayList<Media>  = runBlocking {
         if (sessionCookies.isEmpty()) login()
 
         withContext(Dispatchers.Default) {
@@ -79,13 +80,19 @@ class AoDParser {
 
             mediaList.clear()
             resAnimes.select("div.animebox").forEach {
-                val media = GUIMedia(
-                    it.select("h3.animebox-title").text(),
-                    it.select("p.animebox-image").select("img").attr("src"),
-                    it.select("p.animebox-shorttext").text(),
-                    it.select("p.animebox-link").select("a").attr("href")
-                )
+                val type = if (it.select("p.animebox-link").select("a").text().toLowerCase(Locale.ROOT) == "zur serie") {
+                    MediaType.TVSHOW
+                } else {
+                    MediaType.MOVIE
+                }
 
+                val media = Media(
+                    it.select("h3.animebox-title").text(),
+                    it.select("p.animebox-link").select("a").attr("href"),
+                    type,
+                    it.select("p.animebox-image").select("img").attr("src"),
+                    it.select("p.animebox-shorttext").text()
+                )
                 mediaList.add(media)
             }
 
@@ -98,17 +105,17 @@ class AoDParser {
     /**
      * load streams for the media path
      */
-    fun loadStreams(mediaPath: String): StreamMedia = runBlocking {
+    fun loadStreams(media: Media): List<Episode> = runBlocking {
         if (sessionCookies.isEmpty()) login()
 
         if (!loginSuccess) {
             println("please log in") // TODO
-            return@runBlocking StreamMedia(MediaType.OTHER)
+            return@runBlocking listOf()
         }
 
         withContext(Dispatchers.Default) {
 
-            val res = Jsoup.connect(baseURL + mediaPath)
+            val res = Jsoup.connect(baseURL + media.link)
                 .cookies(sessionCookies)
                 .get()
 
@@ -120,20 +127,14 @@ class AoDParser {
             //println("first entry: ${playlists.first()}")
             //println("csrf token is: $csrfToken")
 
-            val type = if (res.select("h2").eachText().filter { it == "Episoden" }.any()) {
-                MediaType.TVSHOW
-            } else {
-                MediaType.MOVIE
-            }
-
-            return@withContext loadStreamInfo(playlists.first(), csrfToken, type)
+            return@withContext loadStreamInfo(playlists.first(), csrfToken, media.type)
         }
     }
 
     /**
      * load the playlist path and parse it, read the stream info from json
      */
-    private fun loadStreamInfo(playlistPath: String, csrfToken: String, type: MediaType): StreamMedia = runBlocking {
+    private fun loadStreamInfo(playlistPath: String, csrfToken: String, type: MediaType): List<Episode> = runBlocking {
         withContext(Dispatchers.Default) {
             val headers = mutableMapOf(
                 Pair("Accept", "application/json, text/javascript, */*; q=0.01"),
@@ -151,36 +152,36 @@ class AoDParser {
 
             //println(res.body())
 
-            println(type)
             return@withContext when (type) {
                 MediaType.MOVIE -> {
                     val movie = JsonParser.parseString(res.body()).asJsonObject
                         .get("playlist").asJsonArray
 
-                    val streamList = arrayListOf<String>()
-                    movie.first().asJsonObject.get("sources").asJsonArray.toList().forEach {
-                        streamList.add(it.asJsonObject.get("file").asString)
+                    movie.first().asJsonObject.get("sources").asJsonArray.toList().map {
+                        Episode(streamUrl = it.asJsonObject.get("file").asString)
                     }
-
-                    StreamMedia(MediaType.MOVIE, streamList)
                 }
                 MediaType.TVSHOW -> {
-                    val episodes = JsonParser.parseString(res.body()).asJsonObject
+                    val episodesJson = JsonParser.parseString(res.body()).asJsonObject
                         .get("playlist").asJsonArray
 
-                    val streamList = arrayListOf<String>()
-                    episodes.forEach {
-                        val streamUrl = it.asJsonObject.get("sources").asJsonArray
+
+                    episodesJson.map {
+                        val episodeStream = it.asJsonObject.get("sources").asJsonArray
                             .first().asJsonObject
                             .get("file").asString
-                        streamList.add(streamUrl)
+                        val episodeTitle = it.asJsonObject.get("title").asString
+
+                        Episode(
+                            episodeTitle,
+                            episodeStream
+                        )
                     }
 
-                    StreamMedia(MediaType.TVSHOW, streamList)
                 }
                 else -> {
                     Log.e(javaClass.name, "Wrong Type, please report this issue.")
-                    StreamMedia(MediaType.OTHER)
+                    listOf()
                 }
             }
         }

@@ -11,7 +11,7 @@ import org.mosad.teapod.MainActivity
 import org.mosad.teapod.R
 import org.mosad.teapod.parser.AoDParser
 import org.mosad.teapod.util.CustomAdapter
-import org.mosad.teapod.util.GUIMedia
+import org.mosad.teapod.util.Media
 
 class LibraryFragment : Fragment() {
 
@@ -41,7 +41,7 @@ class LibraryFragment : Fragment() {
 
     private fun initActions() {
         list_library.setOnItemClickListener { _, _, position, _ ->
-            val media = adapter.getItem(position) as GUIMedia
+            val media = adapter.getItem(position) as Media
             println("selected item is: ${media.title}")
 
             val mainActivity = activity as MainActivity
