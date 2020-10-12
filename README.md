@@ -13,7 +13,7 @@ A unoffical App for Anime-on-Demand.
 [<img src="https://www.mosad.xyz/images/Teapod/Teapod_Search.png" width=180>](https://www.mosad.xyz/images/Teapod/Teapod_Search.png)
 
 ## License
-This App is licensed under the treams and conditions of GPL3. This Project is not accosiated with Anime-on-Demand in anya way.
+This App is licensed under the terms and conditions of GPL 3. This Project is not associated with Anime-on-Demand in any way.
 
 ### Used Libraries
 * gson: https://github.com/google/gson
