@@ -16,6 +16,7 @@ import org.mosad.teapod.util.Media
 
 class SearchFragment : Fragment() {
 
+    private val instance = this
     private lateinit var adapter : CustomAdapter
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
@@ -32,13 +33,14 @@ class SearchFragment : Fragment() {
 
             // create and set the adapter, needs context
             withContext(Dispatchers.Main) {
-                adapter = CustomAdapter(requireContext(), AoDParser.mediaList)
-                list_search.adapter = adapter
-                //adapter.notifyDataSetChanged()
+                context?.let {
+                    adapter = CustomAdapter(it, AoDParser.mediaList)
+                    list_search.adapter = adapter
+                }
             }
-
-            initActions()
         }
+
+        initActions()
     }
 
     private fun initActions() {

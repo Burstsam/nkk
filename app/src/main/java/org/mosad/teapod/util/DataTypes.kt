@@ -14,4 +14,6 @@ data class Media(val title: String, val link: String, val type: DataTypes.MediaT
     }
 }
 
-data class Episode(val title: String = "", val streamUrl: String = "", var watched: Boolean = false)
+data class Episode(val title: String = "", val streamUrl: String = "", val posterLink: String = "", var watched: Boolean = false)
+
+data class TMDBResponse(val title: String = "", val overview: String = "", val posterUrl: String = "", val backdropUrl: String = "")

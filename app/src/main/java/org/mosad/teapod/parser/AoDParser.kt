@@ -14,7 +14,7 @@ import kotlin.collections.ArrayList
 
 class AoDParser {
 
-    private val baseURL = "https://www.anime-on-demand.de"
+    private val baseUrl = "https://www.anime-on-demand.de"
     private val loginPath = "/users/sign_in"
     private val libraryPath = "/animes"
 
@@ -31,7 +31,7 @@ class AoDParser {
 
         withContext(Dispatchers.Default) {
             // get the authenticity token
-            val resAuth = Jsoup.connect(baseURL + loginPath)
+            val resAuth = Jsoup.connect(baseUrl + loginPath)
                 .header("User-Agent", userAgent)
                 .execute()
 
@@ -49,7 +49,7 @@ class AoDParser {
                 Pair("authenticity_token", authenticityToken)
             )
 
-            val resLogin = Jsoup.connect(baseURL + loginPath)
+            val resLogin = Jsoup.connect(baseUrl + loginPath)
                 .method(Connection.Method.POST)
                 .data(data)
                 .postDataCharset("UTF-8")
@@ -72,7 +72,7 @@ class AoDParser {
         if (sessionCookies.isEmpty()) login()
 
         withContext(Dispatchers.Default) {
-            val resAnimes = Jsoup.connect(baseURL + libraryPath)
+            val resAnimes = Jsoup.connect(baseUrl + libraryPath)
                 .cookies(sessionCookies)
                 .get()
 
@@ -115,7 +115,7 @@ class AoDParser {
 
         withContext(Dispatchers.Default) {
 
-            val res = Jsoup.connect(baseURL + media.link)
+            val res = Jsoup.connect(baseUrl + media.link)
                 .cookies(sessionCookies)
                 .get()
 
@@ -144,7 +144,7 @@ class AoDParser {
                 Pair("X-Requested-With", "XMLHttpRequest"),
             )
 
-            val res = Jsoup.connect(baseURL + playlistPath)
+            val res = Jsoup.connect(baseUrl + playlistPath)
                 .ignoreContentType(true)
                 .cookies(sessionCookies)
                 .headers(headers)

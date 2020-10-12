@@ -15,8 +15,9 @@ import org.mosad.teapod.R
 import org.mosad.teapod.util.DataTypes.MediaType
 import org.mosad.teapod.util.EpisodesAdapter
 import org.mosad.teapod.util.Media
+import org.mosad.teapod.util.TMDBResponse
 
-class MediaFragment(private val media: Media) : Fragment() {
+class MediaFragment(private val media: Media, private val tmdb: TMDBResponse) : Fragment() {
 
     private lateinit var adapterRecEpisodes: EpisodesAdapter
     private lateinit var viewManager: RecyclerView.LayoutManager
@@ -30,13 +31,20 @@ class MediaFragment(private val media: Media) : Fragment() {
         super.onViewCreated(view, savedInstanceState)
 
         // generic gui
-        Glide.with(requireContext()).load(media.posterLink).into(image_poster)
         text_title.text = media.title
-        text_desc.text = media.shortDesc
+
+        if (tmdb.posterUrl.isNotEmpty()) {
+            Glide.with(requireContext()).load(tmdb.posterUrl).into(image_poster)
+            text_desc.text = tmdb.overview
+            Log.d(javaClass.name, "TMDB data present")
+        } else {
+            Glide.with(requireContext()).load(media.posterLink).into(image_poster)
+            text_desc.text = media.shortDesc
+            Log.d(javaClass.name, "No TMDB data present, using Aod")
+        }
 
         // specific gui
         if (media.type == MediaType.TVSHOW) {
-            // TODO
             val episodeTitles = media.episodes.map { it.title }
 
             adapterRecEpisodes = EpisodesAdapter(episodeTitles)

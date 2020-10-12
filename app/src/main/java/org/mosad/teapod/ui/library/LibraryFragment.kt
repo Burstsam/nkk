@@ -31,8 +31,10 @@ class LibraryFragment : Fragment() {
 
             // create and set the adapter, needs context
             withContext(Dispatchers.Main) {
-                adapter = CustomAdapter(requireContext(), AoDParser.mediaList)
-                list_library.adapter = adapter
+                context?.let {
+                    adapter = CustomAdapter(it, AoDParser.mediaList)
+                    list_library.adapter = adapter
+                }
             }
         }
 
