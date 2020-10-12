@@ -10,6 +10,8 @@
 
     <!-- media fragment -->
     <string name="button_play">Play</string>
+    <string name="text_title_ex">A Silent Voice</string>
+    <string name="text_overview_ex">Shouya Ishida ist ein sehr aktives Kind. Mit seinen Freunden …</string>
 
     <!-- settings fragment -->
     <string name="account">Account</string>

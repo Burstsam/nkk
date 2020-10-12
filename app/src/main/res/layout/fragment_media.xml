@@ -17,14 +17,27 @@
             android:layout_height="wrap_content"
             android:orientation="vertical" >
 
-            <ImageView
-                android:id="@+id/image_poster"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_gravity="center"
-                android:layout_marginTop="20dp"
-                android:minHeight="200dp"
-                android:src="@drawable/ic_launcher_background" />
+            <FrameLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content">
+
+                <ImageView
+                    android:id="@+id/image_backdrop"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:adjustViewBounds="true"
+                    android:maxHeight="231dp"
+                    android:minHeight="220dp" />
+
+                <ImageView
+                    android:id="@+id/image_poster"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center"
+                    android:minHeight="200dp"
+                    android:src="@drawable/ic_launcher_background" />
+
+            </FrameLayout>
 
             <Button
                 android:id="@+id/button_play"
@@ -54,18 +67,18 @@
                 android:layout_marginStart="7dp"
                 android:layout_marginTop="12dp"
                 android:layout_marginEnd="7dp"
-                android:text="TextView"
+                android:text="@string/text_title_ex"
                 android:textStyle="bold" />
 
             <TextView
-                android:id="@+id/text_desc"
+                android:id="@+id/text_overview"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_gravity="center"
                 android:layout_marginStart="7dp"
                 android:layout_marginTop="10dp"
                 android:layout_marginEnd="7dp"
-                android:text="TextView" />
+                android:text="@string/text_overview_ex" />
 
             <androidx.recyclerview.widget.RecyclerView
                 android:id="@+id/recycler_episodes"

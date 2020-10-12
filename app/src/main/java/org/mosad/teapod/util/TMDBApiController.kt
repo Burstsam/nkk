@@ -1,6 +1,7 @@
 package org.mosad.teapod.util
 
 import android.util.Log
+import com.google.gson.JsonObject
 import com.google.gson.JsonParser
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.async
@@ -16,24 +17,18 @@ class TMDBApiController {
     private val searchTVUrl = "$apiUrl/search/tv"
     private val apiKey = "de959cf9c07a08b5ca7cb51cda9a40c2"
     private val language = "de"
-    private val preparedParamters = "?api_key=$apiKey&language=$language"
+    private val preparedParameters = "?api_key=$apiKey&language=$language"
 
     private val imageUrl = "https://image.tmdb.org/t/p/w500"
 
     fun search(title: String, type: MediaType): TMDBResponse {
+        val searchTerm = title.replace("(Sub)", "").trim()
+
         return when (type) {
-            MediaType.MOVIE -> {
-                val test = searchMovie(title)
-                println("test: $test")
-                test
-            }
-            MediaType.TVSHOW -> {
-                val test = searchTVShow(title)
-                println("test: $test")
-                test
-            }
-            MediaType.OTHER -> {
-                Log.e(javaClass.name, "Error")
+            MediaType.MOVIE -> searchMovie(searchTerm)
+            MediaType.TVSHOW -> searchTVShow(searchTerm)
+            else -> {
+                Log.e(javaClass.name, "Wrong Type: $type")
                 TMDBResponse()
             }
         }
@@ -41,17 +36,17 @@ class TMDBApiController {
     }
 
     fun searchTVShow(title: String) = runBlocking {
-        val url = URL("$searchTVUrl$preparedParamters&query=${URLEncoder.encode(title, "UTF-8")}")
+        val url = URL("$searchTVUrl$preparedParameters&query=${URLEncoder.encode(title, "UTF-8")}")
 
         GlobalScope.async {
             val response = JsonParser.parseString(url.readText()).asJsonObject
-            println(response)
+            //println(response)
 
             return@async if (response.get("total_results").asInt > 0) {
-                response.get("results").asJsonArray.first().let {
-                    val overview = it.asJsonObject.get("overview").asString
-                    val posterPath = imageUrl + it.asJsonObject.get("poster_path").asString
-                    val backdropPath = imageUrl + it.asJsonObject.get("backdrop_path").asString
+                response.get("results").asJsonArray.first().asJsonObject.let {
+                    val overview = getStringNotNull(it,"overview")
+                    val posterPath = getStringNotNullPrefix(it, "poster_path", imageUrl)
+                    val backdropPath = getStringNotNullPrefix(it, "backdrop_path", imageUrl)
 
                     TMDBResponse("", overview, posterPath, backdropPath)
                 }
@@ -63,17 +58,17 @@ class TMDBApiController {
     }
 
     fun searchMovie(title: String) = runBlocking {
-        val url = URL("$searchMovieUrl$preparedParamters&query=${URLEncoder.encode(title, "UTF-8")}")
+        val url = URL("$searchMovieUrl$preparedParameters&query=${URLEncoder.encode(title, "UTF-8")}")
 
         GlobalScope.async {
             val response = JsonParser.parseString(url.readText()).asJsonObject
-            println(response)
+            //println(response)
 
             return@async if (response.get("total_results").asInt > 0) {
-                response.get("results").asJsonArray.first().let {
-                    val overview = it.asJsonObject.get("overview").asString
-                    val posterPath = imageUrl + it.asJsonObject.get("poster_path").asString
-                    val backdropPath = imageUrl + it.asJsonObject.get("backdrop_path").asString
+                response.get("results").asJsonArray.first().asJsonObject.let {
+                    val overview = getStringNotNull(it,"overview")
+                    val posterPath = getStringNotNullPrefix(it, "poster_path", imageUrl)
+                    val backdropPath = getStringNotNullPrefix(it, "backdrop_path", imageUrl)
 
                     TMDBResponse("", overview, posterPath, backdropPath)
                 }
@@ -83,6 +78,26 @@ class TMDBApiController {
 
 
         }.await()
+    }
+
+    /**
+     * return memberName as string if it's not JsonNull,
+     * else return an empty string
+     */
+    private fun getStringNotNull(jsonObject: JsonObject, memberName: String): String {
+        return getStringNotNullPrefix(jsonObject, memberName, "")
+    }
+
+    /**
+     * return memberName as string with a prefix if it's not JsonNull,
+     * else return an empty string
+     */
+    private fun getStringNotNullPrefix(jsonObject: JsonObject, memberName: String, prefix: String): String {
+        return if (!jsonObject.get(memberName).isJsonNull) {
+            prefix + jsonObject.get(memberName).asString
+        } else {
+            ""
+        }
     }
 
 }
