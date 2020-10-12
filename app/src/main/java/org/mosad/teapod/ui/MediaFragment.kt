@@ -6,18 +6,22 @@ import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.ArrayAdapter
+import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
 import kotlinx.android.synthetic.main.fragment_media.*
 import org.mosad.teapod.MainActivity
 import org.mosad.teapod.R
 import org.mosad.teapod.util.DataTypes.MediaType
+import org.mosad.teapod.util.EpisodesAdapter
 import org.mosad.teapod.util.GUIMedia
 import org.mosad.teapod.util.StreamMedia
 
 class MediaFragment(private val guiMedia: GUIMedia, private val streamMedia: StreamMedia) : Fragment() {
 
-    private lateinit var adapterEpisodes: ArrayAdapter<String>
+    private lateinit var adapterRecEpisodes: EpisodesAdapter
+    private lateinit var viewManager: RecyclerView.LayoutManager
+
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
         return inflater.inflate(R.layout.fragment_media, container, false)
@@ -37,11 +41,14 @@ class MediaFragment(private val guiMedia: GUIMedia, private val streamMedia: Str
                 "${guiMedia.title} - Ep. ${index + 1}"
             }
 
-            adapterEpisodes = ArrayAdapter(requireContext(), android.R.layout.simple_list_item_1, episodes)
-            list_episodes.adapter = adapterEpisodes
+
+            adapterRecEpisodes = EpisodesAdapter(episodes)
+            viewManager = LinearLayoutManager(context)
+            recycler_episodes.layoutManager = viewManager
+            recycler_episodes.adapter = adapterRecEpisodes
 
         } else if (streamMedia.type == MediaType.MOVIE) {
-            list_episodes.visibility = View.GONE
+            recycler_episodes.visibility = View.GONE
         }
 
 
@@ -55,8 +62,11 @@ class MediaFragment(private val guiMedia: GUIMedia, private val streamMedia: Str
             onClickButtonPlay()
         }
 
-        list_episodes.setOnItemClickListener { _, _, position, _ ->
-            playStream(streamMedia.streams[position])
+        // set onItemClick only in adapter is initialized
+        if (this::adapterRecEpisodes.isInitialized) {
+            adapterRecEpisodes.onItemClick = { item, position ->
+                playStream(streamMedia.streams[position])
+            }
         }
     }
 
