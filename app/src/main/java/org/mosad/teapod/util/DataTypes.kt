@@ -8,14 +8,35 @@ class DataTypes {
     }
 }
 
-data class Media(val title: String, val link: String, val type: DataTypes.MediaType, val posterLink: String, val shortDesc : String, var episodes: List<Episode> = listOf(), val info : Info = Info()) {
+data class Media(val title: String, val link: String, val type: DataTypes.MediaType, val info : Info = Info(), var episodes: List<Episode> = listOf()) {
     override fun toString(): String {
         return title
     }
 }
 
-data class Info(var description: String = "", var year: Int = 0, var age: Int = 0, var episodesCount: Int = 0)
+data class Info(
+    var posterLink: String = "",
+    var shortDesc: String = "",
+    var description: String = "",
+    var year: Int = 0,
+    var age: Int = 0,
+    var episodesCount: Int = 0
+)
 
-data class Episode(val title: String = "", val streamUrl: String = "", val posterLink: String = "", var description: String = "", var number: Int = 0, var watched: Boolean = false)
+data class Episode(
+    val title: String = "",
+    val streamUrl: String = "",
+    val posterLink: String = "",
+    var description: String = "",
+    var number: Int = 0,
+    var watched: Boolean = false
+)
 
-data class TMDBResponse(val id: Int = 0, val title: String = "", val overview: String = "", val posterUrl: String = "", val backdropUrl: String = "", var runtime: Int = 0)
+data class TMDBResponse(
+    val id: Int = 0,
+    val title: String = "",
+    val overview: String = "",
+    val posterUrl: String = "",
+    val backdropUrl: String = "",
+    var runtime: Int = 0
+)

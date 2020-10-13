@@ -90,10 +90,11 @@ class AoDParser {
                 val media = Media(
                     it.select("h3.animebox-title").text(),
                     it.select("p.animebox-link").select("a").attr("href"),
-                    type,
-                    it.select("p.animebox-image").select("img").attr("src"),
-                    it.select("p.animebox-shorttext").text()
+                    type
                 )
+                media.info.posterLink = it.select("p.animebox-image").select("img").attr("src")
+                media.info.shortDesc = it.select("p.animebox-shorttext").text()
+
                 mediaList.add(media)
             }
 
@@ -130,6 +131,13 @@ class AoDParser {
                     "episodenanzahl" -> media.info.episodesCount = it.select("td").text().toInt()
                 }
             }
+            /**
+             * TODO tv show specific for each episode (div.episodebox)
+             *  * episode id (div.flip-front -> id.substringafter("-"))
+             *  * watched (if div.status-icon-orange present = true)
+             *  * watchedCallback
+             *  * episodebox-shorttext
+             */
 
             val playlists = res.select("input.streamstarter_html5").eachAttr("data-playlist")
             val csrfToken = res.select("meta[name=csrf-token]").attr("content")

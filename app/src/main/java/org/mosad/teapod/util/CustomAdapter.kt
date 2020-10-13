@@ -21,7 +21,7 @@ class CustomAdapter(val context: Context, private val originalMedia: ArrayList<M
         val imagePoster = view.findViewById<ImageView>(R.id.image_poster)
 
         textTitle.text = filteredMedia[position].title
-        Glide.with(context).load(filteredMedia[position].posterLink).into(imagePoster)
+        Glide.with(context).load(filteredMedia[position].info.posterLink).into(imagePoster)
 
         return view
     }

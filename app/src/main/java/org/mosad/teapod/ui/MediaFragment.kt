@@ -43,8 +43,8 @@ class MediaFragment(private val media: Media, private val tmdb: TMDBResponse) : 
      */
     private fun initGUI() {
         // generic gui
-        val backdropUrl = if (tmdb.backdropUrl.isNotEmpty()) tmdb.backdropUrl else media.posterLink
-        val posterUrl = if (tmdb.posterUrl.isNotEmpty()) tmdb.posterUrl else media.posterLink
+        val backdropUrl = if (tmdb.backdropUrl.isNotEmpty()) tmdb.backdropUrl else media.info.posterLink
+        val posterUrl = if (tmdb.posterUrl.isNotEmpty()) tmdb.posterUrl else media.info.posterLink
 
         Glide.with(requireContext()).load(backdropUrl)
             .apply(RequestOptions.placeholderOf(ColorDrawable(Color.DKGRAY)))
@@ -57,7 +57,7 @@ class MediaFragment(private val media: Media, private val tmdb: TMDBResponse) : 
         text_title.text = media.title
         text_year.text = media.info.year.toString()
         text_age.text = media.info.age.toString()
-        text_overview.text = media.shortDesc //if (tmdb.overview.isNotEmpty()) tmdb.overview else media.shortDesc
+        text_overview.text = media.info.shortDesc //if (tmdb.overview.isNotEmpty()) tmdb.overview else media.shortDesc
 
         // specific gui
         if (media.type == MediaType.TVSHOW) {
