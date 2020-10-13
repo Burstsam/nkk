@@ -24,10 +24,12 @@ data class Info(
 )
 
 data class Episode(
-    val title: String = "",
-    val streamUrl: String = "",
-    val posterLink: String = "",
+    val id: Int = 0,
+    var title: String = "",
+    var streamUrl: String = "",
+    var posterLink: String = "",
     var description: String = "",
+    var shortDesc: String = "",
     var number: Int = 0,
     var watched: Boolean = false
 )

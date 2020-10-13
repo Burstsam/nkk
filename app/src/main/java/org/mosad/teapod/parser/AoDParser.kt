@@ -131,14 +131,24 @@ class AoDParser {
                     "episodenanzahl" -> media.info.episodesCount = it.select("td").text().toInt()
                 }
             }
+
             /**
              * TODO tv show specific for each episode (div.episodebox)
-             *  * episode id (div.flip-front -> id.substringafter("-"))
-             *  * watched (if div.status-icon-orange present = true)
              *  * watchedCallback
-             *  * episodebox-shorttext
              */
+            val episodes = if (media.type == MediaType.TVSHOW) {
+                res.select("div.three-box-container > div.episodebox").map { episodebox ->
+                    val episodeId = episodebox.select("div.flip-front").attr("id").substringAfter("-").toInt()
+                    val episodeWatched = episodebox.select("div.episodebox-icons > div").hasClass("status-icon-orange")
+                    val episodeShortDesc = episodebox.select("p.episodebox-shorttext").text()
 
+                    Episode(id = episodeId, watched = episodeWatched, shortDesc = episodeShortDesc)
+                }
+            } else {
+                listOf(Episode())
+            }
+
+            // has attr data-lag (ger or jap)
             val playlists = res.select("input.streamstarter_html5").eachAttr("data-playlist")
             val csrfToken = res.select("meta[name=csrf-token]").attr("content")
 
@@ -146,7 +156,7 @@ class AoDParser {
             //println("csrf token is: $csrfToken")
 
             return@withContext if (playlists.size > 0) {
-                loadStreamInfo(playlists.first(), csrfToken, media.type)
+                loadStreamInfo(playlists.first(), csrfToken, media.type, episodes)
             } else {
                 listOf()
             }
@@ -155,8 +165,9 @@ class AoDParser {
 
     /**
      * load the playlist path and parse it, read the stream info from json
+     * @param episodes is used as call ba reference, additionally it is passed a return value
      */
-    private fun loadStreamInfo(playlistPath: String, csrfToken: String, type: MediaType): List<Episode> = runBlocking {
+    private fun loadStreamInfo(playlistPath: String, csrfToken: String, type: MediaType, episodes: List<Episode>): List<Episode> = runBlocking {
         withContext(Dispatchers.Default) {
             val headers = mutableMapOf(
                 Pair("Accept", "application/json, text/javascript, */*; q=0.01"),
@@ -174,44 +185,48 @@ class AoDParser {
 
             //println(res.body())
 
-            return@withContext when (type) {
+            when (type) {
                 MediaType.MOVIE -> {
                     val movie = JsonParser.parseString(res.body()).asJsonObject
                         .get("playlist").asJsonArray
 
-                    movie.first().asJsonObject.get("sources").asJsonArray.toList().map {
-                        Episode(streamUrl = it.asJsonObject.get("file").asString)
+                    movie.first().asJsonObject.get("sources").asJsonArray.toList().forEach {
+                        episodes.first().streamUrl = it.asJsonObject.get("file").asString
                     }
                 }
+
                 MediaType.TVSHOW -> {
                     val episodesJson = JsonParser.parseString(res.body()).asJsonObject
                         .get("playlist").asJsonArray
 
 
-                    episodesJson.map {
-                        val episodeStream = it.asJsonObject.get("sources").asJsonArray
+                    episodesJson.forEach { jsonElement ->
+                        val episodeId = jsonElement.asJsonObject.get("mediaid")
+                        val episodeStream = jsonElement.asJsonObject.get("sources").asJsonArray
                             .first().asJsonObject
                             .get("file").asString
-                        val episodeTitle = it.asJsonObject.get("title").asString
-                        val episodePoster = it.asJsonObject.get("image").asString
-                        val episodeDescription = it.asJsonObject.get("description").asString
+                        val episodeTitle = jsonElement.asJsonObject.get("title").asString
+                        val episodePoster = jsonElement.asJsonObject.get("image").asString
+                        val episodeDescription = jsonElement.asJsonObject.get("description").asString
                         val episodeNumber = episodeTitle.substringAfter(", Ep. ").toInt()
 
-                        Episode(
-                            episodeTitle,
-                            episodeStream,
-                            episodePoster,
-                            episodeDescription,
-                            episodeNumber
-                        )
+                        episodes.first { it.id == episodeId.asInt }.apply {
+                            this.title = episodeTitle
+                            this.posterLink = episodePoster
+                            this.streamUrl = episodeStream
+                            this.description = episodeDescription
+                            this.number = episodeNumber
+                        }
                     }
 
                 }
+
                 else -> {
                     Log.e(javaClass.name, "Wrong Type, please report this issue.")
-                    listOf()
                 }
             }
+
+            return@withContext episodes
         }
     }
 

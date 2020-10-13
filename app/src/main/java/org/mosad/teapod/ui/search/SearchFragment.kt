@@ -16,7 +16,7 @@ import org.mosad.teapod.util.Media
 
 class SearchFragment : Fragment() {
 
-    private lateinit var adapter : CustomAdapter
+    private var adapter : CustomAdapter? = null
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
         return inflater.inflate(R.layout.fragment_search, container, false)
@@ -45,14 +45,14 @@ class SearchFragment : Fragment() {
     private fun initActions() {
         search_text.setOnQueryTextListener(object : SearchView.OnQueryTextListener {
             override fun onQueryTextSubmit(query: String?): Boolean {
-                adapter.filter.filter(query)
-                adapter.notifyDataSetChanged()
+                adapter?.filter?.filter(query)
+                adapter?.notifyDataSetChanged()
                 return false
             }
 
             override fun onQueryTextChange(newText: String?): Boolean {
-                adapter.filter.filter(newText)
-                adapter.notifyDataSetChanged()
+                adapter?.filter?.filter(newText)
+                adapter?.notifyDataSetChanged()
                 return false
             }
         })
@@ -61,7 +61,7 @@ class SearchFragment : Fragment() {
             search_text.clearFocus() // remove focus from the SearchView
 
             runBlocking {
-                val media = adapter.getItem(position) as Media
+                val media = adapter?.getItem(position) as Media
                 println("selected item is: ${media.title}")
 
                 (activity as MainActivity).showDetailFragment(media).join()

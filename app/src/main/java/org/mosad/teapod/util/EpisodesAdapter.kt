@@ -9,7 +9,7 @@ import com.bumptech.glide.Glide
 import kotlinx.android.synthetic.main.component_episode.view.*
 import org.mosad.teapod.R
 
-class EpisodesAdapter(private val data: List<Episode>, private val context: Context) : RecyclerView.Adapter<EpisodesAdapter.MyViewHolder>() {
+class EpisodesAdapter(private val episodes: List<Episode>, private val context: Context) : RecyclerView.Adapter<EpisodesAdapter.MyViewHolder>() {
 
     var onItemClick: ((String, Int) -> Unit)? = null
 
@@ -20,21 +20,30 @@ class EpisodesAdapter(private val data: List<Episode>, private val context: Cont
     }
 
     override fun onBindViewHolder(holder: MyViewHolder, position: Int) {
-        holder.view.text_episode_title.text = "Episode ${data[position].number} ${data[position].description}"
+        holder.view.text_episode_title.text = context.getString(
+            R.string.component_episode_title,
+            episodes[position].number,
+            episodes[position].description
+        )
+        holder.view.text_episode_desc.text = episodes[position].shortDesc
 
-        if (data[position].posterLink.isNotEmpty()) {
-            Glide.with(context).load(data[position].posterLink).into(holder.view.image_episode)
+        if (episodes[position].posterLink.isNotEmpty()) {
+            Glide.with(context).load(episodes[position].posterLink).into(holder.view.image_episode)
+        }
+
+        if (!episodes[position].watched) {
+            holder.view.image_watched.setImageDrawable(null)
         }
     }
 
     override fun getItemCount(): Int {
-        return data.size
+        return episodes.size
     }
 
     inner class MyViewHolder(val view: View) : RecyclerView.ViewHolder(view) {
         init {
             view.setOnClickListener {
-                onItemClick?.invoke(data[adapterPosition].title, adapterPosition)
+                onItemClick?.invoke(episodes[adapterPosition].title, adapterPosition)
             }
         }
     }
