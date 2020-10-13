@@ -24,4 +24,7 @@ This App is licensed under the terms and conditions of GPL 3. This Project is no
 * Material design icons: https://github.com/google/material-design-icons
 * androidx libraries
 
+#### Why is it called Teapod?
+Teapod is a Acronym for "The ultimate anime app on demand", hence this project is called Teapod and not Teapot.
+
 Teapod © 2020 [@Seil0](https://git.mosad.xyz/Seil0)
