@@ -25,9 +25,10 @@
                     android:id="@+id/image_backdrop"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:adjustViewBounds="true"
+                    android:adjustViewBounds="false"
                     android:maxHeight="231dp"
-                    android:minHeight="220dp" />
+                    android:minHeight="220dp"
+                    android:scaleType="centerCrop" />
 
                 <ImageView
                     android:id="@+id/image_poster"
