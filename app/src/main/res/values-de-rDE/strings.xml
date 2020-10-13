@@ -10,6 +10,8 @@
 
     <!-- media fragment -->
     <string name="button_play">Abspielen</string>
+    <string name="text_episodes_count">%1$d Episoden</string>
+    <string name="text_runtime">%1$d Minuten</string>
 
     <!-- settings fragment -->
     <string name="account">Account</string>

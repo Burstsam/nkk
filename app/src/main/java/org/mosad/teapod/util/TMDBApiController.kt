@@ -15,6 +15,7 @@ class TMDBApiController {
     private val apiUrl = "https://api.themoviedb.org/3"
     private val searchMovieUrl = "$apiUrl/search/movie"
     private val searchTVUrl = "$apiUrl/search/tv"
+    private val getMovieUrl = "$apiUrl/movie"
     private val apiKey = "de959cf9c07a08b5ca7cb51cda9a40c2"
     private val language = "de"
     private val preparedParameters = "?api_key=$apiKey&language=$language"
@@ -44,11 +45,12 @@ class TMDBApiController {
 
             return@async if (response.get("total_results").asInt > 0) {
                 response.get("results").asJsonArray.first().asJsonObject.let {
+                    val id = getStringNotNull(it,"id").toInt()
                     val overview = getStringNotNull(it,"overview")
                     val posterPath = getStringNotNullPrefix(it, "poster_path", imageUrl)
                     val backdropPath = getStringNotNullPrefix(it, "backdrop_path", imageUrl)
 
-                    TMDBResponse("", overview, posterPath, backdropPath)
+                    TMDBResponse(id, "", overview, posterPath, backdropPath)
                 }
             } else {
                 TMDBResponse()
@@ -66,17 +68,37 @@ class TMDBApiController {
 
             return@async if (response.get("total_results").asInt > 0) {
                 response.get("results").asJsonArray.first().asJsonObject.let {
+                    val id = getStringNotNull(it,"id").toInt()
                     val overview = getStringNotNull(it,"overview")
                     val posterPath = getStringNotNullPrefix(it, "poster_path", imageUrl)
                     val backdropPath = getStringNotNullPrefix(it, "backdrop_path", imageUrl)
+                    val runtime = getMovieRuntime(id)
 
-                    TMDBResponse("", overview, posterPath, backdropPath)
+                    TMDBResponse(id, "", overview, posterPath, backdropPath, runtime)
                 }
             } else {
                 TMDBResponse()
             }
 
 
+        }.await()
+    }
+
+    /**
+     * currently only used for runtime, need a rework
+     */
+    fun getMovieRuntime(id: Int): Int = runBlocking {
+        val url = URL("$getMovieUrl/$id?api_key=$apiKey&language=$language")
+
+        GlobalScope.async {
+            val response = JsonParser.parseString(url.readText()).asJsonObject
+            //println(response)
+
+            val runtime = getStringNotNull(response,"runtime").toInt()
+            println(runtime)
+
+
+            return@async runtime
         }.await()
     }
 

@@ -9,6 +9,8 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.commit
 import kotlinx.android.synthetic.main.activity_main.*
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.launch
 import org.mosad.teapod.parser.AoDParser
 import org.mosad.teapod.preferences.EncryptedPreferences
 import org.mosad.teapod.ui.MediaFragment
@@ -84,7 +86,10 @@ class MainActivity : AppCompatActivity(), BottomNavigationView.OnNavigationItemS
         }
     }
 
-    fun showDetailFragment(media: Media) {
+    /**
+     * TODO show loading fragment
+     */
+    fun showDetailFragment(media: Media) = GlobalScope.launch {
         media.episodes = AoDParser().loadStreams(media) // load the streams for the selected media
 
         val tmdb = TMDBApiController().search(media.title, media.type)

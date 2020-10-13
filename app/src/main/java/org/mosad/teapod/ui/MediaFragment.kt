@@ -55,20 +55,26 @@ class MediaFragment(private val media: Media, private val tmdb: TMDBResponse) : 
             .into(image_poster)
 
         text_title.text = media.title
-        // TODO add  year, fsk
-        text_overview.text = if (tmdb.overview.isNotEmpty()) tmdb.overview else media.shortDesc
+        text_year.text = media.info.year.toString()
+        text_age.text = media.info.age.toString()
+        text_overview.text = media.shortDesc //if (tmdb.overview.isNotEmpty()) tmdb.overview else media.shortDesc
 
         // specific gui
         if (media.type == MediaType.TVSHOW) {
-            val episodeTitles = media.episodes.map { it.title }
-
-            adapterRecEpisodes = EpisodesAdapter(episodeTitles)
+            adapterRecEpisodes = EpisodesAdapter(media.episodes, requireContext())
             viewManager = LinearLayoutManager(context)
             recycler_episodes.layoutManager = viewManager
             recycler_episodes.adapter = adapterRecEpisodes
 
+            text_episodes_or_runtime.text = getString(R.string.text_episodes_count, media.info.episodesCount)
         } else if (media.type == MediaType.MOVIE) {
             recycler_episodes.visibility = View.GONE
+
+            if (tmdb.runtime > 0) {
+                text_episodes_or_runtime.text = getString(R.string.text_runtime, tmdb.runtime)
+            } else {
+                text_episodes_or_runtime.visibility = View.GONE
+            }
         }
     }
 

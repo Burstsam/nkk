@@ -36,10 +36,10 @@ class AoDParser {
                 .execute()
 
             val authenticityToken = resAuth.parse().select("meta[name=csrf-token]").attr("content")
-            println("Authenticity token is: $authenticityToken")
+            val authCookies = resAuth.cookies()
 
-            val cookies = resAuth.cookies()
-            println("cookies: $cookies")
+            Log.i(javaClass.name, "Received authenticity token: $authenticityToken")
+            Log.i(javaClass.name, "Received authenticity cookies: $authCookies")
 
             val data = mapOf(
                 Pair("user[login]", EncryptedPreferences.login),
@@ -53,7 +53,7 @@ class AoDParser {
                 .method(Connection.Method.POST)
                 .data(data)
                 .postDataCharset("UTF-8")
-                .cookies(cookies)
+                .cookies(authCookies)
                 .execute()
 
             //println(resLogin.body())
@@ -122,6 +122,15 @@ class AoDParser {
 
             //println(res)
 
+            // parse additional info from the media page
+            res.select("table.vertical-table").select("tr").forEach {
+                when (it.select("th").text().toLowerCase(Locale.ROOT)) {
+                    "produktionsjahr" -> media.info.year = it.select("td").text().toInt()
+                    "fsk" -> media.info.age = it.select("td").text().toInt()
+                    "episodenanzahl" -> media.info.episodesCount = it.select("td").text().toInt()
+                }
+            }
+
             val playlists = res.select("input.streamstarter_html5").eachAttr("data-playlist")
             val csrfToken = res.select("meta[name=csrf-token]").attr("content")
 
@@ -176,10 +185,16 @@ class AoDParser {
                             .first().asJsonObject
                             .get("file").asString
                         val episodeTitle = it.asJsonObject.get("title").asString
+                        val episodePoster = it.asJsonObject.get("image").asString
+                        val episodeDescription = it.asJsonObject.get("description").asString
+                        val episodeNumber = episodeTitle.substringAfter(", Ep. ").toInt()
 
                         Episode(
                             episodeTitle,
-                            episodeStream
+                            episodeStream,
+                            episodePoster,
+                            episodeDescription,
+                            episodeNumber
                         )
                     }
 

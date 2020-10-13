@@ -16,7 +16,6 @@ import org.mosad.teapod.util.Media
 
 class SearchFragment : Fragment() {
 
-    private val instance = this
     private lateinit var adapter : CustomAdapter
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
@@ -46,6 +45,8 @@ class SearchFragment : Fragment() {
     private fun initActions() {
         search_text.setOnQueryTextListener(object : SearchView.OnQueryTextListener {
             override fun onQueryTextSubmit(query: String?): Boolean {
+                adapter.filter.filter(query)
+                adapter.notifyDataSetChanged()
                 return false
             }
 
@@ -57,12 +58,14 @@ class SearchFragment : Fragment() {
         })
 
         list_search.setOnItemClickListener { _, _, position, _ ->
-            val media = adapter.getItem(position) as Media
+            search_text.clearFocus() // remove focus from the SearchView
 
-            println("selected item is: ${media.title}")
+            runBlocking {
+                val media = adapter.getItem(position) as Media
+                println("selected item is: ${media.title}")
 
-            val mainActivity = activity as MainActivity
-            mainActivity.showDetailFragment(media)
+                (activity as MainActivity).showDetailFragment(media).join()
+            }
         }
     }
 }

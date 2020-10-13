@@ -12,6 +12,10 @@
     <string name="button_play">Play</string>
     <string name="text_title_ex" translatable="false">A Silent Voice</string>
     <string name="text_overview_ex" translatable="false">Shouya Ishida starts bullying the new girl in class …</string>
+    <string name="text_year_ex" translatable="false">2016</string>
+    <string name="text_age_ex" translatable="false">6</string>
+    <string name="text_episodes_count">%1$d episodes</string>
+    <string name="text_runtime">%1$d Minutes</string>
 
     <!-- settings fragment -->
     <string name="account">Account</string>
