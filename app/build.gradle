@@ -11,7 +11,7 @@ android {
         minSdkVersion 23
         targetSdkVersion 30
         versionCode 1
-        versionName "0.1-alpha1"
+        versionName "0.1-alpha2"
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         resValue "string", "build_time", buildTime()
@@ -44,6 +44,7 @@ dependencies {
     implementation 'androidx.navigation:navigation-fragment-ktx:2.3.0'
     implementation 'androidx.navigation:navigation-ui-ktx:2.3.0'
     implementation 'androidx.security:security-crypto:1.1.0-alpha02'
+    implementation 'androidx.legacy:legacy-support-v4:1.0.0'
 
     implementation 'com.google.android.material:material:1.2.1'
     implementation 'com.google.code.gson:gson:2.8.6'
@@ -57,7 +58,7 @@ dependencies {
     implementation 'jp.wasabeef:glide-transformations:4.3.0'
     implementation 'com.afollestad.material-dialogs:core:3.3.0'
     implementation 'com.afollestad.material-dialogs:bottomsheets:3.3.0'
-    implementation 'androidx.legacy:legacy-support-v4:1.0.0'
+    implementation 'de.psdev.licensesdialog:licensesdialog:2.1.0'
 
     testImplementation 'junit:junit:4.12'
     androidTestImplementation 'androidx.test.ext:junit:1.1.2'

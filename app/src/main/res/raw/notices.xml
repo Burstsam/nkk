@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="utf-8"?>
+<notices>
+    <notice>
+        <name>AndroidX</name>
+        <url>https://developer.android.com/jetpack/androidx</url>
+        <copyright>Copyright The Android Open Source Project</copyright>
+        <license>Apache Software License 2.0</license>
+    </notice>
+    <notice>
+        <name>Material Components for Android</name>
+        <url>https://github.com/material-components/material-components-android</url>
+        <copyright>Copyright The Android Open Source Project</copyright>
+        <license>Apache Software License 2.0</license>
+    </notice>
+    <notice>
+        <name>ExoPlayer</name>
+        <url>https://github.com/material-components/material-components-android</url>
+        <copyright>Copyright The Android Open Source Project</copyright>
+        <license>Apache Software License 2.0</license>
+    </notice>
+    <notice>
+        <name>Gson</name>
+        <url>https://github.com/google/gson</url>
+        <copyright>Copyright 2008 Google Inc.</copyright>
+        <license>Apache Software License 2.0</license>
+    </notice>
+    <notice>
+        <name>Material design icons</name>
+        <url>https://github.com/google/material-design-icons</url>
+        <copyright>Copyright Google Inc.</copyright>
+        <license>Apache Software License 2.0</license>
+    </notice>
+    <notice>
+        <name>Material Dialogs</name>
+        <url>https://github.com/afollestad/material-dialogs</url>
+        <copyright>Copyright Aidan Follestad</copyright>
+        <license>Apache Software License 2.0</license>
+    </notice>
+    <notice>
+        <name>Jsoup</name>
+        <url>https://jsoup.org/</url>
+        <copyright>Copyright 2009 - 2020 Jonathan Hedley</copyright>
+        <license>MIT License</license>
+    </notice>
+    <notice>
+        <name>kotlinx.coroutines</name>
+        <url>https://github.com/Kotlin/kotlinx.coroutines</url>
+        <copyright>Copyright 2016 - 2019 JetBrains</copyright>
+        <license>Apache Software License 2.0</license>
+    </notice>
+    <notice>
+        <name>Glide</name>
+        <url>https://github.com/bumptech/glide</url>
+        <copyright>Copyright Google, Inc</copyright>
+        <license>BSD 3-Clause License</license>
+    </notice>
+    <notice>
+        <name>Glide Transformations</name>
+        <url>https://github.com/wasabeef/glide-transformations</url>
+        <copyright>Copyright 2020 Wasabeef</copyright>
+        <license>Apache Software License 2.0</license>
+    </notice>
+</notices>

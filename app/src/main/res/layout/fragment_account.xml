@@ -39,6 +39,7 @@
                     android:id="@+id/linear_account_login"
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
+                    android:layout_margin="7dp"
                     android:gravity="center"
                     android:orientation="horizontal">
 
@@ -103,6 +104,7 @@
                     android:id="@+id/linear_about"
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
+                    android:layout_margin="7dp"
                     android:gravity="center"
                     android:orientation="horizontal">
 
@@ -110,6 +112,7 @@
                         android:id="@+id/imageView2"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
+                        android:contentDescription="@string/info"
                         android:minWidth="48dp"
                         android:minHeight="48dp"
                         android:padding="5dp"
@@ -140,6 +143,23 @@
                     </LinearLayout>
 
                 </LinearLayout>
+
+                <View
+                    android:id="@+id/divider"
+                    android:layout_width="match_parent"
+                    android:layout_height="1dp"
+                    android:background="?android:attr/listDivider" />
+
+                <TextView
+                    android:id="@+id/text_licenses"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_margin="7dp"
+                    android:paddingStart="48dp"
+                    android:paddingEnd="48dp"
+                    android:text="Licenses"
+                    android:textColor="@android:color/primary_text_light"
+                    android:textSize="16sp" />
             </LinearLayout>
         </LinearLayout>
     </ScrollView>

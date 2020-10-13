@@ -26,8 +26,9 @@
     <string name="account_login_desc">Tap to edit</string>
     <string name="info">Info</string>
     <string name="info_about" translatable="false">Teapod by @Seil0</string>
-    <string name="info_about_desc" translatable="false">Version %1$s (%2$s)</string>
-    <string name="info_about_dialog" translatable="false">This software is published under the terms and conditions of GPL 3. For further information visit: \ngit.mosad.xyz/Seil0/teapod \n\n© 2020 seil0@mosad.xyz</string>
+    <string name="info_about_desc">Version %1$s (%2$s)</string>
+    <string name="info_about_dialog">This app is published under the terms and conditions of the GNU GPL 3 or later. For further information visit: \ngit.mosad.xyz/Seil0/teapod \n\n© 2020 seil0@mosad.xyz</string>
+    <string name="licenses">Licenses</string>
 
     <!-- dialogs -->
     <string name="save">save</string>

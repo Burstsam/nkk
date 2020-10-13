@@ -6,7 +6,8 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
-import com.afollestad.materialdialogs.MaterialDialog
+import com.google.android.material.dialog.MaterialAlertDialogBuilder
+import de.psdev.licensesdialog.LicensesDialog
 import kotlinx.android.synthetic.main.fragment_account.*
 import org.mosad.teapod.BuildConfig
 import org.mosad.teapod.R
@@ -35,9 +36,19 @@ class AccountFragment : Fragment() {
         }
 
         linear_about.setOnClickListener {
-            MaterialDialog(requireContext())
-                .title(R.string.info_about)
-                .message(R.string.info_about_dialog)
+            MaterialAlertDialogBuilder(requireContext())
+                .setTitle(R.string.info_about)
+                .setMessage(R.string.info_about_dialog)
+                .show()
+        }
+
+        text_licenses.setOnClickListener {
+            LicensesDialog.Builder(requireContext())
+                .setNotices(R.raw.notices)
+                .setTitle(R.string.licenses)
+                .setIncludeOwnLicense(true)
+                .setThemeResourceId(R.style.AppTheme)
+                .build()
                 .show()
         }
     }
