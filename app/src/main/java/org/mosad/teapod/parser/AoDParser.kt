@@ -12,6 +12,9 @@ import org.mosad.teapod.util.Media
 import java.util.*
 import kotlin.collections.ArrayList
 
+/**
+ * maybe AoDParser as object would be useful
+ */
 class AoDParser {
 
     private val baseUrl = "https://www.anime-on-demand.de"
@@ -19,6 +22,7 @@ class AoDParser {
     private val libraryPath = "/animes"
 
     companion object {
+        private var csrfToken: String = ""
         private var sessionCookies = mutableMapOf<String, String>()
         private var loginSuccess = false
 
@@ -132,25 +136,31 @@ class AoDParser {
                 }
             }
 
-            /**
-             * TODO tv show specific for each episode (div.episodebox)
-             *  * watchedCallback
-             */
+            // parse additional information for tv shows
             val episodes = if (media.type == MediaType.TVSHOW) {
                 res.select("div.three-box-container > div.episodebox").map { episodebox ->
                     val episodeId = episodebox.select("div.flip-front").attr("id").substringAfter("-").toInt()
-                    val episodeWatched = episodebox.select("div.episodebox-icons > div").hasClass("status-icon-orange")
                     val episodeShortDesc = episodebox.select("p.episodebox-shorttext").text()
+                    val episodeWatched = episodebox.select("div.episodebox-icons > div").hasClass("status-icon-orange")
+                    val episodeWatchedCallback = episodebox.select("input.streamstarter_html5").eachAttr("data-playlist").first()
 
-                    Episode(id = episodeId, watched = episodeWatched, shortDesc = episodeShortDesc)
+                    Episode(
+                        id = episodeId,
+                        shortDesc = episodeShortDesc,
+                        watched = episodeWatched,
+                        watchedCallback = episodeWatchedCallback
+                    )
                 }
             } else {
                 listOf(Episode())
             }
 
+            if (csrfToken.isEmpty()) {
+                csrfToken = res.select("meta[name=csrf-token]").attr("content")
+            }
+
             // has attr data-lag (ger or jap)
             val playlists = res.select("input.streamstarter_html5").eachAttr("data-playlist")
-            val csrfToken = res.select("meta[name=csrf-token]").attr("content")
 
             //println("first entry: ${playlists.first()}")
             //println("csrf token is: $csrfToken")
@@ -176,6 +186,8 @@ class AoDParser {
                 Pair("X-CSRF-Token", csrfToken),
                 Pair("X-Requested-With", "XMLHttpRequest"),
             )
+
+            println("loading streaminfo with cstf: $csrfToken")
 
             val res = Jsoup.connect(baseUrl + playlistPath)
                 .ignoreContentType(true)
@@ -228,6 +240,22 @@ class AoDParser {
 
             return@withContext episodes
         }
+    }
+
+    fun sendCallback(callbackPath: String) = GlobalScope.launch {
+        val headers = mutableMapOf(
+            Pair("Accept", "application/json, text/javascript, */*; q=0.01"),
+            Pair("Accept-Language", "de,en-US;q=0.7,en;q=0.3"),
+            Pair("Accept-Encoding", "gzip, deflate, br"),
+            Pair("X-CSRF-Token", csrfToken),
+            Pair("X-Requested-With", "XMLHttpRequest"),
+        )
+
+        Jsoup.connect(baseUrl + callbackPath)
+            .ignoreContentType(true)
+            .cookies(sessionCookies)
+            .headers(headers)
+            .execute()
     }
 
 }

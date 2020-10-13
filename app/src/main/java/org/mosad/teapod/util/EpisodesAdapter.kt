@@ -40,6 +40,10 @@ class EpisodesAdapter(private val episodes: List<Episode>, private val context: 
         return episodes.size
     }
 
+    fun updateWatchedState(watched: Boolean, position: Int) {
+        episodes[position].watched = watched
+    }
+
     inner class MyViewHolder(val view: View) : RecyclerView.ViewHolder(view) {
         init {
             view.setOnClickListener {

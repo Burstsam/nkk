@@ -31,7 +31,8 @@ data class Episode(
     var description: String = "",
     var shortDesc: String = "",
     var number: Int = 0,
-    var watched: Boolean = false
+    var watched: Boolean = false,
+    var watchedCallback: String = ""
 )
 
 data class TMDBResponse(
