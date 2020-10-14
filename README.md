@@ -16,13 +16,16 @@ A unoffical App for Anime-on-Demand.
 This App is licensed under the terms and conditions of GPL 3. This Project is not associated with Anime-on-Demand in any way.
 
 ### Used Libraries
-* gson: https://github.com/google/gson
-* exoplayer: https://github.com/google/ExoPlayer
-* jsoup: https://jsoup.org/
-* material-dialogs: https://github.com/afollestad/material-dialogs
-* kotlin.coroutines: https://github.com/Kotlin/kotlinx.coroutines
+* AndroidX: https://developer.android.com/jetpack/androidx
+* Material Components for Android: https://github.com/material-components/material-components-android
+* ExoPlayer: https://github.com/google/ExoPlayer
+* Gson: https://github.com/google/gson
 * Material design icons: https://github.com/google/material-design-icons
-* androidx libraries
+* Material Dialogs: https://github.com/afollestad/material-dialogs
+* Jsoup: https://jsoup.org
+* kotlinx.coroutines: https://github.com/Kotlin/kotlinx.coroutines
+* Glide: https://github.com/bumptech/glide
+* Glide Transformations: https://github.com/wasabeef/glide-transformations
 
 #### Why is it called Teapod?
 Teapod is a Acronym for "The ultimate anime app on demand", hence this project is called Teapod and not Teapot.

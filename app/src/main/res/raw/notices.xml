@@ -14,7 +14,7 @@
     </notice>
     <notice>
         <name>ExoPlayer</name>
-        <url>https://github.com/material-components/material-components-android</url>
+        <url>https://github.com/google/ExoPlayer</url>
         <copyright>Copyright The Android Open Source Project</copyright>
         <license>Apache Software License 2.0</license>
     </notice>
