@@ -24,7 +24,7 @@
 
     <!-- dialogs -->
     <string name="save">speichern</string>
-    <string name="cancel">\@android:string/cancel</string>
+    <string name="cancel">@android:string/cancel</string>
 
     <!-- etc -->
     <string name="login">Login</string>

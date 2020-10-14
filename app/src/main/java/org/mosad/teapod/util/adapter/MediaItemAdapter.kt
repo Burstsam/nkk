@@ -13,7 +13,7 @@ import java.util.*
 class MediaItemAdapter(val context: Context, private val originalMedia: ArrayList<Media>) : BaseAdapter(), Filterable {
 
     private var filteredMedia = originalMedia.map { it.copy() }
-    private val customFilter = CustomFilter()
+    private val filer = MediaFilter()
 
     override fun getView(position: Int, convertView: View?, parent: ViewGroup): View {
         val view = convertView ?: LayoutInflater.from(context).inflate(R.layout.item_media, parent, false)
@@ -28,7 +28,7 @@ class MediaItemAdapter(val context: Context, private val originalMedia: ArrayLis
     }
 
     override fun getFilter(): Filter {
-        return customFilter
+        return filer
     }
 
     override fun getCount(): Int {
@@ -43,7 +43,8 @@ class MediaItemAdapter(val context: Context, private val originalMedia: ArrayLis
         return position.toLong()
     }
 
-    inner class CustomFilter : Filter() {
+
+    inner class MediaFilter : Filter() {
         override fun performFiltering(constraint: CharSequence?): FilterResults {
             val filterTerm = constraint.toString().toLowerCase(Locale.ROOT)
             val results = FilterResults()
@@ -62,6 +63,10 @@ class MediaItemAdapter(val context: Context, private val originalMedia: ArrayLis
             return results
         }
 
+        @Suppress("unchecked_cast")
+        /**
+         * suppressing unchecked cast is safe, since we only use Media
+         */
         override fun publishResults(constraint: CharSequence?, results: FilterResults?) {
             filteredMedia = results?.values as ArrayList<Media>
             notifyDataSetChanged()

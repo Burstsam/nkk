@@ -6,7 +6,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
-import com.google.android.material.dialog.MaterialAlertDialogBuilder
+import com.afollestad.materialdialogs.MaterialDialog
 import de.psdev.licensesdialog.LicensesDialog
 import kotlinx.android.synthetic.main.fragment_account.*
 import org.mosad.teapod.BuildConfig
@@ -36,9 +36,9 @@ class AccountFragment : Fragment() {
         }
 
         linear_about.setOnClickListener {
-            MaterialAlertDialogBuilder(requireContext())
-                .setTitle(R.string.info_about)
-                .setMessage(R.string.info_about_dialog)
+            MaterialDialog(requireContext())
+                .title(R.string.info_about)
+                .message(R.string.info_about_dialog)
                 .show()
         }
 
