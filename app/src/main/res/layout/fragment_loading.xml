@@ -3,23 +3,15 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:keepScreenOn="true"
-    android:background="#000000"
-    tools:context=".PlayerActivity">
-
-    <com.google.android.exoplayer2.ui.PlayerView
-        android:id="@+id/video_view"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:layout_gravity="center" />
-    <!--    app:controller_layout_id="@layout/player_custom_control"/>-->
+    android:background="#f5f5f5"
+    android:clickable="true"
+    android:focusable="true">
 
     <com.google.android.material.progressindicator.ProgressIndicator
-        android:id="@+id/loading"
+        android:id="@+id/progressBar2"
         style="@style/Widget.MaterialComponents.ProgressIndicator.Circular.Indeterminate"
         android:layout_width="70dp"
         android:layout_height="70dp"
         android:layout_gravity="center"
         tools:visibility="visible" />
-
 </FrameLayout>

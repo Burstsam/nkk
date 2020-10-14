@@ -32,6 +32,7 @@ import androidx.fragment.app.Fragment
 import androidx.fragment.app.commit
 import kotlinx.android.synthetic.main.activity_main.*
 import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.async
 import kotlinx.coroutines.launch
 import org.mosad.teapod.parser.AoDParser
 import org.mosad.teapod.preferences.EncryptedPreferences
@@ -41,8 +42,7 @@ import org.mosad.teapod.ui.components.LoginDialog
 import org.mosad.teapod.ui.home.HomeFragment
 import org.mosad.teapod.ui.library.LibraryFragment
 import org.mosad.teapod.ui.search.SearchFragment
-import org.mosad.teapod.util.Media
-import org.mosad.teapod.util.TMDBApiController
+import org.mosad.teapod.util.*
 
 class MainActivity : AppCompatActivity(), BottomNavigationView.OnNavigationItemSelectedListener {
 
@@ -70,6 +70,10 @@ class MainActivity : AppCompatActivity(), BottomNavigationView.OnNavigationItemS
     }
 
     override fun onNavigationItemSelected(item: MenuItem): Boolean {
+        if (supportFragmentManager.backStackEntryCount > 0) {
+            supportFragmentManager.popBackStack()
+        }
+
         val ret = when (item.itemId) {
             R.id.navigation_home -> {
                 activeFragment = HomeFragment()
@@ -109,11 +113,18 @@ class MainActivity : AppCompatActivity(), BottomNavigationView.OnNavigationItemS
     }
 
     /**
-     * TODO show loading fragment
+     * show the media fragment for the selected media
+     * while loading show the loading fragment
      */
-    fun showDetailFragment(media: Media) = GlobalScope.launch {
-        media.episodes = AoDParser().loadStreams(media) // load the streams for the selected media
+    fun showMediaFragment(media: Media) = GlobalScope.launch {
+        val loadingFragment = LoadingFragment()
+        supportFragmentManager.commit {
+            add(R.id.nav_host_fragment, loadingFragment, "MediaFragment")
+            show(loadingFragment)
+        }
 
+        // load the streams for the selected media
+        media.episodes = AoDParser().loadStreams(media)
         val tmdb = TMDBApiController().search(media.title, media.type)
 
         val mediaFragment = MediaFragment(media, tmdb)
@@ -121,6 +132,10 @@ class MainActivity : AppCompatActivity(), BottomNavigationView.OnNavigationItemS
             add(R.id.nav_host_fragment, mediaFragment, "MediaFragment")
             addToBackStack(null)
             show(mediaFragment)
+        }
+
+        supportFragmentManager.commit {
+            remove(loadingFragment)
         }
     }
 

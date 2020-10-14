@@ -1,4 +1,4 @@
-package org.mosad.teapod.util
+package org.mosad.teapod.util.adapter
 
 import android.content.Context
 import android.view.LayoutInflater
@@ -10,8 +10,9 @@ import com.bumptech.glide.request.RequestOptions
 import jp.wasabeef.glide.transformations.RoundedCornersTransformation
 import kotlinx.android.synthetic.main.item_episode.view.*
 import org.mosad.teapod.R
+import org.mosad.teapod.util.Episode
 
-class EpisodesAdapter(private val episodes: List<Episode>, private val context: Context) : RecyclerView.Adapter<EpisodesAdapter.MyViewHolder>() {
+class EpisodeItemAdapter(private val episodes: List<Episode>, private val context: Context) : RecyclerView.Adapter<EpisodeItemAdapter.MyViewHolder>() {
 
     var onItemClick: ((String, Int) -> Unit)? = null
 

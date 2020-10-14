@@ -30,12 +30,13 @@
                     android:minHeight="220dp"
                     android:scaleType="centerCrop" />
 
-                <ImageView
+                <com.google.android.material.imageview.ShapeableImageView
                     android:id="@+id/image_poster"
                     android:layout_width="wrap_content"
                     android:layout_height="200dp"
                     android:layout_gravity="center"
-                    android:src="@drawable/ic_launcher_background" />
+                    app:shapeAppearance="@style/ShapeAppearance.Teapod.RoundedPoster"
+                    app:srcCompat="@drawable/ic_launcher_background" />
 
             </FrameLayout>
 

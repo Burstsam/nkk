@@ -1,4 +1,4 @@
-package org.mosad.teapod.util
+package org.mosad.teapod.util.adapter
 
 import android.content.Context
 import android.view.LayoutInflater
@@ -7,9 +7,10 @@ import android.view.ViewGroup
 import android.widget.*
 import com.bumptech.glide.Glide
 import org.mosad.teapod.R
+import org.mosad.teapod.util.Media
 import java.util.*
 
-class CustomAdapter(val context: Context, private val originalMedia: ArrayList<Media>) : BaseAdapter(), Filterable {
+class MediaItemAdapter(val context: Context, private val originalMedia: ArrayList<Media>) : BaseAdapter(), Filterable {
 
     private var filteredMedia = originalMedia.map { it.copy() }
     private val customFilter = CustomFilter()

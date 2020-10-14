@@ -14,12 +14,13 @@
         android:layout_height="wrap_content"
         android:orientation="horizontal">
 
-        <ImageView
+        <com.google.android.material.imageview.ShapeableImageView
             android:id="@+id/image_episode"
             android:layout_width="128dp"
             android:layout_height="72dp"
             android:contentDescription="@string/component_poster_desc"
-            app:srcCompat="@color/md_disabled_text_dark_theme" />
+            app:srcCompat="@color/md_disabled_text_dark_theme"
+            app:shapeAppearance="@style/ShapeAppearance.Teapod.RoundedPoster"/>
 
         <TextView
             android:id="@+id/text_episode_title"

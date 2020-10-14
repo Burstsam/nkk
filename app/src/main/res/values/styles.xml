@@ -14,5 +14,10 @@
         <item name="android:windowContentOverlay">@null</item>
     </style>
 
+    <!-- shapes -->
+    <style name="ShapeAppearance.Teapod.RoundedPoster" parent="ShapeAppearance.MaterialComponents.LargeComponent">
+        <item name="cornerFamily">rounded</item>
+        <item name="cornerSize">5dp</item>
+    </style>
 
 </resources>

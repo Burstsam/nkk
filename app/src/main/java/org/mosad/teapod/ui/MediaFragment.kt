@@ -19,13 +19,13 @@ import org.mosad.teapod.MainActivity
 import org.mosad.teapod.R
 import org.mosad.teapod.parser.AoDParser
 import org.mosad.teapod.util.DataTypes.MediaType
-import org.mosad.teapod.util.EpisodesAdapter
+import org.mosad.teapod.util.adapter.EpisodeItemAdapter
 import org.mosad.teapod.util.Media
 import org.mosad.teapod.util.TMDBResponse
 
 class MediaFragment(private val media: Media, private val tmdb: TMDBResponse) : Fragment() {
 
-    private lateinit var adapterRecEpisodes: EpisodesAdapter
+    private lateinit var adapterRecEpisodes: EpisodeItemAdapter
     private lateinit var viewManager: RecyclerView.LayoutManager
 
 
@@ -55,17 +55,16 @@ class MediaFragment(private val media: Media, private val tmdb: TMDBResponse) : 
             .into(image_backdrop)
 
         Glide.with(requireContext()).load(posterUrl)
-            .apply(RequestOptions.bitmapTransform(RoundedCornersTransformation(posterCornerRadius, 0)))
             .into(image_poster)
 
         text_title.text = media.title
         text_year.text = media.info.year.toString()
         text_age.text = media.info.age.toString()
-        text_overview.text = media.info.shortDesc //if (tmdb.overview.isNotEmpty()) tmdb.overview else media.shortDesc
+        text_overview.text = media.info.shortDesc
 
         // specific gui
         if (media.type == MediaType.TVSHOW) {
-            adapterRecEpisodes = EpisodesAdapter(media.episodes, requireContext())
+            adapterRecEpisodes = EpisodeItemAdapter(media.episodes, requireContext())
             viewManager = LinearLayoutManager(context)
             recycler_episodes.layoutManager = viewManager
             recycler_episodes.adapter = adapterRecEpisodes
