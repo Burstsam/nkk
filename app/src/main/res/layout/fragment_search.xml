@@ -10,11 +10,8 @@
     <SearchView
         android:id="@+id/search_text"
         android:layout_width="match_parent"
-        android:layout_height="48dp"
+        android:layout_height="0dp"
         android:iconifiedByDefault="false"
-        android:paddingStart="5dp"
-        android:paddingTop="5dp"
-        android:paddingEnd="5dp"
         android:paddingBottom="5dp"
         android:queryHint="@string/search_hint"
         app:layout_constraintEnd_toEndOf="parent"
@@ -23,13 +20,16 @@
 
     </SearchView>
 
-    <ListView
-        android:id="@+id/list_search"
+    <GridView
+        android:id="@+id/grid_media_search"
         android:layout_width="match_parent"
         android:layout_height="0dp"
+        android:clipToPadding="false"
+        android:horizontalSpacing="7dp"
+        android:numColumns="2"
+        android:padding="5dp"
+        android:verticalSpacing="7dp"
         app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/search_text" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

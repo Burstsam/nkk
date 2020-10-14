@@ -6,6 +6,7 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
 import kotlinx.android.synthetic.main.fragment_library.*
+import kotlinx.android.synthetic.main.item_media.view.*
 import kotlinx.coroutines.*
 import org.mosad.teapod.MainActivity
 import org.mosad.teapod.R
@@ -33,7 +34,7 @@ class LibraryFragment : Fragment() {
             withContext(Dispatchers.Main) {
                 context?.let {
                     adapter = CustomAdapter(it, AoDParser.mediaList)
-                    list_library.adapter = adapter
+                    grid_media_library.adapter = adapter
                 }
             }
         }
@@ -42,12 +43,11 @@ class LibraryFragment : Fragment() {
     }
 
     private fun initActions() {
-        list_library.setOnItemClickListener { _, _, position, _ ->
+        grid_media_library.setOnItemClickListener { _, _, position, _ ->
             val media = adapter.getItem(position) as Media
             println("selected item is: ${media.title}")
 
-            val mainActivity = activity as MainActivity
-            mainActivity.showDetailFragment(media)
+            (activity as MainActivity).showDetailFragment(media)
         }
     }
 

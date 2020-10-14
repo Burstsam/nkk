@@ -15,7 +15,7 @@ class CustomAdapter(val context: Context, private val originalMedia: ArrayList<M
     private val customFilter = CustomFilter()
 
     override fun getView(position: Int, convertView: View?, parent: ViewGroup): View {
-        val view = convertView ?: LayoutInflater.from(context).inflate(R.layout.linear_media, parent, false)
+        val view = convertView ?: LayoutInflater.from(context).inflate(R.layout.item_media, parent, false)
 
         val textTitle = view.findViewById<TextView>(R.id.text_title)
         val imagePoster = view.findViewById<ImageView>(R.id.image_poster)

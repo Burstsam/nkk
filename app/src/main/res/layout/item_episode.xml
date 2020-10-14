@@ -19,7 +19,7 @@
             android:layout_width="128dp"
             android:layout_height="72dp"
             android:contentDescription="@string/component_poster_desc"
-            app:srcCompat="@drawable/ic_baseline_account_box_24" />
+            app:srcCompat="@color/md_disabled_text_dark_theme" />
 
         <TextView
             android:id="@+id/text_episode_title"

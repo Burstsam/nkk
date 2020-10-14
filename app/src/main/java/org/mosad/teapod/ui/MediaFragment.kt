@@ -13,6 +13,7 @@ import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
 import com.bumptech.glide.request.RequestOptions
 import jp.wasabeef.glide.transformations.BlurTransformation
+import jp.wasabeef.glide.transformations.RoundedCornersTransformation
 import kotlinx.android.synthetic.main.fragment_media.*
 import org.mosad.teapod.MainActivity
 import org.mosad.teapod.R
@@ -46,6 +47,7 @@ class MediaFragment(private val media: Media, private val tmdb: TMDBResponse) : 
         // generic gui
         val backdropUrl = if (tmdb.backdropUrl.isNotEmpty()) tmdb.backdropUrl else media.info.posterLink
         val posterUrl = if (tmdb.posterUrl.isNotEmpty()) tmdb.posterUrl else media.info.posterLink
+        val posterCornerRadius = if (tmdb.posterUrl.isNotEmpty()) 60 else 30
 
         Glide.with(requireContext()).load(backdropUrl)
             .apply(RequestOptions.placeholderOf(ColorDrawable(Color.DKGRAY)))
@@ -53,6 +55,7 @@ class MediaFragment(private val media: Media, private val tmdb: TMDBResponse) : 
             .into(image_backdrop)
 
         Glide.with(requireContext()).load(posterUrl)
+            .apply(RequestOptions.bitmapTransform(RoundedCornersTransformation(posterCornerRadius, 0)))
             .into(image_poster)
 
         text_title.text = media.title

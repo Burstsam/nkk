@@ -34,7 +34,7 @@ class SearchFragment : Fragment() {
             withContext(Dispatchers.Main) {
                 context?.let {
                     adapter = CustomAdapter(it, AoDParser.mediaList)
-                    list_search.adapter = adapter
+                    grid_media_search.adapter = adapter
                 }
             }
         }
@@ -57,7 +57,7 @@ class SearchFragment : Fragment() {
             }
         })
 
-        list_search.setOnItemClickListener { _, _, position, _ ->
+        grid_media_search.setOnItemClickListener { _, _, position, _ ->
             search_text.clearFocus() // remove focus from the SearchView
 
             runBlocking {

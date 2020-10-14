@@ -6,7 +6,9 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
-import kotlinx.android.synthetic.main.component_episode.view.*
+import com.bumptech.glide.request.RequestOptions
+import jp.wasabeef.glide.transformations.RoundedCornersTransformation
+import kotlinx.android.synthetic.main.item_episode.view.*
 import org.mosad.teapod.R
 
 class EpisodesAdapter(private val episodes: List<Episode>, private val context: Context) : RecyclerView.Adapter<EpisodesAdapter.MyViewHolder>() {
@@ -14,7 +16,7 @@ class EpisodesAdapter(private val episodes: List<Episode>, private val context: 
     var onItemClick: ((String, Int) -> Unit)? = null
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): MyViewHolder {
-        val view = LayoutInflater.from(parent.context).inflate(R.layout.component_episode, parent, false)
+        val view = LayoutInflater.from(parent.context).inflate(R.layout.item_episode, parent, false)
 
         return MyViewHolder(view)
     }
@@ -28,7 +30,9 @@ class EpisodesAdapter(private val episodes: List<Episode>, private val context: 
         holder.view.text_episode_desc.text = episodes[position].shortDesc
 
         if (episodes[position].posterLink.isNotEmpty()) {
-            Glide.with(context).load(episodes[position].posterLink).into(holder.view.image_episode)
+            Glide.with(context).load(episodes[position].posterLink)
+                .apply(RequestOptions.bitmapTransform(RoundedCornersTransformation(10, 0)))
+                .into(holder.view.image_episode)
         }
 
         if (!episodes[position].watched) {
