@@ -1,4 +1,4 @@
-package org.mosad.teapod.ui.search
+package org.mosad.teapod.ui.fragments
 
 import android.os.Bundle
 import android.view.LayoutInflater
