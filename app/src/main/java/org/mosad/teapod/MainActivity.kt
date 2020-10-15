@@ -26,10 +26,10 @@ import android.content.Intent
 import android.os.Bundle
 import android.util.Log
 import android.view.MenuItem
-import com.google.android.material.bottomnavigation.BottomNavigationView
 import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.commit
+import com.google.android.material.bottomnavigation.BottomNavigationView
 import kotlinx.android.synthetic.main.activity_main.*
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
@@ -41,7 +41,10 @@ import org.mosad.teapod.ui.components.LoginDialog
 import org.mosad.teapod.ui.home.HomeFragment
 import org.mosad.teapod.ui.library.LibraryFragment
 import org.mosad.teapod.ui.search.SearchFragment
-import org.mosad.teapod.util.*
+import org.mosad.teapod.util.LoadingFragment
+import org.mosad.teapod.util.Media
+import org.mosad.teapod.util.TMDBApiController
+import kotlin.system.measureTimeMillis
 
 class MainActivity : AppCompatActivity(), BottomNavigationView.OnNavigationItemSelectedListener {
 
@@ -109,7 +112,11 @@ class MainActivity : AppCompatActivity(), BottomNavigationView.OnNavigationItemS
         }
 
         // TODO save last loginSuccess, if false show login dialog even if credentials are present
-        AoDParser().listAnimes()
+        // running login and list in parallel does not bring any speed improvements
+        val time = measureTimeMillis {
+            AoDParser().listAnimes()
+        }
+        Log.i(javaClass.name, "login and list in $time ms")
     }
 
     /**

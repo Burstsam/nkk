@@ -22,6 +22,8 @@ class AoDParser {
     private val loginPath = "/users/sign_in"
     private val libraryPath = "/animes"
 
+    private val userAgent = "Mozilla/5.0 (X11; Linux x86_64; rv:80.0) Gecko/20100101 Firefox/80.0"
+
     companion object {
         private var csrfToken: String = ""
         private var sessionCookies = mutableMapOf<String, String>()
@@ -31,8 +33,6 @@ class AoDParser {
     }
 
     fun login(): Boolean = runBlocking {
-
-        val userAgent = "Mozilla/5.0 (X11; Linux x86_64; rv:80.0) Gecko/20100101 Firefox/80.0"
 
         withContext(Dispatchers.Default) {
             // get the authenticity token
@@ -64,7 +64,6 @@ class AoDParser {
             //println(resLogin.body())
             sessionCookies = resLogin.cookies()
             loginSuccess = resLogin.body().contains("Hallo, du bist jetzt angemeldet.")
-
             Log.i(javaClass.name, "Status: ${resLogin.statusCode()} (${resLogin.statusMessage()}), login successful: $loginSuccess")
 
             loginSuccess
@@ -207,16 +206,16 @@ class AoDParser {
                 MediaType.MOVIE -> {
                     val movie = JsonParser.parseString(res.body()).asJsonObject
                         .get("playlist").asJsonArray
+                        .first().asJsonObject
 
-                    movie.first().asJsonObject.get("sources").asJsonArray.toList().forEach {
-                        episodes.first().streamUrl = it.asJsonObject.get("file").asString
+                    movie.get("sources").asJsonArray.first().apply {
+                        episodes.first().streamUrl = this.asJsonObject.get("file").asString
                     }
                 }
 
                 MediaType.TVSHOW -> {
                     val episodesJson = JsonParser.parseString(res.body()).asJsonObject
                         .get("playlist").asJsonArray
-
 
                     episodesJson.forEach { jsonElement ->
                         val episodeId = jsonElement.asJsonObject.get("mediaid")

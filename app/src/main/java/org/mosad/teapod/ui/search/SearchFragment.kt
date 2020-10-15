@@ -39,6 +39,7 @@ class SearchFragment : Fragment() {
                     layoutManager = GridLayoutManager(context, 2)
                     adapter = MediaItemAdapter(AoDParser.mediaList)
                     adapter!!.onItemClick = { media, _ ->
+                        search_text.clearFocus()
                         (activity as MainActivity).showMediaFragment(media)
                     }
 

@@ -46,7 +46,6 @@ class MediaFragment(private val media: Media, private val tmdb: TMDBResponse) : 
         // generic gui
         val backdropUrl = if (tmdb.backdropUrl.isNotEmpty()) tmdb.backdropUrl else media.info.posterLink
         val posterUrl = if (tmdb.posterUrl.isNotEmpty()) tmdb.posterUrl else media.info.posterLink
-        val posterCornerRadius = if (tmdb.posterUrl.isNotEmpty()) 60 else 30
 
         Glide.with(requireContext()).load(backdropUrl)
             .apply(RequestOptions.placeholderOf(ColorDrawable(Color.DKGRAY)))
@@ -82,6 +81,9 @@ class MediaFragment(private val media: Media, private val tmdb: TMDBResponse) : 
 
     private fun initActions() {
         button_play.setOnClickListener {
+            println(media.episodes)
+
+
             when (media.type) {
                 MediaType.MOVIE -> playStream(media.episodes.first().streamUrl)
                 MediaType.TVSHOW -> playStream(media.episodes.first().streamUrl)
@@ -104,6 +106,9 @@ class MediaFragment(private val media: Media, private val tmdb: TMDBResponse) : 
 
     private fun playStream(url: String) {
         val mainActivity = activity as MainActivity
+
+        println("url is: $url")
+
         mainActivity.startPlayer(url)
     }
 
