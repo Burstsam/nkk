@@ -42,6 +42,7 @@ import org.mosad.teapod.ui.fragments.HomeFragment
 import org.mosad.teapod.ui.fragments.LibraryFragment
 import org.mosad.teapod.ui.fragments.SearchFragment
 import org.mosad.teapod.ui.fragments.LoadingFragment
+import org.mosad.teapod.util.CacheHelper
 import org.mosad.teapod.util.Media
 import org.mosad.teapod.util.TMDBApiController
 import kotlin.system.measureTimeMillis
@@ -110,6 +111,8 @@ class MainActivity : AppCompatActivity(), BottomNavigationView.OnNavigationItemS
         if (EncryptedPreferences.password.isEmpty()) {
             showLoginDialog(true)
         }
+
+        CacheHelper.load(this)
 
         // TODO save last loginSuccess, if false show login dialog even if credentials are present
         // running login and list in parallel does not bring any speed improvements

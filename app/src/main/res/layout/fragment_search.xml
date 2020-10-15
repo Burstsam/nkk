@@ -28,10 +28,14 @@
         android:layout_height="0dp"
         android:clipToPadding="false"
         android:padding="3dp"
+        android:orientation="vertical"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/search_text">
+        app:layout_constraintTop_toBottomOf="@+id/search_text"
+        app:layoutManager="androidx.recyclerview.widget.GridLayoutManager"
+        app:spanCount="2"
+        tools:listitem="@layout/item_media">
 
     </androidx.recyclerview.widget.RecyclerView>
 

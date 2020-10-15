@@ -1,26 +1,28 @@
 <?xml version="1.0" encoding="utf-8"?>
 <com.google.android.material.card.MaterialCardView xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:tools="http://schemas.android.com/tools"
-    android:layout_width="match_parent"
+    android:layout_width="195dp"
     android:layout_height="wrap_content"
     android:backgroundTint="#FFFFFF"
     android:visibility="visible"
     app:cardCornerRadius="7dp"
     app:cardElevation="4dp">
 
-    <LinearLayout
+    <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:orientation="vertical">
+        android:layout_height="match_parent">
 
         <ImageView
             android:id="@+id/image_poster"
-            android:layout_width="match_parent"
-            android:layout_height="112.5dp"
+            android:layout_width="0dp"
+            android:layout_height="0dp"
             android:contentDescription="@string/media_poster_desc"
-            android:maxWidth="200dp"
             android:scaleType="centerCrop"
+            app:layout_constraintBottom_toTopOf="@+id/text_title"
+            app:layout_constraintDimensionRatio="H,16:9"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
             app:srcCompat="@color/md_disabled_text_dark_theme" />
 
         <TextView
@@ -33,6 +35,8 @@
             android:padding="3dp"
             android:text="@string/text_title_ex"
             android:textAlignment="center"
-            android:textSize="15sp" />
-    </LinearLayout>
+            android:textSize="15sp"
+            app:layout_constraintTop_toBottomOf="@+id/image_poster" />
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
 </com.google.android.material.card.MaterialCardView>

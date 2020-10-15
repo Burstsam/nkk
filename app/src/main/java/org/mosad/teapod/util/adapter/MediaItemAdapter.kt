@@ -11,9 +11,8 @@ import kotlinx.android.synthetic.main.item_media.view.*
 import org.mosad.teapod.R
 import org.mosad.teapod.util.Media
 import java.util.*
-import kotlin.collections.ArrayList
 
-class MediaItemAdapter(private val media: ArrayList<Media>) : RecyclerView.Adapter<MediaItemAdapter.ViewHolder>(), Filterable {
+class MediaItemAdapter(private val media: List<Media>) : RecyclerView.Adapter<MediaItemAdapter.ViewHolder>(), Filterable {
 
     var onItemClick: ((Media, Int) -> Unit)? = null
     private val filter = MediaFilter()
@@ -72,7 +71,7 @@ class MediaItemAdapter(private val media: ArrayList<Media>) : RecyclerView.Adapt
          * suppressing unchecked cast is safe, since we only use Media
          */
         override fun publishResults(constraint: CharSequence?, results: FilterResults?) {
-            filteredMedia = results?.values as java.util.ArrayList<Media>
+            filteredMedia = results?.values as List<Media>
             notifyDataSetChanged()
         }
     }

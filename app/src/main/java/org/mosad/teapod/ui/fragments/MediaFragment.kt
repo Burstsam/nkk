@@ -17,6 +17,7 @@ import kotlinx.android.synthetic.main.fragment_media.*
 import org.mosad.teapod.MainActivity
 import org.mosad.teapod.R
 import org.mosad.teapod.parser.AoDParser
+import org.mosad.teapod.util.CacheHelper
 import org.mosad.teapod.util.DataTypes.MediaType
 import org.mosad.teapod.util.adapter.EpisodeItemAdapter
 import org.mosad.teapod.util.Media
@@ -59,6 +60,7 @@ class MediaFragment(private val media: Media, private val tmdb: TMDBResponse) : 
         text_year.text = media.info.year.toString()
         text_age.text = media.info.age.toString()
         text_overview.text = media.info.shortDesc
+        check_my_list.isChecked = CacheHelper.myList.contains(media.link)
 
         // specific gui
         if (media.type == MediaType.TVSHOW) {
@@ -81,14 +83,22 @@ class MediaFragment(private val media: Media, private val tmdb: TMDBResponse) : 
 
     private fun initActions() {
         button_play.setOnClickListener {
-            println(media.episodes)
-
-
             when (media.type) {
                 MediaType.MOVIE -> playStream(media.episodes.first().streamUrl)
                 MediaType.TVSHOW -> playStream(media.episodes.first().streamUrl)
                 else -> Log.e(javaClass.name, "Wrong Type: $media.type")
             }
+        }
+
+        // add or remove media from myList
+        check_my_list.setOnCheckedChangeListener { buttonView, isChecked ->
+            if (isChecked) {
+                CacheHelper.myList.add(media.link)
+            } else {
+                CacheHelper.myList.remove(media.link)
+            }
+            CacheHelper.saveMyList(requireContext())
+            // TODO notify home fragment on change
         }
 
         // set onItemClick only in adapter is initialized
