@@ -8,7 +8,14 @@ class DataTypes {
     }
 }
 
-data class Media(val title: String, val link: String, val type: DataTypes.MediaType, val info : Info = Info(), var episodes: List<Episode> = listOf()) {
+// TODO the episodes workflow could use a clean up/rework
+data class Media(
+    val title: String,
+    val link: String,
+    val type: DataTypes.MediaType,
+    val info: Info = Info(),
+    var episodes: List<Episode> = listOf()
+) {
     override fun toString(): String {
         return title
     }

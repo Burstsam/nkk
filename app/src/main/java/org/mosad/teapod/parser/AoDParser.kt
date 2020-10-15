@@ -119,6 +119,11 @@ class AoDParser {
             return@runBlocking listOf()
         }
 
+        // if the episodes list is not empty it was loaded before
+        if (media.episodes.isNotEmpty()) {
+            return@runBlocking media.episodes
+        }
+
         withContext(Dispatchers.Default) {
 
             val res = Jsoup.connect(baseUrl + media.link)
