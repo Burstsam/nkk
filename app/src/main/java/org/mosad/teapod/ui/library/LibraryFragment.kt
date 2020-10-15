@@ -5,17 +5,19 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
+import androidx.recyclerview.widget.GridLayoutManager
 import kotlinx.android.synthetic.main.fragment_library.*
 import kotlinx.coroutines.*
 import org.mosad.teapod.MainActivity
 import org.mosad.teapod.R
 import org.mosad.teapod.parser.AoDParser
+import org.mosad.teapod.util.MediaItemDecoration
 import org.mosad.teapod.util.adapter.MediaItemAdapter
-import org.mosad.teapod.util.Media
 
 class LibraryFragment : Fragment() {
 
-    private lateinit var adapter : MediaItemAdapter
+    private lateinit var adapter: MediaItemAdapter
+    private lateinit var layoutManager: GridLayoutManager
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
         return inflater.inflate(R.layout.fragment_library, container, false)
@@ -24,6 +26,7 @@ class LibraryFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
+        // init async
         GlobalScope.launch {
             if (AoDParser.mediaList.isEmpty()) {
                 AoDParser().listAnimes()
@@ -32,22 +35,18 @@ class LibraryFragment : Fragment() {
             // create and set the adapter, needs context
             withContext(Dispatchers.Main) {
                 context?.let {
-                    adapter = MediaItemAdapter(it, AoDParser.mediaList)
-                    grid_media_library.adapter = adapter
+                    layoutManager = GridLayoutManager(context, 2)
+                    adapter = MediaItemAdapter(AoDParser.mediaList)
+                    adapter.onItemClick = { media, _ ->
+                        (activity as MainActivity).showMediaFragment(media)
+                    }
+
+                    recycler_media_library.layoutManager = layoutManager
+                    recycler_media_library.adapter = adapter
+                    recycler_media_library.addItemDecoration(MediaItemDecoration(9))
                 }
             }
-        }
 
-        initActions()
-    }
-
-    private fun initActions() {
-        grid_media_library.setOnItemClickListener { _, _, position, _ ->
-            val media = adapter.getItem(position) as Media
-            println("selected item is: ${media.title}")
-
-            (activity as MainActivity).showMediaFragment(media)
         }
     }
-
 }

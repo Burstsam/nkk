@@ -20,16 +20,17 @@
 
     </SearchView>
 
-    <GridView
-        android:id="@+id/grid_media_search"
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/recycler_media_search"
         android:layout_width="match_parent"
         android:layout_height="0dp"
         android:clipToPadding="false"
-        android:horizontalSpacing="7dp"
-        android:numColumns="2"
-        android:padding="5dp"
-        android:verticalSpacing="7dp"
+        android:padding="3dp"
         app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/search_text" />
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/search_text">
+
+    </androidx.recyclerview.widget.RecyclerView>
 
 </androidx.constraintlayout.widget.ConstraintLayout>

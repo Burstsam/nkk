@@ -3,7 +3,8 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
-    android:layout_height="match_parent"
+    android:layout_height="wrap_content"
+    android:backgroundTint="#FFFFFF"
     app:cardCornerRadius="7dp"
     app:cardElevation="4dp">
 
@@ -18,7 +19,7 @@
             android:layout_height="112.5dp"
             android:contentDescription="@string/media_poster_desc"
             android:maxWidth="200dp"
-            android:scaleType="fitXY"
+            android:scaleType="centerCrop"
             app:srcCompat="@color/md_disabled_text_dark_theme" />
 
         <TextView

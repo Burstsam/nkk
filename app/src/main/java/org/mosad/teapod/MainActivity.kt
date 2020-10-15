@@ -103,12 +103,13 @@ class MainActivity : AppCompatActivity(), BottomNavigationView.OnNavigationItemS
     private fun load() {
         EncryptedPreferences.readCredentials(this)
 
-        // make sure credentials are set and valid
+        // make sure credentials are set
         if (EncryptedPreferences.password.isEmpty()) {
             showLoginDialog(true)
-        } else if (!AoDParser().login()) {
-            showLoginDialog(false)
         }
+
+        // TODO save last loginSuccess, if false show login dialog even if credentials are present
+        AoDParser().listAnimes()
     }
 
     /**

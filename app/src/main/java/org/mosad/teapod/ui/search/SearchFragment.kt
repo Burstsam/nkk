@@ -6,17 +6,20 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.SearchView
 import androidx.fragment.app.Fragment
+import androidx.recyclerview.widget.GridLayoutManager
 import kotlinx.android.synthetic.main.fragment_search.*
 import kotlinx.coroutines.*
 import org.mosad.teapod.MainActivity
 import org.mosad.teapod.R
 import org.mosad.teapod.parser.AoDParser
+import org.mosad.teapod.util.MediaItemDecoration
 import org.mosad.teapod.util.adapter.MediaItemAdapter
-import org.mosad.teapod.util.Media
 
 class SearchFragment : Fragment() {
 
     private var adapter : MediaItemAdapter? = null
+    private lateinit var layoutManager: GridLayoutManager
+
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
         return inflater.inflate(R.layout.fragment_search, container, false)
@@ -33,8 +36,15 @@ class SearchFragment : Fragment() {
             // create and set the adapter, needs context
             withContext(Dispatchers.Main) {
                 context?.let {
-                    adapter = MediaItemAdapter(it, AoDParser.mediaList)
-                    grid_media_search.adapter = adapter
+                    layoutManager = GridLayoutManager(context, 2)
+                    adapter = MediaItemAdapter(AoDParser.mediaList)
+                    adapter!!.onItemClick = { media, _ ->
+                        (activity as MainActivity).showMediaFragment(media)
+                    }
+
+                    recycler_media_search.layoutManager = layoutManager
+                    recycler_media_search.adapter = adapter
+                    recycler_media_search.addItemDecoration(MediaItemDecoration(9))
                 }
             }
         }
@@ -56,14 +66,5 @@ class SearchFragment : Fragment() {
                 return false
             }
         })
-
-        grid_media_search.setOnItemClickListener { _, _, position, _ ->
-            search_text.clearFocus() // remove focus from the SearchView
-
-            val media = adapter?.getItem(position) as Media
-            println("selected item is: ${media.title}")
-
-            (activity as MainActivity).showMediaFragment(media)
-        }
     }
 }

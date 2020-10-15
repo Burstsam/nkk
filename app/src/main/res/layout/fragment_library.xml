@@ -7,16 +7,15 @@
     android:background="#f5f5f5"
     tools:context=".ui.library.LibraryFragment">
 
-    <GridView
-        android:id="@+id/grid_media_library"
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/recycler_media_library"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:clipToPadding="false"
-        android:horizontalSpacing="7dp"
-        android:numColumns="2"
-        android:padding="5dp"
-        android:verticalSpacing="7dp"
-        tools:layout_editor_absoluteX="5dp"
-        tools:layout_editor_absoluteY="5dp" />
+        android:padding="3dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

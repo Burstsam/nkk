@@ -1,48 +1,52 @@
 package org.mosad.teapod.util.adapter
 
-import android.content.Context
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.*
+import android.widget.Filter
+import android.widget.Filterable
+import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
+import kotlinx.android.synthetic.main.item_media.view.*
 import org.mosad.teapod.R
 import org.mosad.teapod.util.Media
 import java.util.*
+import kotlin.collections.ArrayList
 
-class MediaItemAdapter(val context: Context, private val originalMedia: ArrayList<Media>) : BaseAdapter(), Filterable {
+class MediaItemAdapter(private val media: ArrayList<Media>) : RecyclerView.Adapter<MediaItemAdapter.ViewHolder>(), Filterable {
 
-    private var filteredMedia = originalMedia.map { it.copy() }
-    private val filer = MediaFilter()
+    var onItemClick: ((Media, Int) -> Unit)? = null
+    private val filter = MediaFilter()
+    private var filteredMedia = media.map { it.copy() }
 
-    override fun getView(position: Int, convertView: View?, parent: ViewGroup): View {
-        val view = convertView ?: LayoutInflater.from(context).inflate(R.layout.item_media, parent, false)
+    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): MediaItemAdapter.ViewHolder {
+        val view = LayoutInflater.from(parent.context).inflate(R.layout.item_media, parent, false)
 
-        val textTitle = view.findViewById<TextView>(R.id.text_title)
-        val imagePoster = view.findViewById<ImageView>(R.id.image_poster)
-
-        textTitle.text = filteredMedia[position].title
-        Glide.with(context).load(filteredMedia[position].info.posterLink).into(imagePoster)
-
-        return view
+        return ViewHolder(view)
     }
 
-    override fun getFilter(): Filter {
-        return filer
+    override fun onBindViewHolder(holder: MediaItemAdapter.ViewHolder, position: Int) {
+        holder.view.apply {
+            text_title.text = filteredMedia[position].title
+            Glide.with(context).load(filteredMedia[position].info.posterLink).into(image_poster)
+        }
     }
 
-    override fun getCount(): Int {
+    override fun getItemCount(): Int {
         return filteredMedia.size
     }
 
-    override fun getItem(position: Int): Any {
-        return filteredMedia[position]
+    override fun getFilter(): Filter {
+        return filter
     }
 
-    override fun getItemId(position: Int): Long {
-        return position.toLong()
+    inner class ViewHolder(val view: View) : RecyclerView.ViewHolder(view) {
+        init {
+            view.setOnClickListener {
+                onItemClick?.invoke(filteredMedia[adapterPosition], adapterPosition)
+            }
+        }
     }
-
 
     inner class MediaFilter : Filter() {
         override fun performFiltering(constraint: CharSequence?): FilterResults {
@@ -50,9 +54,9 @@ class MediaItemAdapter(val context: Context, private val originalMedia: ArrayLis
             val results = FilterResults()
 
             val filteredList = if (filterTerm.isEmpty()) {
-                originalMedia
+                media
             } else {
-                originalMedia.filter {
+                media.filter {
                     it.title.toLowerCase(Locale.ROOT).contains(filterTerm)
                 }
             }
@@ -68,10 +72,9 @@ class MediaItemAdapter(val context: Context, private val originalMedia: ArrayLis
          * suppressing unchecked cast is safe, since we only use Media
          */
         override fun publishResults(constraint: CharSequence?, results: FilterResults?) {
-            filteredMedia = results?.values as ArrayList<Media>
+            filteredMedia = results?.values as java.util.ArrayList<Media>
             notifyDataSetChanged()
         }
-
     }
 
 }
