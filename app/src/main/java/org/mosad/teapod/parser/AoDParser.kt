@@ -9,6 +9,7 @@ import org.mosad.teapod.preferences.EncryptedPreferences
 import org.mosad.teapod.util.DataTypes.MediaType
 import org.mosad.teapod.util.Episode
 import org.mosad.teapod.util.Media
+import java.io.IOException
 import java.util.*
 import kotlin.collections.ArrayList
 
@@ -128,11 +129,16 @@ class AoDParser {
             //println(res)
 
             // parse additional info from the media page
-            res.select("table.vertical-table").select("tr").forEach {
-                when (it.select("th").text().toLowerCase(Locale.ROOT)) {
-                    "produktionsjahr" -> media.info.year = it.select("td").text().toInt()
-                    "fsk" -> media.info.age = it.select("td").text().toInt()
-                    "episodenanzahl" -> media.info.episodesCount = it.select("td").text().toInt()
+            res.select("table.vertical-table").select("tr").forEach { row ->
+                when (row.select("th").text().toLowerCase(Locale.ROOT)) {
+                    "produktionsjahr" -> media.info.year = row.select("td").text().toInt()
+                    "fsk" -> media.info.age = row.select("td").text().toInt()
+                    "episodenanzahl" -> {
+                        media.info.episodesCount = row.select("td").text()
+                            .substringBefore("/")
+                            .filter{ it.isDigit() }
+                            .toInt()
+                    }
                 }
             }
 
@@ -251,11 +257,16 @@ class AoDParser {
             Pair("X-Requested-With", "XMLHttpRequest"),
         )
 
-        Jsoup.connect(baseUrl + callbackPath)
-            .ignoreContentType(true)
-            .cookies(sessionCookies)
-            .headers(headers)
-            .execute()
+        try {
+            Jsoup.connect(baseUrl + callbackPath)
+                .ignoreContentType(true)
+                .cookies(sessionCookies)
+                .headers(headers)
+                .execute()
+        } catch (ex: IOException) {
+            Log.e(javaClass.name, "Callback for $callbackPath failed.")
+        }
+
     }
 
 }

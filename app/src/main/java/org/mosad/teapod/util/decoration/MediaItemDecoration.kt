@@ -1,4 +1,4 @@
-package org.mosad.teapod.util
+package org.mosad.teapod.util.decoration
 
 import android.graphics.Rect
 import android.view.View

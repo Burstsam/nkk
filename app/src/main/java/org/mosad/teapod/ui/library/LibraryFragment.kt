@@ -11,7 +11,7 @@ import kotlinx.coroutines.*
 import org.mosad.teapod.MainActivity
 import org.mosad.teapod.R
 import org.mosad.teapod.parser.AoDParser
-import org.mosad.teapod.util.MediaItemDecoration
+import org.mosad.teapod.util.decoration.MediaItemDecoration
 import org.mosad.teapod.util.adapter.MediaItemAdapter
 
 class LibraryFragment : Fragment() {
