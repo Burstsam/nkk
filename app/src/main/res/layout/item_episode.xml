@@ -14,13 +14,26 @@
         android:layout_height="wrap_content"
         android:orientation="horizontal">
 
-        <com.google.android.material.imageview.ShapeableImageView
-            android:id="@+id/image_episode"
-            android:layout_width="128dp"
-            android:layout_height="72dp"
-            android:contentDescription="@string/component_poster_desc"
-            app:srcCompat="@color/md_disabled_text_dark_theme"
-            app:shapeAppearance="@style/ShapeAppearance.Teapod.RoundedPoster"/>
+        <FrameLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content">
+
+            <com.google.android.material.imageview.ShapeableImageView
+                android:id="@+id/image_episode"
+                android:layout_width="128dp"
+                android:layout_height="72dp"
+                android:contentDescription="@string/component_poster_desc"
+                app:shapeAppearance="@style/ShapeAppearance.Teapod.RoundedPoster"
+                app:srcCompat="@color/md_disabled_text_dark_theme" />
+
+            <ImageView
+                android:id="@+id/image_episode_play"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                app:srcCompat="@drawable/ic_baseline_play_arrow_24"
+                app:tint="#FFFFFF" />
+        </FrameLayout>
 
         <TextView
             android:id="@+id/text_episode_title"

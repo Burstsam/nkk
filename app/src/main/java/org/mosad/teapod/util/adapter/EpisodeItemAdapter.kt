@@ -15,6 +15,7 @@ import org.mosad.teapod.util.Episode
 class EpisodeItemAdapter(private val episodes: List<Episode>, private val context: Context) : RecyclerView.Adapter<EpisodeItemAdapter.MyViewHolder>() {
 
     var onItemClick: ((String, Int) -> Unit)? = null
+    var onImageClick: ((String, Int) -> Unit)? = null
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): MyViewHolder {
         val view = LayoutInflater.from(parent.context).inflate(R.layout.item_episode, parent, false)
@@ -53,6 +54,10 @@ class EpisodeItemAdapter(private val episodes: List<Episode>, private val contex
         init {
             view.setOnClickListener {
                 onItemClick?.invoke(episodes[adapterPosition].title, adapterPosition)
+            }
+
+            view.image_episode.setOnClickListener {
+                onImageClick?.invoke(episodes[adapterPosition].title, adapterPosition)
             }
         }
     }

@@ -50,7 +50,7 @@ class MediaFragment(private val media: Media, private val tmdb: TMDBResponse) : 
 
         Glide.with(requireContext()).load(backdropUrl)
             .apply(RequestOptions.placeholderOf(ColorDrawable(Color.DKGRAY)))
-            .apply(RequestOptions.bitmapTransform(BlurTransformation(25, 3)))
+            .apply(RequestOptions.bitmapTransform(BlurTransformation(20, 3)))
             .into(image_backdrop)
 
         Glide.with(requireContext()).load(posterUrl)
@@ -103,7 +103,7 @@ class MediaFragment(private val media: Media, private val tmdb: TMDBResponse) : 
 
         // set onItemClick only in adapter is initialized
         if (this::adapterRecEpisodes.isInitialized) {
-            adapterRecEpisodes.onItemClick = { _, position ->
+            adapterRecEpisodes.onImageClick = { _, position ->
                 playStream(media.episodes[position].streamUrl)
 
                 // update watched state
