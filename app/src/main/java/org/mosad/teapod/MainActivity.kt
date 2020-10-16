@@ -42,29 +42,32 @@ import org.mosad.teapod.ui.fragments.HomeFragment
 import org.mosad.teapod.ui.fragments.LibraryFragment
 import org.mosad.teapod.ui.fragments.SearchFragment
 import org.mosad.teapod.ui.fragments.LoadingFragment
-import org.mosad.teapod.util.CacheHelper
+import org.mosad.teapod.util.StorageController
 import org.mosad.teapod.util.Media
 import org.mosad.teapod.util.TMDBApiController
 import kotlin.system.measureTimeMillis
 
 class MainActivity : AppCompatActivity(), BottomNavigationView.OnNavigationItemSelectedListener {
 
-    private var activeFragment: Fragment = HomeFragment() // the currently active fragment, home at the start
+    private var activeBaseFragment: Fragment = HomeFragment() // the currently active fragment, home at the start
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
-        val navView: BottomNavigationView = findViewById(R.id.nav_view)
-        navView.setOnNavigationItemSelectedListener(this)
+        nav_view.setOnNavigationItemSelectedListener(this)
 
         load()
+
+        supportFragmentManager.commit {
+            replace(R.id.nav_host_fragment, activeBaseFragment, activeBaseFragment.javaClass.simpleName)
+        }
     }
 
     override fun onBackPressed() {
         if (supportFragmentManager.backStackEntryCount > 0) {
             supportFragmentManager.popBackStack()
         } else {
-            if (activeFragment !is HomeFragment) {
+            if (activeBaseFragment !is HomeFragment) {
                 nav_view.selectedItemId = R.id.navigation_home
             } else {
                 super.onBackPressed()
@@ -79,52 +82,56 @@ class MainActivity : AppCompatActivity(), BottomNavigationView.OnNavigationItemS
 
         val ret = when (item.itemId) {
             R.id.navigation_home -> {
-                activeFragment = HomeFragment()
+                activeBaseFragment = HomeFragment()
                 true
             }
             R.id.navigation_library -> {
-                activeFragment = LibraryFragment()
+                activeBaseFragment = LibraryFragment()
                 true
             }
             R.id.navigation_search -> {
-                activeFragment = SearchFragment()
+                activeBaseFragment = SearchFragment()
                 true
             }
             R.id.navigation_account -> {
-                activeFragment = AccountFragment()
+                activeBaseFragment = AccountFragment()
                 true
             }
             else -> false
         }
 
         supportFragmentManager.commit {
-            replace(R.id.nav_host_fragment, activeFragment)
+            replace(R.id.nav_host_fragment, activeBaseFragment, activeBaseFragment.javaClass.simpleName)
         }
 
         return ret
     }
 
     private fun load() {
-        EncryptedPreferences.readCredentials(this)
-
         // make sure credentials are set
-        if (EncryptedPreferences.password.isEmpty()) {
-            showLoginDialog(true)
-        }
+        EncryptedPreferences.readCredentials(this)
+        if (EncryptedPreferences.password.isEmpty()) showLoginDialog(true)
 
-        CacheHelper.load(this)
+        StorageController.load(this)
 
-        // TODO save last loginSuccess, if false show login dialog even if credentials are present
         // running login and list in parallel does not bring any speed improvements
         val time = measureTimeMillis {
+            // try to login in, as most sites can only bee loaded once loged in
+            if (!AoDParser().login()) showLoginDialog(false)
+
+            // initially load all media
             AoDParser().listAnimes()
+
+            // TODO load home screen, can be parallel to listAnimes
         }
         Log.i(javaClass.name, "login and list in $time ms")
     }
 
     /**
-     * show the media fragment for the selected media
-     * while loading show the loading fragment
+     * Show the media fragment for the selected media.
+     * While loading show the loading fragment.
+     * The loading and media fragment are not stored in activeBaseFragment,
+     * as the don't replace a fragment but are added on top of one.
      */
     fun showMediaFragment(media: Media) = GlobalScope.launch {
         val loadingFragment = LoadingFragment()

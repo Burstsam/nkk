@@ -14,7 +14,7 @@ import kotlinx.coroutines.withContext
 import org.mosad.teapod.MainActivity
 import org.mosad.teapod.R
 import org.mosad.teapod.parser.AoDParser
-import org.mosad.teapod.util.CacheHelper
+import org.mosad.teapod.util.StorageController
 import org.mosad.teapod.util.adapter.MediaItemAdapter
 import org.mosad.teapod.util.decoration.MediaItemDecoration
 
@@ -35,23 +35,32 @@ class HomeFragment : Fragment() {
                 AoDParser().listAnimes()
             }
 
-            val myListMedia = AoDParser.mediaList.filter { CacheHelper.myList.contains(it.link) }
-
             withContext(Dispatchers.Main) {
                 context?.let {
                     layoutManager = LinearLayoutManager(context, LinearLayoutManager.HORIZONTAL, false)
-                    adapter = MediaItemAdapter(myListMedia)
-                    adapter.onItemClick = { media, _ ->
-                        (activity as MainActivity).showMediaFragment(media)
-                    }
-
                     recycler_my_list.layoutManager = layoutManager
-                    recycler_my_list.adapter = adapter
                     recycler_my_list.addItemDecoration(MediaItemDecoration(9))
+
+                    updateMyListMedia()
                 }
             }
 
         }
+    }
 
+    // TODO recreating the adapter on list change is not a good solution
+    fun updateMyListMedia() {
+        val myListMedia = StorageController.myList.map { listElement ->
+            AoDParser.mediaList.first {
+                listElement == it.link
+            }
+        }
+
+        adapter = MediaItemAdapter(myListMedia)
+        adapter.onItemClick = { media, _ ->
+            (activity as MainActivity).showMediaFragment(media)
+        }
+
+        recycler_my_list.adapter = adapter
     }
 }

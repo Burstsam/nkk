@@ -1,16 +1,16 @@
 package org.mosad.teapod.util
 
 import android.content.Context
-import android.util.Log
 import com.google.gson.Gson
 import com.google.gson.GsonBuilder
 import kotlinx.coroutines.*
 import java.io.File
 
 /**
- * myList should be saved in a db
+ * This controller contains the logic for permanently saved data.
+ * On load, it loads the saved files into the variables
  */
-object CacheHelper {
+object StorageController {
 
     private const val fileNameMyList = "my_list.json"
 
@@ -27,20 +27,11 @@ object CacheHelper {
         )
     }
 
-
     fun saveMyList(context: Context): Job {
         val file = File(context.filesDir, fileNameMyList)
 
         return GlobalScope.launch(Dispatchers.IO) {
             file.writeText(Gson().toJson(myList))
-        }
-    }
-
-    private fun save(file: File, text: String) {
-        try {
-            file.writeText(text)
-        } catch (ex: Exception) {
-            Log.e(javaClass.name, "failed to write file \"${file.absoluteFile}\"", ex)
         }
     }
 

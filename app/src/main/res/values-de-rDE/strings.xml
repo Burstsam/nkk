@@ -5,6 +5,9 @@
     <string name="title_search">Suche</string>
     <string name="title_account">Account</string>
 
+    <!-- home fragment -->
+    <string name="my_list">Meine Liste</string>
+
     <!-- search fragment -->
     <string name="search_hint">Suche nach Filmen und Serien</string>
 

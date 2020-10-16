@@ -17,7 +17,7 @@ import kotlinx.android.synthetic.main.fragment_media.*
 import org.mosad.teapod.MainActivity
 import org.mosad.teapod.R
 import org.mosad.teapod.parser.AoDParser
-import org.mosad.teapod.util.CacheHelper
+import org.mosad.teapod.util.StorageController
 import org.mosad.teapod.util.DataTypes.MediaType
 import org.mosad.teapod.util.adapter.EpisodeItemAdapter
 import org.mosad.teapod.util.Media
@@ -60,7 +60,7 @@ class MediaFragment(private val media: Media, private val tmdb: TMDBResponse) : 
         text_year.text = media.info.year.toString()
         text_age.text = media.info.age.toString()
         text_overview.text = media.info.shortDesc
-        check_my_list.isChecked = CacheHelper.myList.contains(media.link)
+        check_my_list.isChecked = StorageController.myList.contains(media.link)
 
         // specific gui
         if (media.type == MediaType.TVSHOW) {
@@ -91,14 +91,18 @@ class MediaFragment(private val media: Media, private val tmdb: TMDBResponse) : 
         }
 
         // add or remove media from myList
-        check_my_list.setOnCheckedChangeListener { buttonView, isChecked ->
+        check_my_list.setOnCheckedChangeListener { _, isChecked ->
             if (isChecked) {
-                CacheHelper.myList.add(media.link)
+                StorageController.myList.add(media.link)
             } else {
-                CacheHelper.myList.remove(media.link)
+                StorageController.myList.remove(media.link)
             }
-            CacheHelper.saveMyList(requireContext())
+            StorageController.saveMyList(requireContext())
+
             // TODO notify home fragment on change
+            parentFragmentManager.findFragmentByTag("HomeFragment")?.let {
+                (it as HomeFragment).updateMyListMedia()
+            }
         }
 
         // set onItemClick only in adapter is initialized
