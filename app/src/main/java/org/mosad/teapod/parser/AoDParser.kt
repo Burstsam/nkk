@@ -11,7 +11,6 @@ import org.mosad.teapod.util.Episode
 import org.mosad.teapod.util.Media
 import java.io.IOException
 import java.util.*
-import kotlin.collections.ArrayList
 
 /**
  * maybe AoDParser as object would be useful
@@ -43,8 +42,8 @@ class AoDParser {
             val authenticityToken = resAuth.parse().select("meta[name=csrf-token]").attr("content")
             val authCookies = resAuth.cookies()
 
-            Log.i(javaClass.name, "Received authenticity token: $authenticityToken")
-            Log.i(javaClass.name, "Received authenticity cookies: $authCookies")
+            //Log.d(javaClass.name, "Received authenticity token: $authenticityToken")
+            //Log.d(javaClass.name, "Received authenticity cookies: $authCookies")
 
             val data = mapOf(
                 Pair("user[login]", EncryptedPreferences.login),
@@ -62,6 +61,7 @@ class AoDParser {
                 .execute()
 
             //println(resLogin.body())
+
             sessionCookies = resLogin.cookies()
             loginSuccess = resLogin.body().contains("Hallo, du bist jetzt angemeldet.")
             Log.i(javaClass.name, "Status: ${resLogin.statusCode()} (${resLogin.statusMessage()}), login successful: $loginSuccess")
@@ -167,13 +167,11 @@ class AoDParser {
 
             if (csrfToken.isEmpty()) {
                 csrfToken = res.select("meta[name=csrf-token]").attr("content")
+                //Log.i(javaClass.name, "New csrf token is $csrfToken")
             }
 
-            // has attr data-lag (ger or jap)
+            // TODO has attr data-lag (ger or jap)
             val playlists = res.select("input.streamstarter_html5").eachAttr("data-playlist")
-
-            //println("first entry: ${playlists.first()}")
-            //println("csrf token is: $csrfToken")
 
             return@withContext if (playlists.size > 0) {
                 loadStreamInfo(playlists.first(), csrfToken, media.type, episodes)
@@ -197,7 +195,7 @@ class AoDParser {
                 Pair("X-Requested-With", "XMLHttpRequest"),
             )
 
-            println("loading streaminfo with cstf: $csrfToken")
+            //println("loading streaminfo with cstf: $csrfToken")
 
             val res = Jsoup.connect(baseUrl + playlistPath)
                 .ignoreContentType(true)
@@ -262,13 +260,15 @@ class AoDParser {
         )
 
         try {
-            Jsoup.connect(baseUrl + callbackPath)
-                .ignoreContentType(true)
-                .cookies(sessionCookies)
-                .headers(headers)
-                .execute()
+            withContext(Dispatchers.IO) {
+                Jsoup.connect(baseUrl + callbackPath)
+                    .ignoreContentType(true)
+                    .cookies(sessionCookies)
+                    .headers(headers)
+                    .execute()
+            }
         } catch (ex: IOException) {
-            Log.e(javaClass.name, "Callback for $callbackPath failed.")
+            Log.e(javaClass.name, "Callback for $callbackPath failed.", ex)
         }
 
     }

@@ -4,10 +4,10 @@ import android.graphics.Color
 import android.graphics.drawable.ColorDrawable
 import android.os.Bundle
 import android.util.Log
-import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
@@ -17,11 +17,11 @@ import kotlinx.android.synthetic.main.fragment_media.*
 import org.mosad.teapod.MainActivity
 import org.mosad.teapod.R
 import org.mosad.teapod.parser.AoDParser
-import org.mosad.teapod.util.StorageController
 import org.mosad.teapod.util.DataTypes.MediaType
-import org.mosad.teapod.util.adapter.EpisodeItemAdapter
 import org.mosad.teapod.util.Media
+import org.mosad.teapod.util.StorageController
 import org.mosad.teapod.util.TMDBResponse
+import org.mosad.teapod.util.adapter.EpisodeItemAdapter
 
 class MediaFragment(private val media: Media, private val tmdb: TMDBResponse) : Fragment() {
 
@@ -60,11 +60,15 @@ class MediaFragment(private val media: Media, private val tmdb: TMDBResponse) : 
         text_year.text = media.info.year.toString()
         text_age.text = media.info.age.toString()
         text_overview.text = media.info.shortDesc
-        check_my_list.isChecked = StorageController.myList.contains(media.link)
+        if (StorageController.myList.contains(media.link)) {
+            Glide.with(requireContext()).load(R.drawable.ic_baseline_check_24).into(image_my_list_action)
+        } else {
+            Glide.with(requireContext()).load(R.drawable.ic_baseline_add_24).into(image_my_list_action)
+        }
 
         // specific gui
         if (media.type == MediaType.TVSHOW) {
-            adapterRecEpisodes = EpisodeItemAdapter(media.episodes, requireContext())
+            adapterRecEpisodes = EpisodeItemAdapter(media.episodes)
             viewManager = LinearLayoutManager(context)
             recycler_episodes.layoutManager = viewManager
             recycler_episodes.adapter = adapterRecEpisodes
@@ -91,15 +95,16 @@ class MediaFragment(private val media: Media, private val tmdb: TMDBResponse) : 
         }
 
         // add or remove media from myList
-        check_my_list.setOnCheckedChangeListener { _, isChecked ->
-            if (isChecked) {
-                StorageController.myList.add(media.link)
-            } else {
+        linear_my_list_action.setOnClickListener {
+            if (StorageController.myList.contains(media.link)) {
                 StorageController.myList.remove(media.link)
+                Glide.with(requireContext()).load(R.drawable.ic_baseline_add_24).into(image_my_list_action)
+            } else {
+                StorageController.myList.add(media.link)
+                Glide.with(requireContext()).load(R.drawable.ic_baseline_check_24).into(image_my_list_action)
             }
-            StorageController.saveMyList(requireContext())
 
-            // TODO notify home fragment on change
+            // notify home fragment on change
             parentFragmentManager.findFragmentByTag("HomeFragment")?.let {
                 (it as HomeFragment).updateMyListMedia()
             }
@@ -119,11 +124,8 @@ class MediaFragment(private val media: Media, private val tmdb: TMDBResponse) : 
     }
 
     private fun playStream(url: String) {
-        val mainActivity = activity as MainActivity
-
-        println("url is: $url")
-
-        mainActivity.startPlayer(url)
+        Log.d(javaClass.name, "Playing stream: $url")
+        (activity as MainActivity).startPlayer(url)
     }
 
 }
