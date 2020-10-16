@@ -14,7 +14,7 @@ object StorageController {
 
     private const val fileNameMyList = "my_list.json"
 
-    val myList = ArrayList<String>() // a list of saved links
+    val myList = ArrayList<Int>() // a list of saved mediaIds
 
     fun load(context: Context) {
         val file = File(context.filesDir, fileNameMyList)
@@ -23,7 +23,7 @@ object StorageController {
 
         myList.clear()
         myList.addAll(
-            GsonBuilder().create().fromJson(file.readText(), ArrayList<String>().javaClass)
+            GsonBuilder().create().fromJson(file.readText(), ArrayList<Int>().javaClass)
         )
     }
 

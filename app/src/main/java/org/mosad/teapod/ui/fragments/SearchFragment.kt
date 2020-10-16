@@ -33,10 +33,10 @@ class SearchFragment : Fragment() {
             // create and set the adapter, needs context
             withContext(Dispatchers.Main) {
                 context?.let {
-                    adapter = MediaItemAdapter(AoDParser.mediaList)
-                    adapter!!.onItemClick = { media, _ ->
+                    adapter = MediaItemAdapter(AoDParser.itemMediaList)
+                    adapter!!.onItemClick = { mediaId, _ ->
                         search_text.clearFocus()
-                        (activity as MainActivity).showMediaFragment(media)
+                        (activity as MainActivity).showMediaFragment(mediaId)
                     }
 
                     recycler_media_search.adapter = adapter

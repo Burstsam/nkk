@@ -33,9 +33,9 @@ class LibraryFragment : Fragment() {
             // create and set the adapter, needs context
             withContext(Dispatchers.Main) {
                 context?.let {
-                    adapter = MediaItemAdapter(AoDParser.mediaList)
-                    adapter.onItemClick = { media, _ ->
-                        (activity as MainActivity).showMediaFragment(media)
+                    adapter = MediaItemAdapter(AoDParser.itemMediaList)
+                    adapter.onItemClick = { mediaId, _ ->
+                        (activity as MainActivity).showMediaFragment(mediaId)
                     }
 
                     recycler_media_library.adapter = adapter

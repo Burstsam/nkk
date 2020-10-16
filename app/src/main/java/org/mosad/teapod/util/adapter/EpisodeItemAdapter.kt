@@ -33,8 +33,8 @@ class EpisodeItemAdapter(private val episodes: List<Episode>) : RecyclerView.Ada
         )
         holder.view.text_episode_desc.text = episodes[position].shortDesc
 
-        if (episodes[position].posterLink.isNotEmpty()) {
-            Glide.with(context).load(episodes[position].posterLink)
+        if (episodes[position].posterUrl.isNotEmpty()) {
+            Glide.with(context).load(episodes[position].posterUrl)
                 .apply(RequestOptions.bitmapTransform(RoundedCornersTransformation(10, 0)))
                 .into(holder.view.image_episode)
         }

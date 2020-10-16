@@ -50,15 +50,15 @@ class HomeFragment : Fragment() {
 
     // TODO recreating the adapter on list change is not a good solution
     fun updateMyListMedia() {
-        val myListMedia = StorageController.myList.map { listElement ->
-            AoDParser.mediaList.first {
-                listElement == it.link
+        val myListMedia = StorageController.myList.map { elementId ->
+            AoDParser.itemMediaList.first {
+                elementId == it.id
             }
         }
 
         adapter = MediaItemAdapter(myListMedia)
-        adapter.onItemClick = { media, _ ->
-            (activity as MainActivity).showMediaFragment(media)
+        adapter.onItemClick = { mediaId, _ ->
+            (activity as MainActivity).showMediaFragment(mediaId)
         }
 
         recycler_my_list.adapter = adapter

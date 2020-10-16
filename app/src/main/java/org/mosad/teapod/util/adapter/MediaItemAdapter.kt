@@ -9,12 +9,12 @@ import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
 import kotlinx.android.synthetic.main.item_media.view.*
 import org.mosad.teapod.R
-import org.mosad.teapod.util.Media
+import org.mosad.teapod.util.ItemMedia
 import java.util.*
 
-class MediaItemAdapter(private val media: List<Media>) : RecyclerView.Adapter<MediaItemAdapter.ViewHolder>(), Filterable {
+class MediaItemAdapter(private val media: List<ItemMedia>) : RecyclerView.Adapter<MediaItemAdapter.ViewHolder>(), Filterable {
 
-    var onItemClick: ((Media, Int) -> Unit)? = null
+    var onItemClick: ((Int, Int) -> Unit)? = null
     private val filter = MediaFilter()
     private var filteredMedia = media.map { it.copy() }
 
@@ -27,7 +27,7 @@ class MediaItemAdapter(private val media: List<Media>) : RecyclerView.Adapter<Me
     override fun onBindViewHolder(holder: MediaItemAdapter.ViewHolder, position: Int) {
         holder.view.apply {
             text_title.text = filteredMedia[position].title
-            Glide.with(context).load(filteredMedia[position].info.posterLink).into(image_poster)
+            Glide.with(context).load(filteredMedia[position].posterUrl).into(image_poster)
         }
     }
 
@@ -42,7 +42,7 @@ class MediaItemAdapter(private val media: List<Media>) : RecyclerView.Adapter<Me
     inner class ViewHolder(val view: View) : RecyclerView.ViewHolder(view) {
         init {
             view.setOnClickListener {
-                onItemClick?.invoke(filteredMedia[adapterPosition], adapterPosition)
+                onItemClick?.invoke(filteredMedia[adapterPosition].id, adapterPosition)
             }
         }
     }
@@ -71,7 +71,7 @@ class MediaItemAdapter(private val media: List<Media>) : RecyclerView.Adapter<Me
          * suppressing unchecked cast is safe, since we only use Media
          */
         override fun publishResults(constraint: CharSequence?, results: FilterResults?) {
-            filteredMedia = results?.values as List<Media>
+            filteredMedia = results?.values as List<ItemMedia>
             notifyDataSetChanged()
         }
     }

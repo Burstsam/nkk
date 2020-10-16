@@ -8,6 +8,7 @@ import org.jsoup.Jsoup
 import org.mosad.teapod.preferences.EncryptedPreferences
 import org.mosad.teapod.util.DataTypes.MediaType
 import org.mosad.teapod.util.Episode
+import org.mosad.teapod.util.ItemMedia
 import org.mosad.teapod.util.Media
 import java.io.IOException
 import java.util.*
@@ -29,6 +30,7 @@ class AoDParser {
         private var loginSuccess = false
 
         val mediaList = arrayListOf<Media>()
+        val itemMediaList = arrayListOf<ItemMedia>()
     }
 
     fun login(): Boolean = runBlocking {
@@ -90,16 +92,18 @@ class AoDParser {
                 } else {
                     MediaType.MOVIE
                 }
+                val mediaTitle = it.select("h3.animebox-title").text()
+                val mediaLink = it.select("p.animebox-link").select("a").attr("href")
+                val mediaImage = it.select("p.animebox-image").select("img").attr("src")
+                val mediaShortText = it.select("p.animebox-shorttext").text()
+                val mediaId = mediaLink.substringAfterLast("/").toInt()
 
-                val media = Media(
-                    it.select("h3.animebox-title").text(),
-                    it.select("p.animebox-link").select("a").attr("href"),
-                    type
-                )
-                media.info.posterLink = it.select("p.animebox-image").select("img").attr("src")
-                media.info.shortDesc = it.select("p.animebox-shorttext").text()
-
-                mediaList.add(media)
+                itemMediaList.add(ItemMedia(mediaId, mediaTitle, mediaImage))
+                mediaList.add(Media(mediaId, mediaLink, type).apply {
+                    info.title = mediaTitle
+                    info.posterUrl = mediaImage
+                    info.shortDesc = mediaShortText
+                })
             }
 
             Log.i(javaClass.name, "Total library size is: ${mediaList.size}")
@@ -108,20 +112,26 @@ class AoDParser {
         }
     }
 
+    fun getMediaById(mediaId: Int): Media {
+        val media = mediaList.first { it.id == mediaId }
+
+        if (media.episodes.isEmpty()) {
+            loadStreams(media)
+        }
+
+        return media
+    }
+
     /**
-     * load streams for the media path
+     * load streams for the media path, movies have one episode
+     * @param media is used as call ba reference
      */
-    fun loadStreams(media: Media): List<Episode> = runBlocking {
+    private fun loadStreams(media: Media) = runBlocking {
         if (sessionCookies.isEmpty()) login()
 
         if (!loginSuccess) {
             Log.w(javaClass.name, "Login, was not successful.")
-            return@runBlocking listOf()
-        }
-
-        // if the episodes list is not empty it was loaded before
-        if (media.episodes.isNotEmpty()) {
-            return@runBlocking media.episodes
+            return@runBlocking
         }
 
         withContext(Dispatchers.Default) {
@@ -147,22 +157,24 @@ class AoDParser {
             }
 
             // parse additional information for tv shows
-            val episodes = if (media.type == MediaType.TVSHOW) {
-                res.select("div.three-box-container > div.episodebox").map { episodebox ->
-                    val episodeId = episodebox.select("div.flip-front").attr("id").substringAfter("-").toInt()
-                    val episodeShortDesc = episodebox.select("p.episodebox-shorttext").text()
-                    val episodeWatched = episodebox.select("div.episodebox-icons > div").hasClass("status-icon-orange")
-                    val episodeWatchedCallback = episodebox.select("input.streamstarter_html5").eachAttr("data-playlist").first()
+            media.episodes = when (media.type) {
+                MediaType.MOVIE -> listOf(Episode())
+                MediaType.TVSHOW -> {
+                    res.select("div.three-box-container > div.episodebox").map { episodebox ->
+                        val episodeId = episodebox.select("div.flip-front").attr("id").substringAfter("-").toInt()
+                        val episodeShortDesc = episodebox.select("p.episodebox-shorttext").text()
+                        val episodeWatched = episodebox.select("div.episodebox-icons > div").hasClass("status-icon-orange")
+                        val episodeWatchedCallback = episodebox.select("input.streamstarter_html5").eachAttr("data-playlist").first()
 
-                    Episode(
-                        id = episodeId,
-                        shortDesc = episodeShortDesc,
-                        watched = episodeWatched,
-                        watchedCallback = episodeWatchedCallback
-                    )
+                        Episode(
+                            id = episodeId,
+                            shortDesc = episodeShortDesc,
+                            watched = episodeWatched,
+                            watchedCallback = episodeWatchedCallback
+                        )
+                    }
                 }
-            } else {
-                listOf(Episode())
+                MediaType.OTHER -> listOf()
             }
 
             if (csrfToken.isEmpty()) {
@@ -173,19 +185,17 @@ class AoDParser {
             // TODO has attr data-lag (ger or jap)
             val playlists = res.select("input.streamstarter_html5").eachAttr("data-playlist")
 
-            return@withContext if (playlists.size > 0) {
-                loadStreamInfo(playlists.first(), csrfToken, media.type, episodes)
-            } else {
-                listOf()
+            if (playlists.size > 0) {
+                loadPlaylist(playlists.first(), csrfToken, media.type, media.episodes)
             }
         }
     }
 
     /**
      * load the playlist path and parse it, read the stream info from json
-     * @param episodes is used as call ba reference, additionally it is passed a return value
+     * @param episodes is used as call ba reference
      */
-    private fun loadStreamInfo(playlistPath: String, csrfToken: String, type: MediaType, episodes: List<Episode>): List<Episode> = runBlocking {
+    private fun loadPlaylist(playlistPath: String, csrfToken: String, type: MediaType, episodes: List<Episode>) = runBlocking {
         withContext(Dispatchers.Default) {
             val headers = mutableMapOf(
                 Pair("Accept", "application/json, text/javascript, */*; q=0.01"),
@@ -232,7 +242,7 @@ class AoDParser {
 
                         episodes.first { it.id == episodeId.asInt }.apply {
                             this.title = episodeTitle
-                            this.posterLink = episodePoster
+                            this.posterUrl = episodePoster
                             this.streamUrl = episodeStream
                             this.description = episodeDescription
                             this.number = episodeNumber
@@ -245,8 +255,6 @@ class AoDParser {
                     Log.e(javaClass.name, "Wrong Type, please report this issue.")
                 }
             }
-
-            return@withContext episodes
         }
     }
 

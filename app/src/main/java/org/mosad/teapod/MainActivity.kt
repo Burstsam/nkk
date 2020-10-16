@@ -43,7 +43,6 @@ import org.mosad.teapod.ui.fragments.LibraryFragment
 import org.mosad.teapod.ui.fragments.SearchFragment
 import org.mosad.teapod.ui.fragments.LoadingFragment
 import org.mosad.teapod.util.StorageController
-import org.mosad.teapod.util.Media
 import org.mosad.teapod.util.TMDBApiController
 import kotlin.system.measureTimeMillis
 
@@ -108,16 +107,18 @@ class MainActivity : AppCompatActivity(), BottomNavigationView.OnNavigationItemS
     }
 
     private fun load() {
-        // make sure credentials are set
-        EncryptedPreferences.readCredentials(this)
-        if (EncryptedPreferences.password.isEmpty()) showLoginDialog(true)
-
-        StorageController.load(this)
-
         // running login and list in parallel does not bring any speed improvements
         val time = measureTimeMillis {
-            // try to login in, as most sites can only bee loaded once loged in
-            if (!AoDParser().login()) showLoginDialog(false)
+        // make sure credentials are set
+            EncryptedPreferences.readCredentials(this)
+            if (EncryptedPreferences.password.isEmpty()) {
+                showLoginDialog(true)
+            } else {
+                // try to login in, as most sites can only bee loaded once loged in
+                if (!AoDParser().login()) showLoginDialog(false)
+            }
+
+            StorageController.load(this)
 
             // initially load all media
             AoDParser().listAnimes()
@@ -133,7 +134,7 @@ class MainActivity : AppCompatActivity(), BottomNavigationView.OnNavigationItemS
      * The loading and media fragment are not stored in activeBaseFragment,
      * as the don't replace a fragment but are added on top of one.
      */
-    fun showMediaFragment(media: Media) = GlobalScope.launch {
+    fun showMediaFragment(mediaId: Int) = GlobalScope.launch {
         val loadingFragment = LoadingFragment()
         supportFragmentManager.commit {
             add(R.id.nav_host_fragment, loadingFragment, "MediaFragment")
@@ -141,8 +142,8 @@ class MainActivity : AppCompatActivity(), BottomNavigationView.OnNavigationItemS
         }
 
         // load the streams for the selected media
-        media.episodes = AoDParser().loadStreams(media)
-        val tmdb = TMDBApiController().search(media.title, media.type)
+        val media = AoDParser().getMediaById(mediaId)
+        val tmdb = TMDBApiController().search(media.info.title, media.type)
 
         val mediaFragment = MediaFragment(media, tmdb)
         supportFragmentManager.commit {

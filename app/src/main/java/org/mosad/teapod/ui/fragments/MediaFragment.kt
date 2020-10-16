@@ -45,8 +45,8 @@ class MediaFragment(private val media: Media, private val tmdb: TMDBResponse) : 
      */
     private fun initGUI() {
         // generic gui
-        val backdropUrl = if (tmdb.backdropUrl.isNotEmpty()) tmdb.backdropUrl else media.info.posterLink
-        val posterUrl = if (tmdb.posterUrl.isNotEmpty()) tmdb.posterUrl else media.info.posterLink
+        val backdropUrl = if (tmdb.backdropUrl.isNotEmpty()) tmdb.backdropUrl else media.info.posterUrl
+        val posterUrl = if (tmdb.posterUrl.isNotEmpty()) tmdb.posterUrl else media.info.posterUrl
 
         Glide.with(requireContext()).load(backdropUrl)
             .apply(RequestOptions.placeholderOf(ColorDrawable(Color.DKGRAY)))
@@ -56,11 +56,11 @@ class MediaFragment(private val media: Media, private val tmdb: TMDBResponse) : 
         Glide.with(requireContext()).load(posterUrl)
             .into(image_poster)
 
-        text_title.text = media.title
+        text_title.text = media.info.title
         text_year.text = media.info.year.toString()
         text_age.text = media.info.age.toString()
         text_overview.text = media.info.shortDesc
-        if (StorageController.myList.contains(media.link)) {
+        if (StorageController.myList.contains(media.id)) {
             Glide.with(requireContext()).load(R.drawable.ic_baseline_check_24).into(image_my_list_action)
         } else {
             Glide.with(requireContext()).load(R.drawable.ic_baseline_add_24).into(image_my_list_action)
@@ -96,13 +96,14 @@ class MediaFragment(private val media: Media, private val tmdb: TMDBResponse) : 
 
         // add or remove media from myList
         linear_my_list_action.setOnClickListener {
-            if (StorageController.myList.contains(media.link)) {
-                StorageController.myList.remove(media.link)
+            if (StorageController.myList.contains(media.id)) {
+                StorageController.myList.remove(media.id)
                 Glide.with(requireContext()).load(R.drawable.ic_baseline_add_24).into(image_my_list_action)
             } else {
-                StorageController.myList.add(media.link)
+                StorageController.myList.add(media.id)
                 Glide.with(requireContext()).load(R.drawable.ic_baseline_check_24).into(image_my_list_action)
             }
+            StorageController.saveMyList(requireContext())
 
             // notify home fragment on change
             parentFragmentManager.findFragmentByTag("HomeFragment")?.let {
