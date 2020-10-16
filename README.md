@@ -6,14 +6,21 @@ A unoffical App for Anime-on-Demand.
 * acces all media in the library
 * search the library
 * play movies/tv shows via integrated exoplayer
+* add movies/tv shows to you list, for easier access
+
+### Missing Features
+* a alternative/secondary stream is currently not supported (for dub titles the subtitle version is missing)
 
 ## Screenshots
 [<img src="https://www.mosad.xyz/images/Teapod/Teapod_Library.png" width=180>](https://www.mosad.xyz/images/Teapod/Teapod_Library.png)
 [<img src="https://www.mosad.xyz/images/Teapod/Teapod_Media.png" width=180>](https://www.mosad.xyz/images/Teapod/Teapod_Media.png)
 [<img src="https://www.mosad.xyz/images/Teapod/Teapod_Search.png" width=180>](https://www.mosad.xyz/images/Teapod/Teapod_Search.png)
 
-## License
+### License
 This App is licensed under the terms and conditions of GPL 3. This Project is not associated with Anime-on-Demand in any way.
+
+### Known Issues
+If a tv show is selected, the first episode will be marked as already watched. This is due to the difficulties of parsing. The Parser is designed to be as easy to maintain and fail safe as possible.
 
 ### Used Libraries
 * AndroidX: https://developer.android.com/jetpack/androidx
