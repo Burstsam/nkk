@@ -17,6 +17,7 @@
     <string name="text_episodes_count">%1$d Episoden</string>
     <string name="text_runtime">%1$d Minuten</string>
     <string name="component_episode_title">Episode %1$d %2$s</string>
+    <string name="component_episode_title_sub">Episode %1$d %2$s (OmU)</string>
 
     <!-- settings fragment -->
     <string name="account">Account</string>

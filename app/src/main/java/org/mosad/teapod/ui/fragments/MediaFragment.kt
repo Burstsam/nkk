@@ -88,8 +88,8 @@ class MediaFragment(private val media: Media, private val tmdb: TMDBResponse) : 
     private fun initActions() {
         button_play.setOnClickListener {
             when (media.type) {
-                MediaType.MOVIE -> playStream(media.episodes.first().streamUrl)
-                MediaType.TVSHOW -> playStream(media.episodes.first().streamUrl)
+                MediaType.MOVIE -> playStream(media.episodes.first().priStreamUrl)
+                MediaType.TVSHOW -> playStream(media.episodes.first().priStreamUrl)
                 else -> Log.e(javaClass.name, "Wrong Type: $media.type")
             }
         }
@@ -114,7 +114,13 @@ class MediaFragment(private val media: Media, private val tmdb: TMDBResponse) : 
         // set onItemClick only in adapter is initialized
         if (this::adapterRecEpisodes.isInitialized) {
             adapterRecEpisodes.onImageClick = { _, position ->
-                playStream(media.episodes[position].streamUrl)
+                // TODO add option to prefer secondary stream
+                // try to use secondary stream if primary is missing
+                if (media.episodes[position].priStreamUrl.isNotEmpty()) {
+                    playStream(media.episodes[position].priStreamUrl)
+                } else if (media.episodes[position].secStreamUrl.isNotEmpty()) {
+                    playStream(media.episodes[position].secStreamUrl)
+                }
 
                 // update watched state
                 AoDParser.sendCallback(media.episodes[position].watchedCallback)

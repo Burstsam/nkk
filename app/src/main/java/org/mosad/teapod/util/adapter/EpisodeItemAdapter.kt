@@ -25,21 +25,24 @@ class EpisodeItemAdapter(private val episodes: List<Episode>) : RecyclerView.Ada
 
     override fun onBindViewHolder(holder: MyViewHolder, position: Int) {
         val context = holder.view.context
+        val ep = episodes[position]
 
-        holder.view.text_episode_title.text = context.getString(
-            R.string.component_episode_title,
-            episodes[position].number,
-            episodes[position].description
-        )
-        holder.view.text_episode_desc.text = episodes[position].shortDesc
+        val titleText = if (ep.priStreamUrl.isEmpty() && ep.secStreamOmU) {
+            context.getString(R.string.component_episode_title_sub, ep.number, ep.description)
+        } else {
+            context.getString(R.string.component_episode_title, ep.number, ep.description)
+        }
+
+        holder.view.text_episode_title.text = titleText
+        holder.view.text_episode_desc.text = ep.shortDesc
 
         if (episodes[position].posterUrl.isNotEmpty()) {
-            Glide.with(context).load(episodes[position].posterUrl)
+            Glide.with(context).load(ep.posterUrl)
                 .apply(RequestOptions.bitmapTransform(RoundedCornersTransformation(10, 0)))
                 .into(holder.view.image_episode)
         }
 
-        if (episodes[position].watched) {
+        if (ep.watched) {
             holder.view.image_watched.setImageDrawable(
                 ContextCompat.getDrawable(context, R.drawable.ic_baseline_check_circle_24)
             )

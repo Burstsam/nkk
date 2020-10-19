@@ -30,10 +30,6 @@ class HomeFragment : Fragment() {
         super.onViewCreated(view, savedInstanceState)
 
         GlobalScope.launch {
-            if (AoDParser.mediaList.isEmpty()) {
-                AoDParser().listAnimes()
-            }
-
             withContext(Dispatchers.Main) {
                 context?.let {
                     recycler_my_list.addItemDecoration(MediaItemDecoration(9))

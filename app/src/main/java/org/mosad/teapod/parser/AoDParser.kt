@@ -23,11 +23,12 @@
 package org.mosad.teapod.parser
 
 import android.util.Log
-import com.google.gson.JsonParser
+import com.google.gson.Gson
 import kotlinx.coroutines.*
 import org.jsoup.Connection
 import org.jsoup.Jsoup
 import org.mosad.teapod.preferences.EncryptedPreferences
+import org.mosad.teapod.util.AoDObject
 import org.mosad.teapod.util.DataTypes.MediaType
 import org.mosad.teapod.util.Episode
 import org.mosad.teapod.util.ItemMedia
@@ -47,7 +48,7 @@ object AoDParser {
     private var csrfToken: String = ""
     private var loginSuccess = false
 
-    val mediaList = arrayListOf<Media>()
+    private val mediaList = arrayListOf<Media>()
     val itemMediaList = arrayListOf<ItemMedia>()
     val newEpisodesList = arrayListOf<ItemMedia>()
 
@@ -224,11 +225,68 @@ object AoDParser {
 
         withContext(Dispatchers.Default) {
 
+            // get the media page
             val res = Jsoup.connect(baseUrl + media.link)
                 .cookies(sessionCookies)
                 .get()
 
             //println(res)
+
+            if (csrfToken.isEmpty()) {
+                csrfToken = res.select("meta[name=csrf-token]").attr("content")
+                //Log.i(javaClass.name, "New csrf token is $csrfToken")
+            }
+
+
+            val pl = res.select("input.streamstarter_html5").first()
+            val primary = pl.attr("data-playlist")
+            val secondary = pl.attr("data-otherplaylist")
+            val secondaryIsOmU = secondary.contains("OmU", true)
+
+            println("primary: $primary")
+            println("secondary: $secondary")
+            println("secondaryIsOmU: $secondaryIsOmU")
+
+            // load primary and secondary playlist
+            val primaryPlaylist = parsePlaylistAsync(primary)
+            val secondaryPlaylist = parsePlaylistAsync(secondary)
+
+            primaryPlaylist.await().playlist.forEach { ep ->
+                media.episodes.add(
+                    Episode(
+                        id = ep.mediaid,
+                        priStreamUrl = ep.sources.first().file,
+                        posterUrl = ep.image,
+                        title = ep.title,
+                        description = ep.description,
+                        number = ep.title.substringAfter(", Ep. ").toInt()
+                    )
+                )
+            }
+            Log.i(javaClass.name, "Loading primary playlist finished")
+
+            secondaryPlaylist.await().playlist.forEach { ep ->
+                val episode = media.episodes.firstOrNull { it.id == ep.mediaid }
+
+                if (episode != null) {
+                    episode.secStreamUrl = ep.sources.first().file
+                    episode.secStreamOmU = secondaryIsOmU
+                    println("adding secondary stream for ep: ${ep.title.substringAfter(", Ep. ").toInt()}")
+                } else {
+                    media.episodes.add(
+                        Episode(
+                            id = ep.mediaid,
+                            secStreamUrl = ep.sources.first().file,
+                            secStreamOmU = secondaryIsOmU,
+                            posterUrl = ep.image,
+                            title = ep.title,
+                            description = ep.description,
+                            number = ep.title.substringAfter(", Ep. ").toInt()
+                        )
+                    )
+                }
+            }
+            Log.i(javaClass.name, "Loading secondary plalyist finished")
 
             // parse additional info from the media page
             res.select("table.vertical-table").select("tr").forEach { row ->
@@ -245,46 +303,31 @@ object AoDParser {
             }
 
             // parse additional information for tv shows
-            media.episodes = when (media.type) {
-                MediaType.MOVIE -> listOf(Episode())
-                MediaType.TVSHOW -> {
-                    res.select("div.three-box-container > div.episodebox").map { episodebox ->
-                        val episodeId = episodebox.select("div.flip-front").attr("id").substringAfter("-").toInt()
-                        val episodeShortDesc = episodebox.select("p.episodebox-shorttext").text()
-                        val episodeWatched = episodebox.select("div.episodebox-icons > div").hasClass("status-icon-orange")
-                        val episodeWatchedCallback = episodebox.select("input.streamstarter_html5").eachAttr("data-playlist").first()
+            if (media.type == MediaType.TVSHOW) {
+                res.select("div.three-box-container > div.episodebox").forEach { episodebox ->
+                    val episodeId = episodebox.select("div.flip-front").attr("id").substringAfter("-").toInt()
+                    val episodeShortDesc = episodebox.select("p.episodebox-shorttext").text()
+                    val episodeWatched = episodebox.select("div.episodebox-icons > div").hasClass("status-icon-orange")
+                    val episodeWatchedCallback = episodebox.select("input.streamstarter_html5").eachAttr("data-playlist").first()
 
-                        Episode(
-                            id = episodeId,
-                            shortDesc = episodeShortDesc,
-                            watched = episodeWatched,
-                            watchedCallback = episodeWatchedCallback
-                        )
+                    media.episodes.firstOrNull { it.id == episodeId }?.apply {
+                        shortDesc = episodeShortDesc
+                        watched = episodeWatched
+                        watchedCallback = episodeWatchedCallback
                     }
                 }
-                MediaType.OTHER -> listOf()
             }
 
-            if (csrfToken.isEmpty()) {
-                csrfToken = res.select("meta[name=csrf-token]").attr("content")
-                //Log.i(javaClass.name, "New csrf token is $csrfToken")
-            }
-
-            // TODO has attr data-lag (ger or jap)
-            val playlists = res.select("input.streamstarter_html5").eachAttr("data-playlist")
-
-            if (playlists.size > 0) {
-                loadPlaylist(playlists.first(), csrfToken, media.type, media.episodes)
-            }
         }
     }
 
-    /**
-     * load the playlist path and parse it, read the stream info from json
-     * @param episodes is used as call ba reference
-     */
-    private fun loadPlaylist(playlistPath: String, csrfToken: String, type: MediaType, episodes: List<Episode>) = runBlocking {
-        withContext(Dispatchers.Default) {
+    // TODO is this realy a save way, since we don't have any control over the "api"
+    private fun parsePlaylistAsync(playlistPath: String): Deferred<AoDObject> {
+        if (playlistPath == "[]") {
+            return CompletableDeferred(AoDObject(listOf()))
+        }
+
+        return GlobalScope.async {
             val headers = mutableMapOf(
                 Pair("Accept", "application/json, text/javascript, */*; q=0.01"),
                 Pair("Accept-Language", "de,en-US;q=0.7,en;q=0.3"),
@@ -301,49 +344,9 @@ object AoDParser {
                 .headers(headers)
                 .execute()
 
-            //println(res.body())
-
-            when (type) {
-                MediaType.MOVIE -> {
-                    val movie = JsonParser.parseString(res.body()).asJsonObject
-                        .get("playlist").asJsonArray
-                        .first().asJsonObject
-
-                    movie.get("sources").asJsonArray.first().apply {
-                        episodes.first().streamUrl = this.asJsonObject.get("file").asString
-                    }
-                }
-
-                MediaType.TVSHOW -> {
-                    val episodesJson = JsonParser.parseString(res.body()).asJsonObject
-                        .get("playlist").asJsonArray
-
-                    episodesJson.forEach { jsonElement ->
-                        val episodeId = jsonElement.asJsonObject.get("mediaid")
-                        val episodeStream = jsonElement.asJsonObject.get("sources").asJsonArray
-                            .first().asJsonObject
-                            .get("file").asString
-                        val episodeTitle = jsonElement.asJsonObject.get("title").asString
-                        val episodePoster = jsonElement.asJsonObject.get("image").asString
-                        val episodeDescription = jsonElement.asJsonObject.get("description").asString
-                        val episodeNumber = episodeTitle.substringAfter(", Ep. ").toInt()
-
-                        episodes.first { it.id == episodeId.asInt }.apply {
-                            this.title = episodeTitle
-                            this.posterUrl = episodePoster
-                            this.streamUrl = episodeStream
-                            this.description = episodeDescription
-                            this.number = episodeNumber
-                        }
-                    }
-
-                }
-
-                else -> {
-                    Log.e(javaClass.name, "Wrong Type, please report this issue.")
-                }
-            }
+            Gson().fromJson(res.body(), AoDObject::class.java)
         }
+
     }
 
 }

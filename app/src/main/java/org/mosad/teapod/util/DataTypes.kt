@@ -27,7 +27,7 @@ data class Media(
     val link: String,
     val type: DataTypes.MediaType,
     val info: Info = Info(),
-    var episodes: List<Episode> = listOf()
+    var episodes: ArrayList<Episode> = arrayListOf()
 )
 
 data class Info(
@@ -40,10 +40,15 @@ data class Info(
     var episodesCount: Int = 0
 )
 
+/**
+ * if secStreamOmU == true, then a secondary stream is present
+ */
 data class Episode(
     val id: Int = 0,
     var title: String = "",
-    var streamUrl: String = "",
+    var priStreamUrl: String = "",
+    var secStreamUrl: String = "",
+    var secStreamOmU: Boolean = false,
     var posterUrl: String = "",
     var description: String = "",
     var shortDesc: String = "",
@@ -59,4 +64,18 @@ data class TMDBResponse(
     val posterUrl: String = "",
     val backdropUrl: String = "",
     var runtime: Int = 0
+)
+
+data class AoDObject(val playlist: List<Playlist>)
+
+data class Playlist(
+    val sources: List<Source>,
+    val image: String,
+    val title: String,
+    val description: String,
+    val mediaid: Int
+)
+
+data class Source(
+    val file: String = ""
 )

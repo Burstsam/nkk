@@ -26,10 +26,6 @@ class SearchFragment : Fragment() {
         super.onViewCreated(view, savedInstanceState)
 
         GlobalScope.launch {
-            if (AoDParser.mediaList.isEmpty()) {
-                AoDParser().listAnimes()
-            }
-
             // create and set the adapter, needs context
             withContext(Dispatchers.Main) {
                 context?.let {
