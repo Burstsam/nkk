@@ -5,7 +5,6 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
-import androidx.recyclerview.widget.LinearLayoutManager
 import kotlinx.android.synthetic.main.fragment_home.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
@@ -20,8 +19,8 @@ import org.mosad.teapod.util.decoration.MediaItemDecoration
 
 class HomeFragment : Fragment() {
 
-    private lateinit var adapter: MediaItemAdapter
-    private lateinit var layoutManager: LinearLayoutManager
+    private lateinit var adapterMyList: MediaItemAdapter
+    private lateinit var adapterNewEpisodes: MediaItemAdapter
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
         return inflater.inflate(R.layout.fragment_home, container, false)
@@ -37,14 +36,17 @@ class HomeFragment : Fragment() {
 
             withContext(Dispatchers.Main) {
                 context?.let {
-                    layoutManager = LinearLayoutManager(context, LinearLayoutManager.HORIZONTAL, false)
-                    recycler_my_list.layoutManager = layoutManager
                     recycler_my_list.addItemDecoration(MediaItemDecoration(9))
 
                     updateMyListMedia()
+
+                    adapterNewEpisodes = MediaItemAdapter(AoDParser.newEpisodesList)
+                    recycler_new_episodes.adapter = adapterNewEpisodes
+                    recycler_new_episodes.addItemDecoration(MediaItemDecoration(9))
+
+                    initActions()
                 }
             }
-
         }
     }
 
@@ -56,11 +58,17 @@ class HomeFragment : Fragment() {
             }
         }
 
-        adapter = MediaItemAdapter(myListMedia)
-        adapter.onItemClick = { mediaId, _ ->
+        adapterMyList = MediaItemAdapter(myListMedia)
+        adapterMyList.onItemClick = { mediaId, _ ->
             (activity as MainActivity).showMediaFragment(mediaId)
         }
 
-        recycler_my_list.adapter = adapter
+        recycler_my_list.adapter = adapterMyList
+    }
+
+    private fun initActions() {
+        adapterNewEpisodes.onItemClick = { mediaId, _ ->
+            (activity as MainActivity).showMediaFragment(mediaId)
+        }
     }
 }

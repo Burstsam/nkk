@@ -31,6 +31,7 @@ class AoDParser {
 
         val mediaList = arrayListOf<Media>()
         val itemMediaList = arrayListOf<ItemMedia>()
+        val newEpisodesList = arrayListOf<ItemMedia>()
     }
 
     fun login(): Boolean = runBlocking {
@@ -85,6 +86,7 @@ class AoDParser {
 
             //println(resAnimes)
 
+            itemMediaList.clear()
             mediaList.clear()
             resAnimes.select("div.animebox").forEach {
                 val type = if (it.select("p.animebox-link").select("a").text().toLowerCase(Locale.ROOT) == "zur serie") {
@@ -109,6 +111,29 @@ class AoDParser {
             Log.i(javaClass.name, "Total library size is: ${mediaList.size}")
 
             return@withContext mediaList
+        }
+    }
+
+    fun listNewEpisodes() = runBlocking {
+        if (sessionCookies.isEmpty()) login()
+
+        withContext(Dispatchers.Default) {
+            val resHome = Jsoup.connect(baseUrl)
+                .cookies(sessionCookies)
+                .get()
+
+            newEpisodesList.clear()
+            resHome.select("div.jcarousel-container-new").select("li").forEach {
+                if (it.select("span").hasClass("neweps")) {
+                    val mediaId = it.select("a.thumbs").attr("href")
+                        .substringAfterLast("/").toInt()
+                    val mediaImage = it.select("a.thumbs > img").attr("src")
+                    val mediaTitle = "${it.select("a").text()} - ${it.select("span.neweps").text()}"
+
+                    newEpisodesList.add(ItemMedia(mediaId, mediaTitle, mediaImage))
+                }
+            }
+
         }
     }
 

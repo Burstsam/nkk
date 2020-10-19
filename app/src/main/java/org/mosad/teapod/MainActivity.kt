@@ -32,7 +32,9 @@ import androidx.fragment.app.commit
 import com.google.android.material.bottomnavigation.BottomNavigationView
 import kotlinx.android.synthetic.main.activity_main.*
 import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.async
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
 import org.mosad.teapod.parser.AoDParser
 import org.mosad.teapod.preferences.EncryptedPreferences
 import org.mosad.teapod.ui.fragments.MediaFragment
@@ -120,8 +122,20 @@ class MainActivity : AppCompatActivity(), BottomNavigationView.OnNavigationItemS
 
             StorageController.load(this)
 
-            // initially load all media
-            AoDParser().listAnimes()
+            // move to AoDParser
+            val newEPJob = GlobalScope.async {
+                AoDParser().listNewEpisodes()
+            }
+
+            val listJob = GlobalScope.async {
+                AoDParser().listAnimes() // initially load all media
+            }
+
+            runBlocking {
+                newEPJob.await()
+                listJob.await()
+            }
+
 
             // TODO load home screen, can be parallel to listAnimes
         }
