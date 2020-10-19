@@ -117,7 +117,7 @@ class MediaFragment(private val media: Media, private val tmdb: TMDBResponse) : 
                 playStream(media.episodes[position].streamUrl)
 
                 // update watched state
-                AoDParser().sendCallback(media.episodes[position].watchedCallback)
+                AoDParser.sendCallback(media.episodes[position].watchedCallback)
                 adapterRecEpisodes.updateWatchedState(true, position)
                 adapterRecEpisodes.notifyDataSetChanged()
             }

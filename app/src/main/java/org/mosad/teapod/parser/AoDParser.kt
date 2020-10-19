@@ -1,3 +1,25 @@
+/**
+ * Teapod
+ *
+ * Copyright 2020  <seil0@mosad.xyz>
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
+ * MA 02110-1301, USA.
+ *
+ */
+
 package org.mosad.teapod.parser
 
 import android.util.Log
@@ -13,26 +35,21 @@ import org.mosad.teapod.util.Media
 import java.io.IOException
 import java.util.*
 
-/**
- * maybe AoDParser as object would be useful
- */
-class AoDParser {
+object AoDParser {
 
-    private val baseUrl = "https://www.anime-on-demand.de"
-    private val loginPath = "/users/sign_in"
-    private val libraryPath = "/animes"
+    private const val baseUrl = "https://www.anime-on-demand.de"
+    private const val loginPath = "/users/sign_in"
+    private const val libraryPath = "/animes"
 
-    private val userAgent = "Mozilla/5.0 (X11; Linux x86_64; rv:80.0) Gecko/20100101 Firefox/80.0"
+    private const val userAgent = "Mozilla/5.0 (X11; Linux x86_64; rv:80.0) Gecko/20100101 Firefox/80.0"
 
-    companion object {
-        private var csrfToken: String = ""
-        private var sessionCookies = mutableMapOf<String, String>()
-        private var loginSuccess = false
+    private var sessionCookies = mutableMapOf<String, String>()
+    private var csrfToken: String = ""
+    private var loginSuccess = false
 
-        val mediaList = arrayListOf<Media>()
-        val itemMediaList = arrayListOf<ItemMedia>()
-        val newEpisodesList = arrayListOf<ItemMedia>()
-    }
+    val mediaList = arrayListOf<Media>()
+    val itemMediaList = arrayListOf<ItemMedia>()
+    val newEpisodesList = arrayListOf<ItemMedia>()
 
     fun login(): Boolean = runBlocking {
 
@@ -74,9 +91,64 @@ class AoDParser {
     }
 
     /**
-     * list all animes from the website
+     * initially load all media and home screen data
+     * -> blocking
      */
-    fun listAnimes(): ArrayList<Media>  = runBlocking {
+    fun initialLoading() = runBlocking {
+        val newEPJob = GlobalScope.async {
+            listNewEpisodes()
+        }
+
+        val listJob = GlobalScope.async {
+            listAnimes()
+        }
+
+        newEPJob.await()
+        listJob.await()
+    }
+
+    /**
+     * get a media by it's ID (int)
+     * @return Media
+     */
+    fun getMediaById(mediaId: Int): Media {
+        val media = mediaList.first { it.id == mediaId }
+
+        if (media.episodes.isEmpty()) {
+            loadStreams(media)
+        }
+
+        return media
+    }
+
+    // TODO don't use jsoup here
+    fun sendCallback(callbackPath: String) = GlobalScope.launch {
+        val headers = mutableMapOf(
+            Pair("Accept", "application/json, text/javascript, */*; q=0.01"),
+            Pair("Accept-Language", "de,en-US;q=0.7,en;q=0.3"),
+            Pair("Accept-Encoding", "gzip, deflate, br"),
+            Pair("X-CSRF-Token", csrfToken),
+            Pair("X-Requested-With", "XMLHttpRequest"),
+        )
+
+        try {
+            withContext(Dispatchers.IO) {
+                Jsoup.connect(baseUrl + callbackPath)
+                    .ignoreContentType(true)
+                    .cookies(sessionCookies)
+                    .headers(headers)
+                    .execute()
+            }
+        } catch (ex: IOException) {
+            Log.e(javaClass.name, "Callback for $callbackPath failed.", ex)
+        }
+
+    }
+
+    /**
+     * load all media from aod into itemMediaList and mediaList
+     */
+    private fun listAnimes()  = runBlocking {
         if (sessionCookies.isEmpty()) login()
 
         withContext(Dispatchers.Default) {
@@ -109,12 +181,13 @@ class AoDParser {
             }
 
             Log.i(javaClass.name, "Total library size is: ${mediaList.size}")
-
-            return@withContext mediaList
         }
     }
 
-    fun listNewEpisodes() = runBlocking {
+    /**
+     * load all new episodes from AoD into newEpisodesList
+     */
+    private fun listNewEpisodes() = runBlocking {
         if (sessionCookies.isEmpty()) login()
 
         withContext(Dispatchers.Default) {
@@ -135,16 +208,6 @@ class AoDParser {
             }
 
         }
-    }
-
-    fun getMediaById(mediaId: Int): Media {
-        val media = mediaList.first { it.id == mediaId }
-
-        if (media.episodes.isEmpty()) {
-            loadStreams(media)
-        }
-
-        return media
     }
 
     /**
@@ -281,29 +344,6 @@ class AoDParser {
                 }
             }
         }
-    }
-
-    fun sendCallback(callbackPath: String) = GlobalScope.launch {
-        val headers = mutableMapOf(
-            Pair("Accept", "application/json, text/javascript, */*; q=0.01"),
-            Pair("Accept-Language", "de,en-US;q=0.7,en;q=0.3"),
-            Pair("Accept-Encoding", "gzip, deflate, br"),
-            Pair("X-CSRF-Token", csrfToken),
-            Pair("X-Requested-With", "XMLHttpRequest"),
-        )
-
-        try {
-            withContext(Dispatchers.IO) {
-                Jsoup.connect(baseUrl + callbackPath)
-                    .ignoreContentType(true)
-                    .cookies(sessionCookies)
-                    .headers(headers)
-                    .execute()
-            }
-        } catch (ex: IOException) {
-            Log.e(javaClass.name, "Callback for $callbackPath failed.", ex)
-        }
-
     }
 
 }

@@ -57,7 +57,7 @@ class AccountFragment : Fragment() {
         LoginDialog(requireContext(), firstTry).positiveButton {
             EncryptedPreferences.saveCredentials(login, password, context)
 
-            if (!AoDParser().login()) {
+            if (!AoDParser.login()) {
                 showLoginDialog(false)
                 Log.w(javaClass.name, "Login failed, please try again.")
             }
