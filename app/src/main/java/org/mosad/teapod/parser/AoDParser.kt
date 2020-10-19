@@ -252,6 +252,12 @@ object AoDParser {
             val secondaryPlaylist = parsePlaylistAsync(secondary)
 
             primaryPlaylist.await().playlist.forEach { ep ->
+                val epNumber = if (media.type == MediaType.TVSHOW) {
+                    ep.title.substringAfter(", Ep. ").toInt()
+                } else {
+                    0
+                }
+
                 media.episodes.add(
                     Episode(
                         id = ep.mediaid,
@@ -259,7 +265,7 @@ object AoDParser {
                         posterUrl = ep.image,
                         title = ep.title,
                         description = ep.description,
-                        number = ep.title.substringAfter(", Ep. ").toInt()
+                        number = epNumber
                     )
                 )
             }
@@ -271,8 +277,13 @@ object AoDParser {
                 if (episode != null) {
                     episode.secStreamUrl = ep.sources.first().file
                     episode.secStreamOmU = secondaryIsOmU
-                    println("adding secondary stream for ep: ${ep.title.substringAfter(", Ep. ").toInt()}")
                 } else {
+                    val epNumber = if (media.type == MediaType.TVSHOW) {
+                        ep.title.substringAfter(", Ep. ").toInt()
+                    } else {
+                        0
+                    }
+
                     media.episodes.add(
                         Episode(
                             id = ep.mediaid,
@@ -281,7 +292,7 @@ object AoDParser {
                             posterUrl = ep.image,
                             title = ep.title,
                             description = ep.description,
-                            number = ep.title.substringAfter(", Ep. ").toInt()
+                            number = epNumber
                         )
                     )
                 }
