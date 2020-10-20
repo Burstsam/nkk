@@ -240,10 +240,6 @@ object AoDParser {
             val secondary = pl.attr("data-otherplaylist")
             val secondaryIsOmU = secondary.contains("OmU", true)
 
-            println("primary: $primary")
-            println("secondary: $secondary")
-            println("secondaryIsOmU: $secondaryIsOmU")
-
             // load primary and secondary playlist
             val primaryPlaylist = parsePlaylistAsync(primary)
             val secondaryPlaylist = parsePlaylistAsync(secondary)

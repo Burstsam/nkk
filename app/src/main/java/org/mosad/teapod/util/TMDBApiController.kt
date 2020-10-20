@@ -92,13 +92,8 @@ class TMDBApiController {
 
         GlobalScope.async {
             val response = JsonParser.parseString(url.readText()).asJsonObject
-            //println(response)
 
-            val runtime = getStringNotNull(response,"runtime").toInt()
-            println(runtime)
-
-
-            return@async runtime
+            return@async getStringNotNull(response,"runtime").toInt()
         }.await()
     }
 

@@ -15,7 +15,17 @@
 # Uncomment this to preserve the line number information for
 # debugging stack traces.
 #-keepattributes SourceFile,LineNumberTable
+-dontobfuscate
 
 # If you keep the line number information, uncomment this to
 # hide the original source file name.
 #-renamesourcefileattribute SourceFile
+-keep class org.mosad.teapod.util.** { <fields>; }
+
+#Gson
+-keepattributes Signature
+-dontwarn sun.misc.**
+
+#misc
+-dontwarn java.lang.instrument.ClassFileTransformer
+-dontwarn java.lang.ClassValue
