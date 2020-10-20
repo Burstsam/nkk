@@ -23,16 +23,13 @@
 package org.mosad.teapod.parser
 
 import android.util.Log
-import com.google.gson.Gson
+import com.google.gson.JsonParser
 import kotlinx.coroutines.*
 import org.jsoup.Connection
 import org.jsoup.Jsoup
 import org.mosad.teapod.preferences.EncryptedPreferences
-import org.mosad.teapod.util.AoDObject
+import org.mosad.teapod.util.*
 import org.mosad.teapod.util.DataTypes.MediaType
-import org.mosad.teapod.util.Episode
-import org.mosad.teapod.util.ItemMedia
-import org.mosad.teapod.util.Media
 import java.io.IOException
 import java.util.*
 
@@ -332,7 +329,9 @@ object AoDParser {
         }
     }
 
-    // TODO is this realy a save way, since we don't have any control over the "api"
+    /**
+     * don't use Gson().fromJson() as we don't have any control over the api and it may change
+     */
     private fun parsePlaylistAsync(playlistPath: String): Deferred<AoDObject> {
         if (playlistPath == "[]") {
             return CompletableDeferred(AoDObject(listOf()))
@@ -355,9 +354,21 @@ object AoDParser {
                 .headers(headers)
                 .execute()
 
-            Gson().fromJson(res.body(), AoDObject::class.java)
-        }
+            //Gson().fromJson(res.body(), AoDObject::class.java)
 
+            return@async AoDObject(JsonParser.parseString(res.body()).asJsonObject
+                .get("playlist").asJsonArray.map {
+                    Playlist(
+                        sources = it.asJsonObject.get("sources").asJsonArray.map { source ->
+                            Source(source.asJsonObject.get("file").asString)
+                        },
+                        image = it.asJsonObject.get("image").asString,
+                        title = it.asJsonObject.get("title").asString,
+                        description = it.asJsonObject.get("description").asString,
+                        mediaid = it.asJsonObject.get("mediaid").asInt
+                    )
+                })
+        }
     }
 
 }
