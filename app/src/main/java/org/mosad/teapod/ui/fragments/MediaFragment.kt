@@ -17,7 +17,9 @@ import kotlinx.android.synthetic.main.fragment_media.*
 import org.mosad.teapod.MainActivity
 import org.mosad.teapod.R
 import org.mosad.teapod.parser.AoDParser
+import org.mosad.teapod.preferences.Preferences
 import org.mosad.teapod.util.DataTypes.MediaType
+import org.mosad.teapod.util.Episode
 import org.mosad.teapod.util.Media
 import org.mosad.teapod.util.StorageController
 import org.mosad.teapod.util.TMDBResponse
@@ -88,8 +90,8 @@ class MediaFragment(private val media: Media, private val tmdb: TMDBResponse) : 
     private fun initActions() {
         button_play.setOnClickListener {
             when (media.type) {
-                MediaType.MOVIE -> playStream(media.episodes.first().priStreamUrl)
-                MediaType.TVSHOW -> playStream(media.episodes.first().priStreamUrl)
+                MediaType.MOVIE -> playStream(media.episodes.first())
+                MediaType.TVSHOW -> playStream(media.episodes.first())
                 else -> Log.e(javaClass.name, "Wrong Type: $media.type")
             }
         }
@@ -114,13 +116,7 @@ class MediaFragment(private val media: Media, private val tmdb: TMDBResponse) : 
         // set onItemClick only in adapter is initialized
         if (this::adapterRecEpisodes.isInitialized) {
             adapterRecEpisodes.onImageClick = { _, position ->
-                // TODO add option to prefer secondary stream
-                // try to use secondary stream if primary is missing
-                if (media.episodes[position].priStreamUrl.isNotEmpty()) {
-                    playStream(media.episodes[position].priStreamUrl)
-                } else if (media.episodes[position].secStreamUrl.isNotEmpty()) {
-                    playStream(media.episodes[position].secStreamUrl)
-                }
+                playStream(media.episodes[position])
 
                 // update watched state
                 AoDParser.sendCallback(media.episodes[position].watchedCallback)
@@ -130,9 +126,23 @@ class MediaFragment(private val media: Media, private val tmdb: TMDBResponse) : 
         }
     }
 
-    private fun playStream(url: String) {
-        Log.d(javaClass.name, "Playing stream: $url")
-        (activity as MainActivity).startPlayer(url)
+    /**
+     * Play the media's stream
+     * If prefer secondary or primary is empty and secondary is present (secStreamOmU),
+     * use the secondary stream. Else, if the primary stream is set use the primary stream.
+     */
+    private fun playStream(ep: Episode) {
+        val streamUrl = if ((Preferences.preferSecondary || ep.priStreamUrl.isEmpty()) && ep.secStreamOmU) {
+            ep.secStreamUrl
+        } else if (ep.priStreamUrl.isNotEmpty()) {
+            ep.priStreamUrl
+        } else {
+            Log.e(javaClass.name, "No stream url set.")
+            ""
+        }
+
+        Log.d(javaClass.name, "Playing stream: $streamUrl")
+        (activity as MainActivity).startPlayer(streamUrl)
     }
 
 }

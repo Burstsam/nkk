@@ -35,6 +35,7 @@ import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import org.mosad.teapod.parser.AoDParser
 import org.mosad.teapod.preferences.EncryptedPreferences
+import org.mosad.teapod.preferences.Preferences
 import org.mosad.teapod.ui.components.LoginDialog
 import org.mosad.teapod.ui.fragments.*
 import org.mosad.teapod.util.StorageController
@@ -104,7 +105,9 @@ class MainActivity : AppCompatActivity(), BottomNavigationView.OnNavigationItemS
     private fun load() {
         // running login and list in parallel does not bring any speed improvements
         val time = measureTimeMillis {
-        // make sure credentials are set
+            Preferences.load(this)
+
+            // make sure credentials are set
             EncryptedPreferences.readCredentials(this)
             if (EncryptedPreferences.password.isEmpty()) {
                 showLoginDialog(true)

@@ -13,6 +13,7 @@ import org.mosad.teapod.BuildConfig
 import org.mosad.teapod.R
 import org.mosad.teapod.parser.AoDParser
 import org.mosad.teapod.preferences.EncryptedPreferences
+import org.mosad.teapod.preferences.Preferences
 import org.mosad.teapod.ui.components.LoginDialog
 
 class AccountFragment : Fragment() {
@@ -26,6 +27,7 @@ class AccountFragment : Fragment() {
 
         text_account_login.text = EncryptedPreferences.login
         text_info_about_desc.text = getString(R.string.info_about_desc, BuildConfig.VERSION_NAME, getString(R.string.build_time))
+        switch_secondary.isChecked = Preferences.preferSecondary
 
         initActions()
     }
@@ -50,6 +52,10 @@ class AccountFragment : Fragment() {
                 .setThemeResourceId(R.style.AppTheme)
                 .build()
                 .show()
+        }
+
+        switch_secondary.setOnClickListener {
+            Preferences.savePreferSecondary(requireContext(), switch_secondary.isChecked)
         }
     }
 

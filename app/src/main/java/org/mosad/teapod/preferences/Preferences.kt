@@ -1,22 +1,40 @@
 package org.mosad.teapod.preferences
 
+import android.content.Context
+import org.mosad.teapod.R
+
 object Preferences {
 
-    var login = ""
-        internal set
-    var password = ""
+    var preferSecondary = false
         internal set
 
+    fun savePreferSecondary(context: Context, preferSecondary: Boolean) {
+        val sharedPref = context.getSharedPreferences(
+            context.getString(R.string.preference_file_key),
+            Context.MODE_PRIVATE
+        )
 
-    fun saveCredentials(login: String, password: String) {
-        this.login = login
-        this.password = password
+        with(sharedPref.edit()) {
+            putBoolean(context.getString(R.string.save_key_prefer_secondary), preferSecondary)
+            apply()
+        }
 
-        // TODO save
+        this.preferSecondary = preferSecondary
     }
 
-    fun load() {
-        // TODO
+    /**
+     * initially load the stored values
+     */
+    fun load(context: Context) {
+        val sharedPref = context.getSharedPreferences(
+            context.getString(R.string.preference_file_key),
+            Context.MODE_PRIVATE
+        )
 
+        preferSecondary = sharedPref.getBoolean(
+            context.getString(R.string.save_key_prefer_secondary), false
+        )
     }
+
+
 }

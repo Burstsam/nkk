@@ -26,6 +26,9 @@
     <string name="info_about_desc">Version %1$s (%2$s)</string>
     <string name="info_about_dialog">Diese App wird unter den Bedingungen der GNU GPL 3 oder höher zur Verfügung gestellt. Weiter Informationen findest du unter: \ngit.mosad.xyz/Seil0/teapod \n\n© 2020 seil0@mosad.xyz</string>
     <string name="licenses">Lizenzen</string>
+    <string name="settings">Einstellungen</string>
+    <string name="settings_secondary">Bevorzuge alternativen Stream</string>
+    <string name="settings_secondary_desc">Untertitle-Stream verwenden, sofern vorhanden</string>
 
     <!-- dialogs -->
     <string name="save">speichern</string>

@@ -35,6 +35,9 @@
     <string name="info_about_desc">Version %1$s (%2$s)</string>
     <string name="info_about_dialog">This app is published under the terms and conditions of the GNU GPL 3 or later. For further information visit: \ngit.mosad.xyz/Seil0/teapod \n\n© 2020 seil0@mosad.xyz</string>
     <string name="licenses">Licenses</string>
+    <string name="settings">Settings</string>
+    <string name="settings_secondary">Prefer secondary (sub) stream</string>
+    <string name="settings_secondary_desc">Use the subtitles stream if present</string>
 
     <!-- dialogs -->
     <string name="save">save</string>
@@ -48,8 +51,10 @@
 
     <!-- save keys -->
     <string name="encrypted_preference_file_key" translatable="false">org.mosad.teapod.encrypted_preferences</string>
+    <string name="preference_file_key" translatable="false">org.mosad.teapod.preferences</string>
     <string name="save_key_user_login" translatable="false">org.mosad.teapod.user_login</string>
     <string name="save_key_user_password" translatable="false">org.mosad.teapod.user_password</string>
+    <string name="save_key_prefer_secondary" translatable="false">org.mosad.teapod.prefer_secondary</string>
 
     <!-- intents & states -->
     <string name="intent_stream_url" translatable="false">intent_stream_url</string>
