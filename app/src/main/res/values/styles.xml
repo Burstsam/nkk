@@ -7,7 +7,7 @@
         <item name="colorAccent">@color/colorAccent</item>
     </style>
 
-    <style name="AppTheme.MaterialComponents.Light.NoActionBar.FullScreen" parent="@style/Theme.MaterialComponents.Light.NoActionBar">
+    <style name="PlayerTheme" parent="Theme.MaterialComponents.Light.NoActionBar">
         <item name="android:windowNoTitle">true</item>
         <item name="android:windowActionBar">false</item>
         <item name="android:windowFullscreen">true</item>
