@@ -10,8 +10,8 @@ android {
         applicationId "org.mosad.teapod"
         minSdkVersion 23
         targetSdkVersion 30
-        versionCode 1
-        versionName "0.1-alpha4"
+        versionCode 1000 //00.01.0000
+        versionName "0.1.0"
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         resValue "string", "build_time", buildTime()

@@ -1,0 +1,11 @@
+Teapod ist eine inoffizielle App für Anime-on-Demand (AoD).
+
+* Schau dir alle Title von AoD auf deinem Android Gerät an
+* Nativer Player auf Basis des ExoPayers
+* Bevorzuge die OmU Version über die App-Einstellungen
+* Speicher deine lieblings Anime in "Meine Liste"
+
+Zur Verfügung gestellt unter den Bedingungen der GNU GPL 3 oder höher.
+Dieses Projekt ist in keiner Weise mit Anime-on-Demand verbunden.
+
+Bitte melde Fehler und Probleme an support@mosad.xyz
