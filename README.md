@@ -12,9 +12,10 @@ A unoffical App for Anime-on-Demand.
 * a alternative/secondary stream is currently not supported (for dub titles the subtitle version is missing)
 
 ## Screenshots
-[<img src="https://www.mosad.xyz/images/Teapod/Teapod_Library.png" width=180>](https://www.mosad.xyz/images/Teapod/Teapod_Library.png)
-[<img src="https://www.mosad.xyz/images/Teapod/Teapod_Media.png" width=180>](https://www.mosad.xyz/images/Teapod/Teapod_Media.png)
-[<img src="https://www.mosad.xyz/images/Teapod/Teapod_Search.png" width=180>](https://www.mosad.xyz/images/Teapod/Teapod_Search.png)
+[<img src="https://www.mosad.xyz/images/Teapod/Teapod_Home_200px.png" width=180>](https://www.mosad.xyz/images/Teapod/Teapod_Home.png)
+[<img src="https://www.mosad.xyz/images/Teapod/Teapod_Library_200px.png" width=180>](https://www.mosad.xyz/images/Teapod/Teapod_Library.png)
+[<img src="https://www.mosad.xyz/images/Teapod/Teapod_Media_200px.png" width=180>](https://www.mosad.xyz/images/Teapod/Teapod_Media.png)
+[<img src="https://www.mosad.xyz/images/Teapod/Teapod_Search_200px.png" width=180>](https://www.mosad.xyz/images/Teapod/Teapod_Search.png)
 
 ### License
 This App is licensed under the terms and conditions of GPL 3. This Project is not associated with Anime-on-Demand in any way.
