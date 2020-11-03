@@ -29,7 +29,7 @@ class MediaFragment(private val media: Media, private val tmdb: TMDBResponse) : 
 
     private lateinit var adapterRecEpisodes: EpisodeItemAdapter
     private lateinit var viewManager: RecyclerView.LayoutManager
-
+    private lateinit var nextEpisode: Episode
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
         return inflater.inflate(R.layout.fragment_media, container, false)
@@ -76,6 +76,16 @@ class MediaFragment(private val media: Media, private val tmdb: TMDBResponse) : 
             recycler_episodes.adapter = adapterRecEpisodes
 
             text_episodes_or_runtime.text = getString(R.string.text_episodes_count, media.info.episodesCount)
+
+            // get next episode
+            nextEpisode = if (media.episodes.firstOrNull{ !it.watched } != null) {
+                media.episodes.first{ !it.watched }
+            } else {
+                media.episodes.first()
+            }
+
+            // title is the next episodes title
+            text_title.text = nextEpisode.title
         } else if (media.type == MediaType.MOVIE) {
             recycler_episodes.visibility = View.GONE
 
@@ -91,7 +101,7 @@ class MediaFragment(private val media: Media, private val tmdb: TMDBResponse) : 
         button_play.setOnClickListener {
             when (media.type) {
                 MediaType.MOVIE -> playStream(media.episodes.first())
-                MediaType.TVSHOW -> playStream(media.episodes.first())
+                MediaType.TVSHOW -> playEpisode(nextEpisode)
                 else -> Log.e(javaClass.name, "Wrong Type: $media.type")
             }
         }
@@ -116,14 +126,26 @@ class MediaFragment(private val media: Media, private val tmdb: TMDBResponse) : 
         // set onItemClick only in adapter is initialized
         if (this::adapterRecEpisodes.isInitialized) {
             adapterRecEpisodes.onImageClick = { _, position ->
-                playStream(media.episodes[position])
-
-                // update watched state
-                AoDParser.sendCallback(media.episodes[position].watchedCallback)
-                adapterRecEpisodes.updateWatchedState(true, position)
-                adapterRecEpisodes.notifyDataSetChanged()
+                playEpisode(media.episodes[position])
             }
         }
+    }
+
+    private fun playEpisode(ep: Episode) {
+        playStream(ep)
+
+        // update watched state
+        AoDParser.sendCallback(ep.watchedCallback)
+        adapterRecEpisodes.updateWatchedState(true, media.episodes.indexOf(ep))
+        adapterRecEpisodes.notifyDataSetChanged()
+
+        // update nextEpisode
+        nextEpisode = if (media.episodes.firstOrNull{ !it.watched } != null) {
+            media.episodes.first{ !it.watched }
+        } else {
+            media.episodes.first()
+        }
+        text_title.text = nextEpisode.title
     }
 
     /**
