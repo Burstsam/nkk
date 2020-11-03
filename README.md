@@ -1,6 +1,6 @@
 # teapod
 
-A unoffical App for Anime-on-Demand.
+A unofficial App for Anime-on-Demand.
 
 ## Features
 * acces all media in the library
