@@ -17,7 +17,7 @@ import com.google.android.exoplayer2.upstream.DataSource
 import com.google.android.exoplayer2.upstream.DefaultDataSourceFactory
 import com.google.android.exoplayer2.util.Util
 import kotlinx.android.synthetic.main.activity_player.*
-
+import kotlinx.android.synthetic.main.player_controls.*
 
 class PlayerActivity : AppCompatActivity() {
 
@@ -30,6 +30,8 @@ class PlayerActivity : AppCompatActivity() {
     private var currentWindow = 0
     private var playbackPosition: Long = 0
 
+    private val rwdTime = 10000
+    private val fwdTime = 10000
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -41,8 +43,9 @@ class PlayerActivity : AppCompatActivity() {
             playbackPosition = it.getLong(getString(R.string.state_resume_position))
             playWhenReady = it.getBoolean(getString(R.string.state_is_playing))
         }
-
         streamUrl = intent.getStringExtra(getString(R.string.intent_stream_url)).toString()
+
+        initActions()
     }
 
 
@@ -112,6 +115,12 @@ class PlayerActivity : AppCompatActivity() {
                     ExoPlayer.STATE_BUFFERING -> View.VISIBLE
                     else -> View.GONE
                 }
+
+                exo_play_pause.visibility = when (loading.visibility) {
+                    View.GONE -> View.VISIBLE
+                    View.VISIBLE -> View.INVISIBLE
+                    else -> View.VISIBLE
+                }
             }
         })
 
@@ -121,6 +130,16 @@ class PlayerActivity : AppCompatActivity() {
         }
 
         video_view.player = player
+    }
+
+    private fun initActions() {
+        exo_rew_10.setOnClickListener {
+            player.seekTo(player.currentPosition - rwdTime)
+        }
+
+        exo_ffwd_10.setOnClickListener {
+            player.seekTo(player.currentPosition + fwdTime)
+        }
     }
 
     private fun releasePlayer(){
