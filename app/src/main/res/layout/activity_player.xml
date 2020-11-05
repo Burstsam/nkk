@@ -8,14 +8,14 @@
     android:background="#000000"
     tools:context=".PlayerActivity">
 
-    <com.google.android.exoplayer2.ui.PlayerView
+    <com.google.android.exoplayer2.ui.StyledPlayerView
         android:id="@+id/video_view"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:layout_gravity="center"
         app:fastforward_increment="10000"
-        app:rewind_increment="10000" />
-    <!--    app:controller_layout_id="@layout/player_custom_control"/>-->
+        app:rewind_increment="10000"/>
+        <!--app:controller_layout_id="@layout/player_controls"/>-->
 
     <com.google.android.material.progressindicator.ProgressIndicator
         android:id="@+id/loading"
