@@ -6,10 +6,8 @@ A unofficial App for Anime-on-Demand.
 * acces all media in the library
 * search the library
 * play movies/tv shows via integrated exoplayer
-* add movies/tv shows to you list, for easier access
-
-### Missing Features
-* a alternative/secondary stream is currently not supported (for dub titles the subtitle version is missing)
+* add movies/tv shows to "My List", for easier access
+* prefer the OmU version via the app settings
 
 ## Screenshots
 [<img src="https://www.mosad.xyz/images/Teapod/Teapod_Home_200px.png" width=180>](https://www.mosad.xyz/images/Teapod/Teapod_Home.png)
