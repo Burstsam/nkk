@@ -13,6 +13,7 @@ import com.google.android.exoplayer2.MediaItem
 import com.google.android.exoplayer2.Player
 import com.google.android.exoplayer2.SimpleExoPlayer
 import com.google.android.exoplayer2.source.hls.HlsMediaSource
+import com.google.android.exoplayer2.ui.StyledPlayerControlView
 import com.google.android.exoplayer2.upstream.DataSource
 import com.google.android.exoplayer2.upstream.DefaultDataSourceFactory
 import com.google.android.exoplayer2.util.Util
@@ -23,6 +24,7 @@ class PlayerActivity : AppCompatActivity() {
 
     private lateinit var player: SimpleExoPlayer
     private lateinit var dataSourceFactory: DataSource.Factory
+    private lateinit var controller: StyledPlayerControlView
 
     private var streamUrl = ""
 
@@ -96,6 +98,7 @@ class PlayerActivity : AppCompatActivity() {
 
         player = SimpleExoPlayer.Builder(this).build()
         dataSourceFactory = DefaultDataSourceFactory(this, Util.getUserAgent(this, "Teapod"))
+        controller = video_view.findViewById<StyledPlayerControlView>(R.id.exo_controller)
 
         val mediaSource = HlsMediaSource.Factory(dataSourceFactory)
             .createMediaSource(MediaItem.fromUri(Uri.parse(streamUrl)))
@@ -123,6 +126,9 @@ class PlayerActivity : AppCompatActivity() {
                 }
             }
         })
+
+        // disable controls animation (time-bar) TODO enable and hide time to end with animation
+        controller.isAnimationEnabled = false
 
         // when the player controls get hidden, hide the bars too
         video_view.setControllerVisibilityListener {
