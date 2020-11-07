@@ -39,6 +39,14 @@
     <string name="settings_secondary">Prefer secondary (sub) stream</string>
     <string name="settings_secondary_desc">Use the subtitles stream if present</string>
 
+    <!-- player -->
+    <string name="close_player">close player</string>
+    <string name="rewind_10">rewind 10 seconds</string>
+    <string name="play_pause">play/pause</string>
+    <string name="forward_10">forward 10 seconds</string>
+    <string name="time_min_sec" translatable="false">%1$02d:%2$02d</string>
+    <string name="time_hour_min_sec" translatable="false">%1$d:%2$02d:%3$02d</string>
+
     <!-- dialogs -->
     <string name="save">save</string>
     <string name="cancel">@android:string/cancel</string>
@@ -48,8 +56,6 @@
     <string name="login_desc">You need to login before you can use Teapod. The Login-Data will be stored encrypted on your device.</string>
     <string name="login_failed_desc">Could not login. Please try again.</string>
     <string name="password">Password</string>
-    <string name="time_min_sec" translatable="false">%1$02d:%2$02d</string>
-    <string name="time_hour_min_sec" translatable="false">%1$d:%2$02d:%3$02d</string>
 
     <!-- save keys -->
     <string name="encrypted_preference_file_key" translatable="false">org.mosad.teapod.encrypted_preferences</string>
@@ -60,6 +66,7 @@
 
     <!-- intents & states -->
     <string name="intent_stream_url" translatable="false">intent_stream_url</string>
+    <string name="intent_title" translatable="false">intent_title</string>
     <string name="state_resume_window" translatable="false">state_resume_window</string>
     <string name="state_resume_position" translatable="false">state_resume_position</string>
     <string name="state_is_playing" translatable="false">state_is_playing</string>

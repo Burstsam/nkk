@@ -30,6 +30,11 @@
     <string name="settings_secondary">Bevorzuge alternativen Stream</string>
     <string name="settings_secondary_desc">Untertitle-Stream verwenden, sofern vorhanden</string>
 
+    <!-- player -->
+    <string name="close_player">Player schließen</string>
+    <string name="rewind_10">10 Sekunden zurück</string>
+    <string name="play_pause">Abspielen/Pause</string>
+    <string name="forward_10">10 Sekunden vorwärts</string>
     <!-- dialogs -->
     <string name="save">speichern</string>
     <string name="cancel">@android:string/cancel</string>

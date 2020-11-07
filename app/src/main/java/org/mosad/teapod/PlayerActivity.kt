@@ -25,6 +25,7 @@ class PlayerActivity : AppCompatActivity() {
     private lateinit var controller: StyledPlayerControlView
 
     private var streamUrl = ""
+    private var title = ""
 
     private var playWhenReady = true
     private var currentWindow = 0
@@ -45,6 +46,7 @@ class PlayerActivity : AppCompatActivity() {
             playWhenReady = it.getBoolean(getString(R.string.state_is_playing))
         }
         streamUrl = intent.getStringExtra(getString(R.string.intent_stream_url)).toString()
+        title = intent.getStringExtra(getString(R.string.intent_title)).toString()
 
         initActions()
     }
@@ -107,7 +109,6 @@ class PlayerActivity : AppCompatActivity() {
         player.seekTo(playbackPosition)
         player.prepare()
 
-
         player.addListener(object : Player.EventListener {
             override fun onPlaybackStateChanged(state: Int) {
                 super.onPlaybackStateChanged(state)
@@ -125,6 +126,7 @@ class PlayerActivity : AppCompatActivity() {
                 }
             }
         })
+        video_view.player = player
 
         // when the player controls get hidden, hide the bars too
         video_view.setControllerVisibilityListener {
@@ -149,10 +151,14 @@ class PlayerActivity : AppCompatActivity() {
             }
         }
 
-        video_view.player = player
+        exo_text_title.text = title // set media title
     }
 
     private fun initActions() {
+        exo_close_player.setOnClickListener {
+            this.finish()
+        }
+
         exo_rew_10.setOnClickListener {
             player.seekTo(player.currentPosition - rwdTime)
         }
@@ -167,6 +173,8 @@ class PlayerActivity : AppCompatActivity() {
         currentWindow = player.currentWindowIndex
         playWhenReady = player.playWhenReady
         player.release()
+
+        Log.d(javaClass.name, "Released player")
     }
 
     /**

@@ -164,7 +164,7 @@ class MediaFragment(private val media: Media, private val tmdb: TMDBResponse) : 
         }
 
         Log.d(javaClass.name, "Playing stream: $streamUrl")
-        (activity as MainActivity).startPlayer(streamUrl)
+        (activity as MainActivity).startPlayer(streamUrl, ep.title)
     }
 
 }

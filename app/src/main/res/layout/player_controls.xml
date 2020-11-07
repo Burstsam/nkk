@@ -1,10 +1,37 @@
 <?xml version="1.0" encoding="utf-8"?>
 <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="#73000000">
+
+    <LinearLayout
+        android:id="@+id/exo_top_controls"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="12dp"
+        android:layout_marginTop="7dp"
+        android:layout_marginEnd="12dp"
+        android:gravity="center"
+        android:orientation="horizontal">
+
+        <ImageButton
+            android:id="@+id/exo_close_player"
+            style="@style/ExoStyledControls.Button.Center"
+            android:layout_width="34dp"
+            android:layout_height="34dp"
+            android:contentDescription="@string/close_player"
+            app:srcCompat="@drawable/ic_baseline_arrow_back_24" />
+
+        <TextView
+            android:id="@+id/exo_text_title"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginEnd="34dp"
+            android:text="@string/text_title_ex"
+            android:textAlignment="center"
+            android:textColor="@color/exo_white" />
+    </LinearLayout>
 
     <LinearLayout
         android:id="@+id/exo_main_controls"
@@ -24,7 +51,8 @@
             style="@style/ExoStyledControls.Button.Center.RewWithAmount"
             android:layout_width="42dp"
             android:layout_height="42dp"
-            android:tint="@color/exo_white"/>
+            android:contentDescription="@string/rewind_10"
+            android:tint="@color/exo_white" />
 
 
         <Space
@@ -37,7 +65,8 @@
             style="@style/ExoStyledControls.Button.Center.PlayPause"
             android:layout_width="52dp"
             android:layout_height="52dp"
-            android:layout_gravity="center" />
+            android:layout_gravity="center"
+            android:contentDescription="@string/play_pause" />
 
         <Space
             android:layout_width="0dp"
@@ -48,7 +77,8 @@
             android:id="@+id/exo_ffwd_10"
             style="@style/ExoStyledControls.Button.Center.FfwdWithAmount"
             android:layout_width="42dp"
-            android:layout_height="42dp" />
+            android:layout_height="42dp"
+            android:contentDescription="@string/forward_10" />
 
         <Space
             android:layout_width="0dp"
@@ -57,18 +87,13 @@
     </LinearLayout>
 
     <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/exo_time_controls"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_gravity="bottom"
-        android:layout_marginStart="7dp"
-        android:layout_marginEnd="7dp"
+        android:layout_marginStart="12dp"
+        android:layout_marginEnd="12dp"
         android:layout_marginBottom="@dimen/exo_styled_progress_margin_bottom">
-
-        <TextView
-            android:id="@+id/exo_position"
-            style="@style/ExoStyledControls.TimeText.Position"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent" />
 
         <View
             android:id="@+id/exo_progress_placeholder"
@@ -76,7 +101,7 @@
             android:layout_height="@dimen/exo_styled_progress_layout_height"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toStartOf="@+id/exo_remaining"
-            app:layout_constraintStart_toEndOf="@+id/exo_position"
+            app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent" />
 
         <TextView
@@ -86,6 +111,5 @@
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintTop_toTopOf="parent" />
     </androidx.constraintlayout.widget.ConstraintLayout>
-
 
 </FrameLayout>

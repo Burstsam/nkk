@@ -151,9 +151,10 @@ class MainActivity : AppCompatActivity(), BottomNavigationView.OnNavigationItemS
         }
     }
 
-    fun startPlayer(streamUrl: String) {
+    fun startPlayer(streamUrl: String, title: String) {
         val intent = Intent(this, PlayerActivity::class.java).apply {
             putExtra(getString(R.string.intent_stream_url), streamUrl)
+            putExtra(getString(R.string.intent_title), title)
         }
         startActivity(intent)
     }
