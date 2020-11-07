@@ -75,13 +75,13 @@
             android:layout_width="0dp"
             android:layout_height="@dimen/exo_styled_progress_layout_height"
             app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintEnd_toStartOf="@+id/exo_duration"
+            app:layout_constraintEnd_toStartOf="@+id/exo_remaining"
             app:layout_constraintStart_toEndOf="@+id/exo_position"
             app:layout_constraintTop_toTopOf="parent" />
 
         <TextView
-            android:id="@+id/exo_duration"
-            style="@style/ExoStyledControls.TimeText.Duration"
+            android:id="@+id/exo_remaining"
+            style="@style/ExoStyledControls.TimeText.Position"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintTop_toTopOf="parent" />

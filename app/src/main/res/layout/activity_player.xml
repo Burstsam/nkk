@@ -13,6 +13,7 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:layout_gravity="center"
+        android:animateLayoutChanges="true"
         app:fastforward_increment="10000"
         app:rewind_increment="10000"
         app:controller_layout_id="@layout/player_controls"/>

@@ -8,10 +8,7 @@ import android.view.View
 import android.view.WindowInsets
 import android.view.WindowInsetsController
 import androidx.appcompat.app.AppCompatActivity
-import com.google.android.exoplayer2.ExoPlayer
-import com.google.android.exoplayer2.MediaItem
-import com.google.android.exoplayer2.Player
-import com.google.android.exoplayer2.SimpleExoPlayer
+import com.google.android.exoplayer2.*
 import com.google.android.exoplayer2.source.hls.HlsMediaSource
 import com.google.android.exoplayer2.ui.StyledPlayerControlView
 import com.google.android.exoplayer2.upstream.DataSource
@@ -19,6 +16,7 @@ import com.google.android.exoplayer2.upstream.DefaultDataSourceFactory
 import com.google.android.exoplayer2.util.Util
 import kotlinx.android.synthetic.main.activity_player.*
 import kotlinx.android.synthetic.main.player_controls.*
+import java.util.concurrent.TimeUnit
 
 class PlayerActivity : AppCompatActivity() {
 
@@ -31,6 +29,7 @@ class PlayerActivity : AppCompatActivity() {
     private var playWhenReady = true
     private var currentWindow = 0
     private var playbackPosition: Long = 0
+    private var remainingTime: Long = 0
 
     private val rwdTime = 10000
     private val fwdTime = 10000
@@ -98,7 +97,7 @@ class PlayerActivity : AppCompatActivity() {
 
         player = SimpleExoPlayer.Builder(this).build()
         dataSourceFactory = DefaultDataSourceFactory(this, Util.getUserAgent(this, "Teapod"))
-        controller = video_view.findViewById<StyledPlayerControlView>(R.id.exo_controller)
+        controller = video_view.findViewById(R.id.exo_controller)
 
         val mediaSource = HlsMediaSource.Factory(dataSourceFactory)
             .createMediaSource(MediaItem.fromUri(Uri.parse(streamUrl)))
@@ -127,12 +126,27 @@ class PlayerActivity : AppCompatActivity() {
             }
         })
 
-        // disable controls animation (time-bar) TODO enable and hide time to end with animation
-        controller.isAnimationEnabled = false
-
         // when the player controls get hidden, hide the bars too
         video_view.setControllerVisibilityListener {
-            if (it == View.GONE) hideBars()
+            if (it == View.GONE) {
+                hideBars()
+            }
+        }
+
+        controller.isAnimationEnabled = false // disable controls (time-bar) animation
+        controller.setProgressUpdateListener { _, _ ->
+            remainingTime = player.duration - player.currentPosition
+
+            val hours =  TimeUnit.MILLISECONDS.toHours(remainingTime) % 24
+            val minutes = TimeUnit.MILLISECONDS.toMinutes(remainingTime) % 60
+            val seconds = TimeUnit.MILLISECONDS.toSeconds(remainingTime) % 60
+
+            // if remaining time is below 60 minutes, don't show hours
+            exo_remaining.text = if (TimeUnit.MILLISECONDS.toMinutes(remainingTime) < 60) {
+               getString(R.string.time_min_sec, minutes, seconds)
+            } else {
+               getString(R.string.time_hour_min_sec, hours, minutes, seconds)
+            }
         }
 
         video_view.player = player
