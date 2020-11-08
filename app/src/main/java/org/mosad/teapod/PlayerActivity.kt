@@ -1,14 +1,17 @@
 package org.mosad.teapod
 
+import android.annotation.SuppressLint
 import android.net.Uri
 import android.os.Build
 import android.os.Bundle
 import android.util.Log
-import android.view.View
-import android.view.WindowInsets
-import android.view.WindowInsetsController
+import android.view.*
 import androidx.appcompat.app.AppCompatActivity
-import com.google.android.exoplayer2.*
+import androidx.core.view.GestureDetectorCompat
+import com.google.android.exoplayer2.ExoPlayer
+import com.google.android.exoplayer2.MediaItem
+import com.google.android.exoplayer2.Player
+import com.google.android.exoplayer2.SimpleExoPlayer
 import com.google.android.exoplayer2.source.hls.HlsMediaSource
 import com.google.android.exoplayer2.ui.StyledPlayerControlView
 import com.google.android.exoplayer2.upstream.DataSource
@@ -23,6 +26,7 @@ class PlayerActivity : AppCompatActivity() {
     private lateinit var player: SimpleExoPlayer
     private lateinit var dataSourceFactory: DataSource.Factory
     private lateinit var controller: StyledPlayerControlView
+    private lateinit var gestureDetector: GestureDetectorCompat
 
     private var streamUrl = ""
     private var title = ""
@@ -47,6 +51,8 @@ class PlayerActivity : AppCompatActivity() {
         }
         streamUrl = intent.getStringExtra(getString(R.string.intent_stream_url)).toString()
         title = intent.getStringExtra(getString(R.string.intent_title)).toString()
+
+        gestureDetector = GestureDetectorCompat(this, PlayerGestureListener())
 
         initActions()
     }
@@ -79,7 +85,7 @@ class PlayerActivity : AppCompatActivity() {
     override fun onStop() {
         super.onStop()
         if (Util.SDK_INT > 23) {
-            if (video_view != null) video_view.onPause()
+            video_view?.onPause()
             releasePlayer()
         }
     }
@@ -97,6 +103,12 @@ class PlayerActivity : AppCompatActivity() {
             return
         }
 
+        initExoPlayer()
+        initVideoView()
+        initController()
+    }
+
+    private fun initExoPlayer() {
         player = SimpleExoPlayer.Builder(this).build()
         dataSourceFactory = DefaultDataSourceFactory(this, Util.getUserAgent(this, "Teapod"))
         controller = video_view.findViewById(R.id.exo_controller)
@@ -126,6 +138,10 @@ class PlayerActivity : AppCompatActivity() {
                 }
             }
         })
+    }
+
+    @SuppressLint("ClickableViewAccessibility")
+    private fun initVideoView() {
         video_view.player = player
 
         // when the player controls get hidden, hide the bars too
@@ -135,6 +151,13 @@ class PlayerActivity : AppCompatActivity() {
             }
         }
 
+        video_view.setOnTouchListener { _, event ->
+            gestureDetector.onTouchEvent(event)
+            true
+        }
+    }
+
+    private fun initController() {
         controller.isAnimationEnabled = false // disable controls (time-bar) animation
         controller.setProgressUpdateListener { _, _ ->
             remainingTime = player.duration - player.currentPosition
@@ -145,9 +168,9 @@ class PlayerActivity : AppCompatActivity() {
 
             // if remaining time is below 60 minutes, don't show hours
             exo_remaining.text = if (TimeUnit.MILLISECONDS.toMinutes(remainingTime) < 60) {
-               getString(R.string.time_min_sec, minutes, seconds)
+                getString(R.string.time_min_sec, minutes, seconds)
             } else {
-               getString(R.string.time_hour_min_sec, hours, minutes, seconds)
+                getString(R.string.time_hour_min_sec, hours, minutes, seconds)
             }
         }
 
@@ -155,17 +178,9 @@ class PlayerActivity : AppCompatActivity() {
     }
 
     private fun initActions() {
-        exo_close_player.setOnClickListener {
-            this.finish()
-        }
-
-        exo_rew_10.setOnClickListener {
-            player.seekTo(player.currentPosition - rwdTime)
-        }
-
-        exo_ffwd_10.setOnClickListener {
-            player.seekTo(player.currentPosition + fwdTime)
-        }
+        exo_close_player.setOnClickListener { this.finish() }
+        exo_rew_10.setOnClickListener { rewind() }
+        exo_ffwd_10.setOnClickListener { forward() }
     }
 
     private fun releasePlayer(){
@@ -176,6 +191,15 @@ class PlayerActivity : AppCompatActivity() {
 
         Log.d(javaClass.name, "Released player")
     }
+
+    private fun rewind() {
+        player.seekTo(player.currentPosition - rwdTime)
+    }
+
+    private fun forward() {
+        player.seekTo(player.currentPosition + fwdTime)
+    }
+
 
     /**
      * hide the status and navigation bar
@@ -197,4 +221,42 @@ class PlayerActivity : AppCompatActivity() {
                     or View.SYSTEM_UI_FLAG_FULLSCREEN)
         }
     }
+
+    inner class PlayerGestureListener : GestureDetector.SimpleOnGestureListener() {
+
+        /**
+         * on single tap hide or show the controls
+         */
+        override fun onSingleTapConfirmed(e: MotionEvent?): Boolean {
+            if (controller.isVisible) controller.hide() else  controller.show()
+            return true
+        }
+
+        /**
+         * on double tap rewind or forward
+         */
+        override fun onDoubleTap(e: MotionEvent?): Boolean {
+            val eventPos = e?.x?.toInt() ?: 0
+            val viewCenter = video_view.measuredWidth / 2
+
+            // TODO show indicator for tap action
+            // if the event position is on the left side rewind, if it's on the right forward
+            if (eventPos < viewCenter) {
+                rewind()
+            } else {
+                forward()
+            }
+
+            return true
+        }
+
+        /**
+         * not used
+         */
+        override fun onDoubleTapEvent(e: MotionEvent?): Boolean {
+            return true
+        }
+
+    }
+
 }

@@ -18,7 +18,6 @@ data class ItemMedia(
     val posterUrl: String
 )
 
-
 /**
  * TODO the episodes workflow could use a clean up/rework
  */
