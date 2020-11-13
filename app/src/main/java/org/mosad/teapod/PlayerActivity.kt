@@ -219,7 +219,7 @@ class PlayerActivity : AppCompatActivity() {
             if (remainingTime in 0..20000) {
                 withContext(Dispatchers.Main) {
                     // if the next ep button is not visible, make it visible
-                    if (!button_next_ep.isVisible) {
+                    if (!button_next_ep.isVisible && nextEpisode != null) {
                         button_next_ep.visibility = View.VISIBLE // TODO animation
                     }
                 }
