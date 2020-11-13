@@ -19,6 +19,11 @@ import com.google.android.exoplayer2.upstream.DefaultDataSourceFactory
 import com.google.android.exoplayer2.util.Util
 import kotlinx.android.synthetic.main.activity_player.*
 import kotlinx.android.synthetic.main.player_controls.*
+import org.mosad.teapod.parser.AoDParser
+import org.mosad.teapod.preferences.Preferences
+import org.mosad.teapod.util.DataTypes.MediaType
+import org.mosad.teapod.util.Episode
+import org.mosad.teapod.util.Media
 import java.util.concurrent.TimeUnit
 
 class PlayerActivity : AppCompatActivity() {
@@ -29,7 +34,13 @@ class PlayerActivity : AppCompatActivity() {
     private lateinit var gestureDetector: GestureDetectorCompat
 
     private var streamUrl = ""
-    private var title = ""
+
+    private var mediaId = 0
+    private var episodeId = 0
+
+    private var media: Media = Media(0, "", MediaType.OTHER)
+    private var currentEpisode = Episode()
+    private var nextEpisode: Episode? = null
 
     private var playWhenReady = true
     private var currentWindow = 0
@@ -49,8 +60,9 @@ class PlayerActivity : AppCompatActivity() {
             playbackPosition = it.getLong(getString(R.string.state_resume_position))
             playWhenReady = it.getBoolean(getString(R.string.state_is_playing))
         }
-        streamUrl = intent.getStringExtra(getString(R.string.intent_stream_url)).toString()
-        title = intent.getStringExtra(getString(R.string.intent_title)).toString()
+
+        mediaId = intent.getIntExtra(getString(R.string.intent_media_id), 0)
+        episodeId = intent.getIntExtra(getString(R.string.intent_episode_id), 0)
 
         gestureDetector = GestureDetectorCompat(this, PlayerGestureListener())
 
@@ -98,14 +110,28 @@ class PlayerActivity : AppCompatActivity() {
     }
 
     private fun initPlayer() {
-        if (streamUrl.isEmpty()) {
-            Log.e(javaClass.name, "No stream url was set.")
-            return
+        if (mediaId <= 0) {
+            Log.e(javaClass.name, "No media id was set.")
+            this.finish()
         }
 
+        initMedia()
         initExoPlayer()
         initVideoView()
         initController()
+    }
+
+    private fun initMedia() {
+        media = AoDParser.getMediaById(mediaId)
+        currentEpisode = media.episodes.first { it.id == episodeId }
+        streamUrlFromEp(currentEpisode) // get current stream
+
+        // get next episode if present
+        val nextEpIndex = media.episodes.indexOfFirst { it.id == episodeId } + 1
+        if (nextEpIndex < (media.episodes.size - 1)) {
+            println("has next episode")
+            nextEpisode = media.episodes[nextEpIndex]
+        }
     }
 
     private fun initExoPlayer() {
@@ -174,7 +200,7 @@ class PlayerActivity : AppCompatActivity() {
             }
         }
 
-        exo_text_title.text = title // set media title
+        exo_text_title.text = currentEpisode.title // set media title
     }
 
     private fun initActions() {
@@ -198,6 +224,30 @@ class PlayerActivity : AppCompatActivity() {
 
     private fun forward() {
         player.seekTo(player.currentPosition + fwdTime)
+    }
+
+    @Suppress("unused")
+    private fun playNextEpisode() {
+        nextEpisode?.let { streamUrlFromEp(it) }
+        // TODO play
+        // TODO set next episode if present
+    }
+
+    /**
+     * If preferSecondary or priStreamUrl is empty and secondary is present (secStreamOmU),
+     * use the secondary stream. Else, if the primary stream is set use the primary stream.
+     * If no stream is present, close the activity.
+     */
+    private fun streamUrlFromEp(episode: Episode) {
+        streamUrl = if ((Preferences.preferSecondary || episode.priStreamUrl.isEmpty()) && episode.secStreamOmU) {
+            episode.secStreamUrl
+        } else if (episode.priStreamUrl.isNotEmpty()) {
+            episode.priStreamUrl
+        } else {
+            Log.e(javaClass.name, "No stream url set.")
+            this.finish()
+            return
+        }
     }
 
 

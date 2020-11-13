@@ -65,8 +65,8 @@
     <string name="save_key_prefer_secondary" translatable="false">org.mosad.teapod.prefer_secondary</string>
 
     <!-- intents & states -->
-    <string name="intent_stream_url" translatable="false">intent_stream_url</string>
-    <string name="intent_title" translatable="false">intent_title</string>
+    <string name="intent_media_id" translatable="false">intent_media_id</string>
+    <string name="intent_episode_id" translatable="false">intent_episode_id</string>
     <string name="state_resume_window" translatable="false">state_resume_window</string>
     <string name="state_resume_position" translatable="false">state_resume_position</string>
     <string name="state_is_playing" translatable="false">state_is_playing</string>

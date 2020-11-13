@@ -151,10 +151,10 @@ class MainActivity : AppCompatActivity(), BottomNavigationView.OnNavigationItemS
         }
     }
 
-    fun startPlayer(streamUrl: String, title: String) {
+    fun startPlayer(mediaId: Int, episodeId: Int) {
         val intent = Intent(this, PlayerActivity::class.java).apply {
-            putExtra(getString(R.string.intent_stream_url), streamUrl)
-            putExtra(getString(R.string.intent_title), title)
+            putExtra(getString(R.string.intent_media_id), mediaId)
+            putExtra(getString(R.string.intent_episode_id), episodeId)
         }
         startActivity(intent)
     }

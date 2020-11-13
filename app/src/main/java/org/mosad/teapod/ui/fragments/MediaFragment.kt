@@ -148,23 +148,9 @@ class MediaFragment(private val media: Media, private val tmdb: TMDBResponse) : 
         text_title.text = nextEpisode.title
     }
 
-    /**
-     * Play the media's stream
-     * If prefer secondary or primary is empty and secondary is present (secStreamOmU),
-     * use the secondary stream. Else, if the primary stream is set use the primary stream.
-     */
     private fun playStream(ep: Episode) {
-        val streamUrl = if ((Preferences.preferSecondary || ep.priStreamUrl.isEmpty()) && ep.secStreamOmU) {
-            ep.secStreamUrl
-        } else if (ep.priStreamUrl.isNotEmpty()) {
-            ep.priStreamUrl
-        } else {
-            Log.e(javaClass.name, "No stream url set.")
-            ""
-        }
-
-        Log.d(javaClass.name, "Playing stream: $streamUrl")
-        (activity as MainActivity).startPlayer(streamUrl, ep.title)
+        Log.d(javaClass.name, "Starting Player with  mediaId: ${media.id}")
+        (activity as MainActivity).startPlayer(media.id, ep.id)
     }
 
 }
