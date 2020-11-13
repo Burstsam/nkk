@@ -73,6 +73,7 @@ object AoDParser {
 
             val resLogin = Jsoup.connect(baseUrl + loginPath)
                 .method(Connection.Method.POST)
+                .timeout(60000) // login can take some time
                 .data(data)
                 .postDataCharset("UTF-8")
                 .cookies(authCookies)

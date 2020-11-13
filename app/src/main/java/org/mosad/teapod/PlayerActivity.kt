@@ -8,6 +8,7 @@ import android.util.Log
 import android.view.*
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.GestureDetectorCompat
+import androidx.core.view.isVisible
 import com.google.android.exoplayer2.ExoPlayer
 import com.google.android.exoplayer2.MediaItem
 import com.google.android.exoplayer2.Player
@@ -19,6 +20,7 @@ import com.google.android.exoplayer2.upstream.DefaultDataSourceFactory
 import com.google.android.exoplayer2.util.Util
 import kotlinx.android.synthetic.main.activity_player.*
 import kotlinx.android.synthetic.main.player_controls.*
+import kotlinx.coroutines.*
 import org.mosad.teapod.parser.AoDParser
 import org.mosad.teapod.preferences.Preferences
 import org.mosad.teapod.util.DataTypes.MediaType
@@ -32,8 +34,6 @@ class PlayerActivity : AppCompatActivity() {
     private lateinit var dataSourceFactory: DataSource.Factory
     private lateinit var controller: StyledPlayerControlView
     private lateinit var gestureDetector: GestureDetectorCompat
-
-    private var streamUrl = ""
 
     private var mediaId = 0
     private var episodeId = 0
@@ -119,19 +119,13 @@ class PlayerActivity : AppCompatActivity() {
         initExoPlayer()
         initVideoView()
         initController()
+        initTimeUpdates()
     }
 
     private fun initMedia() {
         media = AoDParser.getMediaById(mediaId)
         currentEpisode = media.episodes.first { it.id == episodeId }
-        streamUrlFromEp(currentEpisode) // get current stream
-
-        // get next episode if present
-        val nextEpIndex = media.episodes.indexOfFirst { it.id == episodeId } + 1
-        if (nextEpIndex < (media.episodes.size - 1)) {
-            println("has next episode")
-            nextEpisode = media.episodes[nextEpIndex]
-        }
+        nextEpisode = selectNextEpisode()
     }
 
     private fun initExoPlayer() {
@@ -140,7 +134,7 @@ class PlayerActivity : AppCompatActivity() {
         controller = video_view.findViewById(R.id.exo_controller)
 
         val mediaSource = HlsMediaSource.Factory(dataSourceFactory)
-            .createMediaSource(MediaItem.fromUri(Uri.parse(streamUrl)))
+            .createMediaSource(MediaItem.fromUri(Uri.parse(selectStream(currentEpisode))))
 
         player.playWhenReady = playWhenReady
         player.setMediaSource(mediaSource)
@@ -162,6 +156,11 @@ class PlayerActivity : AppCompatActivity() {
                     View.VISIBLE -> View.INVISIBLE
                     else -> View.VISIBLE
                 }
+
+                if (state == ExoPlayer.STATE_ENDED && nextEpisode != null) {
+                    playNextEpisode()
+                }
+
             }
         })
     }
@@ -198,6 +197,7 @@ class PlayerActivity : AppCompatActivity() {
             } else {
                 getString(R.string.time_hour_min_sec, hours, minutes, seconds)
             }
+
         }
 
         exo_text_title.text = currentEpisode.title // set media title
@@ -207,6 +207,26 @@ class PlayerActivity : AppCompatActivity() {
         exo_close_player.setOnClickListener { this.finish() }
         exo_rew_10.setOnClickListener { rewind() }
         exo_ffwd_10.setOnClickListener { forward() }
+        button_next_ep.setOnClickListener { playNextEpisode() }
+    }
+
+    private fun initTimeUpdates() = GlobalScope.launch {
+        while (true) {
+            val remainingTime = withContext(Dispatchers.Main) {
+                player.duration - player.currentPosition
+            }
+
+            if (remainingTime in 0..20000) {
+                withContext(Dispatchers.Main) {
+                    // if the next ep button is not visible, make it visible
+                    if (!button_next_ep.isVisible) {
+                        button_next_ep.visibility = View.VISIBLE // TODO animation
+                    }
+                }
+            }
+
+            delay(1000)
+        }
     }
 
     private fun releasePlayer(){
@@ -226,11 +246,23 @@ class PlayerActivity : AppCompatActivity() {
         player.seekTo(player.currentPosition + fwdTime)
     }
 
-    @Suppress("unused")
     private fun playNextEpisode() {
-        nextEpisode?.let { streamUrlFromEp(it) }
-        // TODO play
-        // TODO set next episode if present
+        nextEpisode?.let { nextEp ->
+            currentEpisode = nextEp // set current ep to next ep
+            episodeId = nextEp.id
+
+            // update the gui
+            exo_text_title.text = nextEp.title
+            button_next_ep.visibility = View.GONE // TODO animation
+
+            player.clearMediaItems() //remove previous item
+            val mediaSource = HlsMediaSource.Factory(dataSourceFactory)
+                .createMediaSource(MediaItem.fromUri(Uri.parse(selectStream(nextEp))))
+            player.setMediaSource(mediaSource)
+            player.prepare()
+
+            nextEpisode = selectNextEpisode()
+        }
     }
 
     /**
@@ -238,18 +270,30 @@ class PlayerActivity : AppCompatActivity() {
      * use the secondary stream. Else, if the primary stream is set use the primary stream.
      * If no stream is present, close the activity.
      */
-    private fun streamUrlFromEp(episode: Episode) {
-        streamUrl = if ((Preferences.preferSecondary || episode.priStreamUrl.isEmpty()) && episode.secStreamOmU) {
+    private fun selectStream(episode: Episode): String {
+        return if ((Preferences.preferSecondary || episode.priStreamUrl.isEmpty()) && episode.secStreamOmU) {
             episode.secStreamUrl
         } else if (episode.priStreamUrl.isNotEmpty()) {
             episode.priStreamUrl
         } else {
             Log.e(javaClass.name, "No stream url set.")
             this.finish()
-            return
+            ""
         }
     }
 
+    /**
+     * Based on the current episodeId, get the next episode. If there is no next
+     * episode, return null
+     */
+    private fun selectNextEpisode(): Episode? {
+        val nextEpIndex = media.episodes.indexOfFirst { it.id == currentEpisode.id } + 1
+        return if (nextEpIndex < (media.episodes.size)) {
+            media.episodes[nextEpIndex]
+        } else {
+            null
+        }
+    }
 
     /**
      * hide the status and navigation bar

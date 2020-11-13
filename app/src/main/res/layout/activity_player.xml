@@ -24,6 +24,23 @@
         android:layout_width="70dp"
         android:layout_height="70dp"
         android:layout_gravity="center"
+        app:indicatorColor="@color/exo_white"
         tools:visibility="visible" />
+
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/button_next_ep"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="bottom|end"
+        android:layout_marginEnd="12dp"
+        android:layout_marginBottom="70dp"
+        android:gravity="center"
+        android:text="@string/next_episode"
+        android:textAllCaps="false"
+        android:textColor="@android:color/primary_text_light"
+        android:textSize="16sp"
+        android:visibility="gone"
+        app:backgroundTint="@color/exo_white"
+        app:iconGravity="textStart" />
 
 </FrameLayout>
