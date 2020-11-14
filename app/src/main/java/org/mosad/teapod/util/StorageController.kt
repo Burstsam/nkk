@@ -1,10 +1,12 @@
 package org.mosad.teapod.util
 
 import android.content.Context
+import android.util.Log
 import com.google.gson.Gson
-import com.google.gson.GsonBuilder
+import com.google.gson.JsonParser
 import kotlinx.coroutines.*
 import java.io.File
+import java.lang.Exception
 
 /**
  * This controller contains the logic for permanently saved data.
@@ -21,17 +23,21 @@ object StorageController {
 
         if (!file.exists()) runBlocking { saveMyList(context).join() }
 
-        myList.clear()
-        myList.addAll(
-            GsonBuilder().create().fromJson(file.readText(), ArrayList<Int>().javaClass)
-        )
+        try {
+            myList.clear()
+            myList.addAll(JsonParser.parseString(file.readText()).asJsonArray.map { it.asInt }.distinct())
+        } catch (ex: Exception) {
+            myList.clear()
+            Log.e(javaClass.name, "Parsing of My-List failed.")
+        }
+
     }
 
     fun saveMyList(context: Context): Job {
         val file = File(context.filesDir, fileNameMyList)
 
         return GlobalScope.launch(Dispatchers.IO) {
-            file.writeText(Gson().toJson(myList))
+            file.writeText(Gson().toJson(myList.distinct()))
         }
     }
 
