@@ -6,12 +6,15 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
 import kotlinx.android.synthetic.main.fragment_library.*
-import kotlinx.coroutines.*
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import org.mosad.teapod.MainActivity
 import org.mosad.teapod.R
 import org.mosad.teapod.parser.AoDParser
-import org.mosad.teapod.util.decoration.MediaItemDecoration
 import org.mosad.teapod.util.adapter.MediaItemAdapter
+import org.mosad.teapod.util.decoration.MediaItemDecoration
 
 class LibraryFragment : Fragment() {
 

@@ -1,5 +1,7 @@
 package org.mosad.teapod
 
+import android.animation.Animator
+import android.animation.AnimatorListenerAdapter
 import android.annotation.SuppressLint
 import android.net.Uri
 import android.os.Build
@@ -27,6 +29,7 @@ import org.mosad.teapod.util.DataTypes.MediaType
 import org.mosad.teapod.util.Episode
 import org.mosad.teapod.util.Media
 import java.util.concurrent.TimeUnit
+
 
 class PlayerActivity : AppCompatActivity() {
 
@@ -157,7 +160,7 @@ class PlayerActivity : AppCompatActivity() {
                     else -> View.VISIBLE
                 }
 
-                if (state == ExoPlayer.STATE_ENDED && nextEpisode != null) {
+                if (state == ExoPlayer.STATE_ENDED && nextEpisode != null && Preferences.autoplay) {
                     playNextEpisode()
                 }
 
@@ -219,8 +222,14 @@ class PlayerActivity : AppCompatActivity() {
             if (remainingTime in 0..20000) {
                 withContext(Dispatchers.Main) {
                     // if the next ep button is not visible, make it visible
-                    if (!button_next_ep.isVisible && nextEpisode != null) {
-                        button_next_ep.visibility = View.VISIBLE // TODO animation
+                    if (!button_next_ep.isVisible && nextEpisode != null && Preferences.autoplay) {
+                        showButtonNextEp()
+                    }
+                }
+            } else {
+                withContext(Dispatchers.Main) {
+                    if (button_next_ep.isVisible) {
+                        hideButtonNextEp()
                     }
                 }
             }
@@ -253,7 +262,7 @@ class PlayerActivity : AppCompatActivity() {
 
             // update the gui
             exo_text_title.text = nextEp.title
-            button_next_ep.visibility = View.GONE // TODO animation
+            hideButtonNextEp()
 
             player.clearMediaItems() //remove previous item
             val mediaSource = HlsMediaSource.Factory(dataSourceFactory)
@@ -315,6 +324,36 @@ class PlayerActivity : AppCompatActivity() {
                     or View.SYSTEM_UI_FLAG_FULLSCREEN)
         }
     }
+
+    /**
+     * show the next episode button
+     * TODO improve the show animation
+     */
+    private fun showButtonNextEp() {
+        button_next_ep.visibility = View.VISIBLE
+        button_next_ep.alpha = 0.0f
+
+        button_next_ep.animate()
+            .alpha(1.0f)
+            .setListener(null)
+    }
+
+    /**
+     * hide the next episode button
+     * TODO improve the hide animation
+     */
+    private fun hideButtonNextEp() {
+        button_next_ep.animate()
+            .alpha(0.0f)
+            .setListener(object : AnimatorListenerAdapter() {
+            override fun onAnimationEnd(animation: Animator?) {
+                super.onAnimationEnd(animation)
+                button_next_ep.visibility = View.GONE
+            }
+        })
+
+    }
+
 
     inner class PlayerGestureListener : GestureDetector.SimpleOnGestureListener() {
 

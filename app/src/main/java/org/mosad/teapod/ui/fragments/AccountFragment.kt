@@ -28,6 +28,7 @@ class AccountFragment : Fragment() {
         text_account_login.text = EncryptedPreferences.login
         text_info_about_desc.text = getString(R.string.info_about_desc, BuildConfig.VERSION_NAME, getString(R.string.build_time))
         switch_secondary.isChecked = Preferences.preferSecondary
+        switch_autoplay.isChecked = Preferences.autoplay
 
         initActions()
     }
@@ -56,6 +57,10 @@ class AccountFragment : Fragment() {
 
         switch_secondary.setOnClickListener {
             Preferences.savePreferSecondary(requireContext(), switch_secondary.isChecked)
+        }
+
+        switch_autoplay.setOnClickListener {
+            Preferences.saveAutoplay(requireContext(), switch_autoplay.isChecked)
         }
     }
 

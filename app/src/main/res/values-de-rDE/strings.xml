@@ -29,6 +29,8 @@
     <string name="settings">Einstellungen</string>
     <string name="settings_secondary">Bevorzuge alternativen Stream</string>
     <string name="settings_secondary_desc">Untertitle-Stream verwenden, sofern vorhanden</string>
+    <string name="settings_autoplay">Autoplay</string>
+    <string name="settings_autoplay_desc">Nächste Episode automatisch abspielen</string>
 
     <!-- player -->
     <string name="close_player">Player schließen</string>
