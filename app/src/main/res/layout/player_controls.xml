@@ -31,7 +31,8 @@
             android:layout_marginEnd="44dp"
             android:text="@string/text_title_ex"
             android:textAlignment="center"
-            android:textColor="@color/exo_white" />
+            android:textColor="@color/exo_white"
+            android:textSize="16sp" />
     </LinearLayout>
 
     <LinearLayout

@@ -11,6 +11,7 @@ import android.view.*
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.GestureDetectorCompat
 import androidx.core.view.isVisible
+import androidx.core.view.postDelayed
 import com.google.android.exoplayer2.ExoPlayer
 import com.google.android.exoplayer2.MediaItem
 import com.google.android.exoplayer2.Player
@@ -28,7 +29,9 @@ import org.mosad.teapod.preferences.Preferences
 import org.mosad.teapod.util.DataTypes.MediaType
 import org.mosad.teapod.util.Episode
 import org.mosad.teapod.util.Media
+import java.util.*
 import java.util.concurrent.TimeUnit
+import kotlin.concurrent.scheduleAtFixedRate
 
 
 class PlayerActivity : AppCompatActivity() {
@@ -37,6 +40,7 @@ class PlayerActivity : AppCompatActivity() {
     private lateinit var dataSourceFactory: DataSource.Factory
     private lateinit var controller: StyledPlayerControlView
     private lateinit var gestureDetector: GestureDetectorCompat
+    private lateinit var timerUpdates: TimerTask
 
     private var mediaId = 0
     private var episodeId = 0
@@ -213,28 +217,32 @@ class PlayerActivity : AppCompatActivity() {
         button_next_ep.setOnClickListener { playNextEpisode() }
     }
 
-    private fun initTimeUpdates() = GlobalScope.launch {
-        while (true) {
-            val remainingTime = withContext(Dispatchers.Main) {
-                player.duration - player.currentPosition
-            }
+    private fun initTimeUpdates() {
+        if (this::timerUpdates.isInitialized) {
+            timerUpdates.cancel()
+        }
 
-            if (remainingTime in 0..20000) {
+        timerUpdates = Timer().scheduleAtFixedRate(0, 1000) {
+            GlobalScope.launch {
+                var btnNextEpIsVisible: Boolean
+                var remainingTime: Long
+
                 withContext(Dispatchers.Main) {
-                    // if the next ep button is not visible, make it visible
-                    if (!button_next_ep.isVisible && nextEpisode != null && Preferences.autoplay) {
-                        showButtonNextEp()
+                    btnNextEpIsVisible = button_next_ep.isVisible
+                    remainingTime = player.duration - player.currentPosition
+                }
+
+                if (remainingTime in 0..20000) {
+                    if (!btnNextEpIsVisible && nextEpisode != null && Preferences.autoplay) {
+                        // if the next ep button is not visible, make it visible
+                        withContext(Dispatchers.Main) { showButtonNextEp() }
+                    }
+                } else {
+                    if (btnNextEpIsVisible) {
+                        withContext(Dispatchers.Main) { hideButtonNextEp() } 
                     }
                 }
-            } else {
-                withContext(Dispatchers.Main) {
-                    if (button_next_ep.isVisible) {
-                        hideButtonNextEp()
-                    }
-                }
             }
-
-            delay(1000)
         }
     }
 
@@ -243,6 +251,7 @@ class PlayerActivity : AppCompatActivity() {
         currentWindow = player.currentWindowIndex
         playWhenReady = player.playWhenReady
         player.release()
+        timerUpdates.cancel()
 
         Log.d(javaClass.name, "Released player")
     }
@@ -338,6 +347,8 @@ class PlayerActivity : AppCompatActivity() {
             .setListener(null)
     }
 
+
+
     /**
      * hide the next episode button
      * TODO improve the hide animation
@@ -369,12 +380,26 @@ class PlayerActivity : AppCompatActivity() {
          * on double tap rewind or forward
          */
         override fun onDoubleTap(e: MotionEvent?): Boolean {
-            val eventPos = e?.x?.toInt() ?: 0
-            val viewCenter = video_view.measuredWidth / 2
+            val eventPosX = e?.x?.toInt() ?: 0
+            val eventPosY = e?.y?.toInt() ?: 0
+            val viewCenterX = video_view.measuredWidth / 2
+            val viewCenterY = video_view.measuredHeight / 2
 
-            // TODO show indicator for tap action
+            // Show ripple effect (Jellyfin Android App) TODO replace this with a netflix player like animation?
+            video_view.foreground?.apply {
+                val left = if (eventPosX < viewCenterX) 0 else viewCenterX
+                val right = if (eventPosX < viewCenterX) viewCenterX else video_view.measuredWidth
+
+                setBounds(left, viewCenterY - viewCenterX / 2, right, viewCenterY + viewCenterX / 2)
+                setHotspot(eventPosX.toFloat(), eventPosY.toFloat())
+                state = intArrayOf(android.R.attr.state_enabled, android.R.attr.state_pressed)
+                video_view.postDelayed(100) {
+                    state = IntArray(0)
+                }
+            }
+
             // if the event position is on the left side rewind, if it's on the right forward
-            if (eventPos < viewCenter) {
+            if (eventPosX < viewCenterX) {
                 rewind()
             } else {
                 forward()
