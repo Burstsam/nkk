@@ -34,7 +34,7 @@ class FastForwardButton(context: Context, attrs: AttributeSet): FrameLayout(cont
             addListener(object : AnimatorListenerAdapter() {
                 override fun onAnimationStart(animation: Animator?) {
                     imageButton.isEnabled = false // disable button
-                    imageButton.setImageResource(R.drawable.ic_baseline_forward_24)
+                    imageButton.setBackgroundResource(R.drawable.ic_baseline_forward_24)
                 }
                 override fun onAnimationEnd(animation: Animator?) {
                     imageButton.isEnabled = true // enable button
@@ -50,7 +50,7 @@ class FastForwardButton(context: Context, attrs: AttributeSet): FrameLayout(cont
             addListener(object : AnimatorListenerAdapter() {
                 override fun onAnimationEnd(animation: Animator?) {
                     imageButton.isEnabled = true // enable button
-                    imageButton.setImageResource(R.drawable.ic_baseline_forward_10_24)
+                    imageButton.setBackgroundResource(R.drawable.ic_baseline_forward_10_24)
 
                     textView.visibility = View.GONE
                     textView.animate().translationX(0f)
