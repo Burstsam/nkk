@@ -48,14 +48,10 @@
             android:layout_height="1dp"
             android:layout_weight="1" />
 
-        <ImageButton
-            android:id="@+id/exo_rew_10"
-            style="@style/ExoStyledControls.Button.Center.RewWithAmount"
-            android:layout_width="42dp"
-            android:layout_height="42dp"
-            android:contentDescription="@string/rewind_10"
-            android:tint="@color/exo_white" />
-
+        <org.mosad.teapod.ui.components.RewindButton
+            android:id="@+id/rwd_10"
+            android:layout_width="100dp"
+            android:layout_height="wrap_content" />
 
         <Space
             android:layout_width="0dp"
@@ -75,12 +71,10 @@
             android:layout_height="1dp"
             android:layout_weight="1" />
 
-        <ImageButton
-            android:id="@+id/exo_ffwd_10"
-            style="@style/ExoStyledControls.Button.Center.FfwdWithAmount"
-            android:layout_width="42dp"
-            android:layout_height="42dp"
-            android:contentDescription="@string/forward_10" />
+        <org.mosad.teapod.ui.components.FastForwardButton
+            android:id="@+id/ffwd_10"
+            android:layout_width="100dp"
+            android:layout_height="wrap_content" />
 
         <Space
             android:layout_width="0dp"

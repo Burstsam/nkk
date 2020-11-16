@@ -212,8 +212,8 @@ class PlayerActivity : AppCompatActivity() {
 
     private fun initActions() {
         exo_close_player.setOnClickListener { this.finish() }
-        exo_rew_10.setOnClickListener { rewind() }
-        exo_ffwd_10.setOnClickListener { forward() }
+        rwd_10.setOnButtonClickListener { rewind() }
+        ffwd_10.setOnButtonClickListener { forward() }
         button_next_ep.setOnClickListener { playNextEpisode() }
     }
 
