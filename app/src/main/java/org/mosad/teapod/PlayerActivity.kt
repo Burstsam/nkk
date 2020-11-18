@@ -26,6 +26,7 @@ import kotlinx.android.synthetic.main.player_controls.*
 import kotlinx.coroutines.*
 import org.mosad.teapod.parser.AoDParser
 import org.mosad.teapod.preferences.Preferences
+import org.mosad.teapod.ui.fragments.MediaFragment
 import org.mosad.teapod.util.DataTypes.MediaType
 import org.mosad.teapod.util.Episode
 import org.mosad.teapod.util.Media
@@ -266,8 +267,7 @@ class PlayerActivity : AppCompatActivity() {
 
     private fun playNextEpisode() {
         nextEpisode?.let { nextEp ->
-            currentEpisode = nextEp // set current ep to next ep
-            episodeId = nextEp.id
+
 
             // update the gui
             exo_text_title.text = nextEp.title
@@ -278,6 +278,11 @@ class PlayerActivity : AppCompatActivity() {
                 .createMediaSource(MediaItem.fromUri(Uri.parse(selectStream(nextEp))))
             player.setMediaSource(mediaSource)
             player.prepare()
+
+            // watchedCallback for next ep
+            currentEpisode = nextEp // set current ep to next ep
+            episodeId = nextEp.id
+            MediaFragment.instance.updateWatchedState(nextEp) // TODO i don't like this
 
             nextEpisode = selectNextEpisode()
         }

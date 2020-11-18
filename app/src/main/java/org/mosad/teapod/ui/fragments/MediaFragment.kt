@@ -30,6 +30,14 @@ class MediaFragment(private val media: Media, private val tmdb: TMDBResponse) : 
     private lateinit var viewManager: RecyclerView.LayoutManager
     private lateinit var nextEpisode: Episode
 
+    companion object {
+        lateinit var instance: MediaFragment
+    }
+
+    init {
+        instance = this
+    }
+
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
         return inflater.inflate(R.layout.fragment_media, container, false)
     }
@@ -134,9 +142,10 @@ class MediaFragment(private val media: Media, private val tmdb: TMDBResponse) : 
         playStream(ep)
 
         // update watched state
-        AoDParser.sendCallback(ep.watchedCallback)
-        adapterRecEpisodes.updateWatchedState(true, media.episodes.indexOf(ep))
-        adapterRecEpisodes.notifyDataSetChanged()
+        updateWatchedState(ep)
+        //AoDParser.sendCallback(ep.watchedCallback)
+        //adapterRecEpisodes.updateWatchedState(true, media.episodes.indexOf(ep))
+        //adapterRecEpisodes.notifyDataSetChanged()
 
         // update nextEpisode
         nextEpisode = if (media.episodes.firstOrNull{ !it.watched } != null) {
@@ -151,5 +160,12 @@ class MediaFragment(private val media: Media, private val tmdb: TMDBResponse) : 
         Log.d(javaClass.name, "Starting Player with  mediaId: ${media.id}")
         (activity as MainActivity).startPlayer(media.id, ep.id)
     }
+
+    fun updateWatchedState(ep: Episode) {
+        AoDParser.sendCallback(ep.watchedCallback)
+        adapterRecEpisodes.updateWatchedState(true, media.episodes.indexOf(ep))
+        adapterRecEpisodes.notifyDataSetChanged()
+    }
+
 
 }
