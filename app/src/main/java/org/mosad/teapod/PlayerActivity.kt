@@ -11,7 +11,6 @@ import android.view.*
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.GestureDetectorCompat
 import androidx.core.view.isVisible
-import androidx.core.view.postDelayed
 import com.google.android.exoplayer2.ExoPlayer
 import com.google.android.exoplayer2.MediaItem
 import com.google.android.exoplayer2.Player
@@ -23,7 +22,10 @@ import com.google.android.exoplayer2.upstream.DefaultDataSourceFactory
 import com.google.android.exoplayer2.util.Util
 import kotlinx.android.synthetic.main.activity_player.*
 import kotlinx.android.synthetic.main.player_controls.*
-import kotlinx.coroutines.*
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import org.mosad.teapod.parser.AoDParser
 import org.mosad.teapod.preferences.Preferences
 import org.mosad.teapod.ui.fragments.MediaFragment
@@ -33,7 +35,6 @@ import org.mosad.teapod.util.Media
 import java.util.*
 import java.util.concurrent.TimeUnit
 import kotlin.concurrent.scheduleAtFixedRate
-
 
 class PlayerActivity : AppCompatActivity() {
 
@@ -257,12 +258,52 @@ class PlayerActivity : AppCompatActivity() {
         Log.d(javaClass.name, "Released player")
     }
 
+    /**
+     * TODO set position of rewind/fast forward indicators programmatically
+     */
+
     private fun rewind() {
         player.seekTo(player.currentPosition - rwdTime)
+
+        // hide/show needed components
+        exo_double_tap_indicator.visibility = View.VISIBLE
+        ffwd_10_indicator.visibility = View.INVISIBLE
+        ffwd_10.visibility = View.INVISIBLE
+
+        rwd_10_indicator.onAnimationEndCallback = {
+            exo_double_tap_indicator.visibility = View.GONE
+            ffwd_10_indicator.visibility = View.VISIBLE
+            ffwd_10.visibility = View.VISIBLE
+        }
+
+        // run animation
+        rwd_10_indicator.runOnClickAnimation()
     }
 
     private fun forward() {
         player.seekTo(player.currentPosition + fwdTime)
+
+        // hide/show needed components
+        exo_double_tap_indicator.visibility = View.VISIBLE
+        rwd_10_indicator.visibility = View.INVISIBLE
+        ffwd_10.visibility = View.INVISIBLE
+
+        ffwd_10_indicator.onAnimationEndCallback = {
+            exo_double_tap_indicator.visibility = View.GONE
+            rwd_10_indicator.visibility = View.VISIBLE
+            ffwd_10.visibility = View.VISIBLE
+        }
+
+        // run animation
+        ffwd_10_indicator.runOnClickAnimation()
+    }
+
+    private fun togglePausePlay() {
+        if (player.isPlaying) {
+            player.pause()
+        } else {
+            player.play()
+        }
     }
 
     private fun playNextEpisode() {
@@ -282,7 +323,7 @@ class PlayerActivity : AppCompatActivity() {
             // watchedCallback for next ep
             currentEpisode = nextEp // set current ep to next ep
             episodeId = nextEp.id
-            MediaFragment.instance.updateWatchedState(nextEp) // TODO i don't like this
+            MediaFragment.instance.updateWatchedState(nextEp)
 
             nextEpisode = selectNextEpisode()
         }
@@ -362,14 +403,13 @@ class PlayerActivity : AppCompatActivity() {
         button_next_ep.animate()
             .alpha(0.0f)
             .setListener(object : AnimatorListenerAdapter() {
-            override fun onAnimationEnd(animation: Animator?) {
-                super.onAnimationEnd(animation)
-                button_next_ep.visibility = View.GONE
-            }
-        })
+                override fun onAnimationEnd(animation: Animator?) {
+                    super.onAnimationEnd(animation)
+                    button_next_ep.visibility = View.GONE
+                }
+            })
 
     }
-
 
     inner class PlayerGestureListener : GestureDetector.SimpleOnGestureListener() {
 
@@ -386,22 +426,7 @@ class PlayerActivity : AppCompatActivity() {
          */
         override fun onDoubleTap(e: MotionEvent?): Boolean {
             val eventPosX = e?.x?.toInt() ?: 0
-            val eventPosY = e?.y?.toInt() ?: 0
             val viewCenterX = video_view.measuredWidth / 2
-            val viewCenterY = video_view.measuredHeight / 2
-
-            // Show ripple effect (Jellyfin Android App) TODO replace this with a netflix player like animation?
-            video_view.foreground?.apply {
-                val left = if (eventPosX < viewCenterX) 0 else viewCenterX
-                val right = if (eventPosX < viewCenterX) viewCenterX else video_view.measuredWidth
-
-                setBounds(left, viewCenterY - viewCenterX / 2, right, viewCenterY + viewCenterX / 2)
-                setHotspot(eventPosX.toFloat(), eventPosY.toFloat())
-                state = intArrayOf(android.R.attr.state_enabled, android.R.attr.state_pressed)
-                video_view.postDelayed(100) {
-                    state = IntArray(0)
-                }
-            }
 
             // if the event position is on the left side rewind, if it's on the right forward
             if (eventPosX < viewCenterX) {
@@ -418,6 +443,10 @@ class PlayerActivity : AppCompatActivity() {
          */
         override fun onDoubleTapEvent(e: MotionEvent?): Boolean {
             return true
+        }
+
+        override fun onLongPress(e: MotionEvent?) {
+            togglePausePlay()
         }
 
     }

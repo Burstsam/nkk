@@ -2,10 +2,11 @@
 <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/player_layout"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:keepScreenOn="true"
     android:background="#000000"
+    android:keepScreenOn="true"
     tools:context=".PlayerActivity">
 
     <com.google.android.exoplayer2.ui.StyledPlayerView
@@ -15,9 +16,9 @@
         android:layout_gravity="center"
         android:animateLayoutChanges="true"
         android:foreground="@drawable/ripple_background"
+        app:controller_layout_id="@layout/player_controls"
         app:fastforward_increment="10000"
-        app:rewind_increment="10000"
-        app:controller_layout_id="@layout/player_controls"/>
+        app:rewind_increment="10000" />
 
     <com.google.android.material.progressindicator.ProgressIndicator
         android:id="@+id/loading"
@@ -27,6 +28,50 @@
         android:layout_gravity="center"
         app:indicatorColor="@color/exo_white"
         tools:visibility="visible" />
+
+    <LinearLayout
+        android:id="@+id/exo_double_tap_indicator"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:gravity="center"
+        android:orientation="horizontal"
+        android:visibility="gone">
+
+        <Space
+            android:layout_width="0dp"
+            android:layout_height="1dp"
+            android:layout_weight="1" />
+
+        <org.mosad.teapod.ui.components.RewindButton
+            android:id="@+id/rwd_10_indicator"
+            android:layout_width="100dp"
+            android:layout_height="wrap_content" />
+
+        <Space
+            android:layout_width="0dp"
+            android:layout_height="1dp"
+            android:layout_weight="1" />
+
+        <Space
+            android:layout_width="60dp"
+            android:layout_height="1dp" />
+
+        <Space
+            android:layout_width="0dp"
+            android:layout_height="1dp"
+            android:layout_weight="1" />
+
+        <org.mosad.teapod.ui.components.FastForwardButton
+            android:id="@+id/ffwd_10_indicator"
+            android:layout_width="100dp"
+            android:layout_height="wrap_content" />
+
+        <Space
+            android:layout_width="0dp"
+            android:layout_height="1dp"
+            android:layout_weight="1" />
+    </LinearLayout>
 
     <com.google.android.material.button.MaterialButton
         android:id="@+id/button_next_ep"

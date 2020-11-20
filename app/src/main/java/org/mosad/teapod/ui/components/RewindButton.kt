@@ -13,21 +13,15 @@ import org.mosad.teapod.R
 class RewindButton(context: Context, attrs: AttributeSet): FrameLayout(context, attrs) {
 
     private val animationDuration: Long = 800
+    private val buttonAnimation: ObjectAnimator
+    private val labelAnimation: ObjectAnimator
+
+    var onAnimationEndCallback: (() -> Unit)? = null
 
     init {
         inflate(context, R.layout.button_rewind, this)
-    }
 
-    fun setOnButtonClickListener(func: RewindButton.() -> Unit) {
-        imageButton.setOnClickListener {
-            func()
-            runOnClickAnimation()
-        }
-    }
-
-    fun runOnClickAnimation() {
-        // run button animation
-        ObjectAnimator.ofFloat(imageButton, View.ROTATION, 0f, -50f).apply {
+        buttonAnimation = ObjectAnimator.ofFloat(imageButton, View.ROTATION, 0f, -50f).apply {
             duration = animationDuration / 4
             repeatCount = 1
             repeatMode = ObjectAnimator.REVERSE
@@ -36,16 +30,10 @@ class RewindButton(context: Context, attrs: AttributeSet): FrameLayout(context, 
                     imageButton.isEnabled = false // disable button
                     imageButton.setBackgroundResource(R.drawable.ic_baseline_rewind_24)
                 }
-                override fun onAnimationEnd(animation: Animator?) {
-                    imageButton.isEnabled = true // enable button
-                }
             })
-            start()
         }
 
-        // run lbl animation
-        textView.visibility = View.VISIBLE
-        ObjectAnimator.ofFloat(textView, View.TRANSLATION_X, -35f).apply {
+        labelAnimation = ObjectAnimator.ofFloat(textView, View.TRANSLATION_X, -35f).apply {
             duration = animationDuration
             addListener(object : AnimatorListenerAdapter() {
                 override fun onAnimationEnd(animation: Animator?) {
@@ -54,11 +42,26 @@ class RewindButton(context: Context, attrs: AttributeSet): FrameLayout(context, 
 
                     textView.visibility = View.GONE
                     textView.animate().translationX(0f)
+
+                    onAnimationEndCallback?.invoke()
                 }
             })
-            start()
         }
+    }
 
+    fun setOnButtonClickListener(func: RewindButton.() -> Unit) {
+        imageButton.setOnClickListener {
+            func()
+        }
+    }
+
+    fun runOnClickAnimation() {
+        // run button animation
+        buttonAnimation.start()
+
+        // run lbl animation
+        textView.visibility = View.VISIBLE
+        labelAnimation.start()
     }
 
 }

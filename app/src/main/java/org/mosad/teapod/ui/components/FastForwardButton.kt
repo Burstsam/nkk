@@ -10,24 +10,18 @@ import android.widget.FrameLayout
 import kotlinx.android.synthetic.main.button_fast_forward.view.*
 import org.mosad.teapod.R
 
-class FastForwardButton(context: Context, attrs: AttributeSet): FrameLayout(context, attrs) {
+class FastForwardButton(context: Context, attrs: AttributeSet?): FrameLayout(context, attrs) {
 
     private val animationDuration: Long = 800
+    private val buttonAnimation: ObjectAnimator
+    private val labelAnimation: ObjectAnimator
+
+    var onAnimationEndCallback: (() -> Unit)? = null
 
     init {
         inflate(context, R.layout.button_fast_forward, this)
-    }
 
-    fun setOnButtonClickListener(func: FastForwardButton.() -> Unit) {
-        imageButton.setOnClickListener {
-            func()
-            runOnClickAnimation()
-        }
-    }
-
-    fun runOnClickAnimation() {
-        // run button animation
-        ObjectAnimator.ofFloat(imageButton, View.ROTATION, 0f, 50f).apply {
+        buttonAnimation = ObjectAnimator.ofFloat(imageButton, View.ROTATION, 0f, 50f).apply {
             duration = animationDuration / 4
             repeatCount = 1
             repeatMode = ObjectAnimator.REVERSE
@@ -36,29 +30,39 @@ class FastForwardButton(context: Context, attrs: AttributeSet): FrameLayout(cont
                     imageButton.isEnabled = false // disable button
                     imageButton.setBackgroundResource(R.drawable.ic_baseline_forward_24)
                 }
-                override fun onAnimationEnd(animation: Animator?) {
-                    imageButton.isEnabled = true // enable button
-                }
             })
-            start()
         }
 
-        // run lbl animation
-        textView.visibility = View.VISIBLE
-        ObjectAnimator.ofFloat(textView, View.TRANSLATION_X, 35f).apply {
+        labelAnimation = ObjectAnimator.ofFloat(textView, View.TRANSLATION_X, 35f).apply {
             duration = animationDuration
             addListener(object : AnimatorListenerAdapter() {
+                // the label animation takes longer then the button animation, reset stuff in here
                 override fun onAnimationEnd(animation: Animator?) {
                     imageButton.isEnabled = true // enable button
                     imageButton.setBackgroundResource(R.drawable.ic_baseline_forward_10_24)
 
                     textView.visibility = View.GONE
                     textView.animate().translationX(0f)
+
+                    onAnimationEndCallback?.invoke()
                 }
             })
-            start()
         }
+    }
 
+    fun setOnButtonClickListener(func: FastForwardButton.() -> Unit) {
+        imageButton.setOnClickListener {
+            func()
+        }
+    }
+
+    fun runOnClickAnimation() {
+        // run button animation
+        buttonAnimation.start()
+
+        // run lbl animation
+        textView.visibility = View.VISIBLE
+        labelAnimation.start()
     }
 
 }
