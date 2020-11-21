@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <attr format="color" name="themePrimary"/>
+    <attr format="color" name="themeSecondary"/>
+    <attr format="color" name="textPrimary"/>
+    <attr format="color" name="textSecondary"/>
+</resources>

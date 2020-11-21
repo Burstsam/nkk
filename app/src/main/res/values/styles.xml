@@ -1,12 +1,32 @@
 <resources>
-    <!-- Base application theme. -->
+    <!-- application themes -->
     <style name="AppTheme" parent="Theme.MaterialComponents.Light.NoActionBar">
-        <!-- Customize your theme here. -->
         <item name="colorPrimary">@color/colorPrimary</item>
         <item name="colorPrimaryDark">@color/colorPrimaryDark</item>
         <item name="colorAccent">@color/colorAccent</item>
     </style>
 
+    <style name="AppThemeLight" parent="AppTheme">
+        <item name="themePrimary">@color/themePrimaryLight</item>
+        <item name="themeSecondary">@color/themeSecondaryLight</item>
+        <item name="textPrimary">@color/textPrimaryLight</item>
+        <item name="textSecondary">@color/textSecondaryLight</item>
+        <item name="android:textColor">@color/textSecondaryLight</item>
+        <item name="android:textColorPrimary">@color/textPrimaryLight</item>
+        <item name="android:textColorHint">@color/textSecondaryLight</item>
+    </style>
+
+    <style name="AppThemeDark" parent="AppTheme">
+        <item name="themePrimary">@color/themePrimaryDark</item>
+        <item name="themeSecondary">@color/themeSecondaryDark</item>
+        <item name="textPrimary">@color/textPrimaryDark</item>
+        <item name="textSecondary">@color/textSecondaryDark</item>
+        <item name="android:textColor">@color/textPrimaryDark</item>
+        <item name="android:textColorPrimary">@color/textPrimaryDark</item>
+        <item name="android:textColorHint">@color/textSecondaryDark</item>
+    </style>
+
+    <!-- player theme -->
     <style name="PlayerTheme" parent="Theme.MaterialComponents.Light.NoActionBar">
         <item name="android:windowNoTitle">true</item>
         <item name="android:windowActionBar">false</item>
@@ -16,6 +36,7 @@
         <item name="android:windowTranslucentNavigation">true</item>
     </style>
 
+    <!-- splash theme -->
     <style name="SplashTheme" parent="Theme.AppCompat.NoActionBar">
         <item name="android:windowBackground">@drawable/bg_splash</item>
     </style>

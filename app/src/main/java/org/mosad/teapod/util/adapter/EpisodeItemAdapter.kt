@@ -12,18 +12,18 @@ import kotlinx.android.synthetic.main.item_episode.view.*
 import org.mosad.teapod.R
 import org.mosad.teapod.util.Episode
 
-class EpisodeItemAdapter(private val episodes: List<Episode>) : RecyclerView.Adapter<EpisodeItemAdapter.MyViewHolder>() {
+class EpisodeItemAdapter(private val episodes: List<Episode>) : RecyclerView.Adapter<EpisodeItemAdapter.EpisodeViewHolder>() {
 
     var onItemClick: ((String, Int) -> Unit)? = null
     var onImageClick: ((String, Int) -> Unit)? = null
 
-    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): MyViewHolder {
+    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): EpisodeViewHolder {
         val view = LayoutInflater.from(parent.context).inflate(R.layout.item_episode, parent, false)
 
-        return MyViewHolder(view)
+        return EpisodeViewHolder(view)
     }
 
-    override fun onBindViewHolder(holder: MyViewHolder, position: Int) {
+    override fun onBindViewHolder(holder: EpisodeViewHolder, position: Int) {
         val context = holder.view.context
         val ep = episodes[position]
 
@@ -59,7 +59,7 @@ class EpisodeItemAdapter(private val episodes: List<Episode>) : RecyclerView.Ada
         episodes[position].watched = watched
     }
 
-    inner class MyViewHolder(val view: View) : RecyclerView.ViewHolder(view) {
+    inner class EpisodeViewHolder(val view: View) : RecyclerView.ViewHolder(view) {
         init {
             view.setOnClickListener {
                 onItemClick?.invoke(episodes[adapterPosition].title, adapterPosition)
