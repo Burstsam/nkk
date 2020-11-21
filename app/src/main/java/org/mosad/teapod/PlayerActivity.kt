@@ -11,10 +11,7 @@ import android.view.*
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.GestureDetectorCompat
 import androidx.core.view.isVisible
-import com.google.android.exoplayer2.ExoPlayer
-import com.google.android.exoplayer2.MediaItem
-import com.google.android.exoplayer2.Player
-import com.google.android.exoplayer2.SimpleExoPlayer
+import com.google.android.exoplayer2.*
 import com.google.android.exoplayer2.source.hls.HlsMediaSource
 import com.google.android.exoplayer2.ui.StyledPlayerControlView
 import com.google.android.exoplayer2.upstream.DataSource
@@ -127,7 +124,6 @@ class PlayerActivity : AppCompatActivity() {
         initMedia()
         initExoPlayer()
         initVideoView()
-        initController()
         initTimeUpdates()
     }
 
@@ -143,7 +139,7 @@ class PlayerActivity : AppCompatActivity() {
         controller = video_view.findViewById(R.id.exo_controller)
 
         val mediaSource = HlsMediaSource.Factory(dataSourceFactory)
-            .createMediaSource(MediaItem.fromUri(Uri.parse(selectStream(currentEpisode))))
+            .createMediaSource(MediaItem.fromUri(Uri.parse(autoSelectStream(currentEpisode))))
 
         player.playWhenReady = playWhenReady
         player.setMediaSource(mediaSource)
@@ -172,6 +168,9 @@ class PlayerActivity : AppCompatActivity() {
 
             }
         })
+
+        controller.isAnimationEnabled = false // disable controls (time-bar) animation
+        exo_text_title.text = currentEpisode.title // set media title
     }
 
     @SuppressLint("ClickableViewAccessibility")
@@ -180,8 +179,9 @@ class PlayerActivity : AppCompatActivity() {
 
         // when the player controls get hidden, hide the bars too
         video_view.setControllerVisibilityListener {
-            if (it == View.GONE) {
-                hideBars()
+            when (it) {
+                View.GONE -> hideBars()
+                View.VISIBLE -> updateControls()
             }
         }
 
@@ -189,27 +189,6 @@ class PlayerActivity : AppCompatActivity() {
             gestureDetector.onTouchEvent(event)
             true
         }
-    }
-
-    private fun initController() {
-        controller.isAnimationEnabled = false // disable controls (time-bar) animation
-        controller.setProgressUpdateListener { _, _ ->
-            remainingTime = player.duration - player.currentPosition
-
-            val hours =  TimeUnit.MILLISECONDS.toHours(remainingTime) % 24
-            val minutes = TimeUnit.MILLISECONDS.toMinutes(remainingTime) % 60
-            val seconds = TimeUnit.MILLISECONDS.toSeconds(remainingTime) % 60
-
-            // if remaining time is below 60 minutes, don't show hours
-            exo_remaining.text = if (TimeUnit.MILLISECONDS.toMinutes(remainingTime) < 60) {
-                getString(R.string.time_min_sec, minutes, seconds)
-            } else {
-                getString(R.string.time_hour_min_sec, hours, minutes, seconds)
-            }
-
-        }
-
-        exo_text_title.text = currentEpisode.title // set media title
     }
 
     private fun initActions() {
@@ -224,25 +203,29 @@ class PlayerActivity : AppCompatActivity() {
             timerUpdates.cancel()
         }
 
-        timerUpdates = Timer().scheduleAtFixedRate(0, 1000) {
+        timerUpdates = Timer().scheduleAtFixedRate(0, 500) {
             GlobalScope.launch {
                 var btnNextEpIsVisible: Boolean
-                var remainingTime: Long
+                var controlsVisible: Boolean
 
                 withContext(Dispatchers.Main) {
-                    btnNextEpIsVisible = button_next_ep.isVisible
                     remainingTime = player.duration - player.currentPosition
+                    remainingTime = if (remainingTime < 0) 0 else remainingTime
+
+                    btnNextEpIsVisible = button_next_ep.isVisible
+                    controlsVisible = controller.isVisible
                 }
 
-                if (remainingTime in 0..20000) {
-                    if (!btnNextEpIsVisible && nextEpisode != null && Preferences.autoplay) {
-                        // if the next ep button is not visible, make it visible
-                        withContext(Dispatchers.Main) { showButtonNextEp() }
-                    }
-                } else {
-                    if (btnNextEpIsVisible) {
-                        withContext(Dispatchers.Main) { hideButtonNextEp() } 
-                    }
+                if (remainingTime in 1..20000 && !btnNextEpIsVisible && nextEpisode != null && Preferences.autoplay) {
+                    // if the next ep button is not visible, make it visible
+                    withContext(Dispatchers.Main) { showButtonNextEp() }
+                } else if (btnNextEpIsVisible) {
+                    withContext(Dispatchers.Main) { hideButtonNextEp() }
+                }
+
+                // if controls are visible, update them
+                if (controlsVisible) {
+                    withContext(Dispatchers.Main) { updateControls() }
                 }
             }
         }
@@ -259,6 +242,23 @@ class PlayerActivity : AppCompatActivity() {
     }
 
     /**
+     * update the custom controls
+     */
+    private fun updateControls() {
+        // update remaining time label
+        val hours =  TimeUnit.MILLISECONDS.toHours(remainingTime) % 24
+        val minutes = TimeUnit.MILLISECONDS.toMinutes(remainingTime) % 60
+        val seconds = TimeUnit.MILLISECONDS.toSeconds(remainingTime) % 60
+
+        // if remaining time is below 60 minutes, don't show hours
+        exo_remaining.text = if (TimeUnit.MILLISECONDS.toMinutes(remainingTime) < 60) {
+            getString(R.string.time_min_sec, minutes, seconds)
+        } else {
+            getString(R.string.time_hour_min_sec, hours, minutes, seconds)
+        }
+    }
+
+    /**
      * TODO set position of rewind/fast forward indicators programmatically
      */
 
@@ -268,12 +268,12 @@ class PlayerActivity : AppCompatActivity() {
         // hide/show needed components
         exo_double_tap_indicator.visibility = View.VISIBLE
         ffwd_10_indicator.visibility = View.INVISIBLE
-        ffwd_10.visibility = View.INVISIBLE
+        rwd_10.visibility = View.INVISIBLE
 
         rwd_10_indicator.onAnimationEndCallback = {
             exo_double_tap_indicator.visibility = View.GONE
             ffwd_10_indicator.visibility = View.VISIBLE
-            ffwd_10.visibility = View.VISIBLE
+            rwd_10.visibility = View.VISIBLE
         }
 
         // run animation
@@ -306,27 +306,23 @@ class PlayerActivity : AppCompatActivity() {
         }
     }
 
-    private fun playNextEpisode() {
-        nextEpisode?.let { nextEp ->
+    private fun playNextEpisode() = nextEpisode?.let { nextEp ->
+        // update the gui
+        exo_text_title.text = nextEp.title
+        hideButtonNextEp()
 
+        player.clearMediaItems() //remove previous item
+        val mediaSource = HlsMediaSource.Factory(dataSourceFactory)
+            .createMediaSource(MediaItem.fromUri(Uri.parse(autoSelectStream(nextEp))))
+        player.setMediaSource(mediaSource)
+        player.prepare()
 
-            // update the gui
-            exo_text_title.text = nextEp.title
-            hideButtonNextEp()
+        // watchedCallback for next ep
+        currentEpisode = nextEp // set current ep to next ep
+        episodeId = nextEp.id
+        MediaFragment.instance.updateWatchedState(nextEp)
 
-            player.clearMediaItems() //remove previous item
-            val mediaSource = HlsMediaSource.Factory(dataSourceFactory)
-                .createMediaSource(MediaItem.fromUri(Uri.parse(selectStream(nextEp))))
-            player.setMediaSource(mediaSource)
-            player.prepare()
-
-            // watchedCallback for next ep
-            currentEpisode = nextEp // set current ep to next ep
-            episodeId = nextEp.id
-            MediaFragment.instance.updateWatchedState(nextEp)
-
-            nextEpisode = selectNextEpisode()
-        }
+        nextEpisode = selectNextEpisode()
     }
 
     /**
@@ -334,7 +330,7 @@ class PlayerActivity : AppCompatActivity() {
      * use the secondary stream. Else, if the primary stream is set use the primary stream.
      * If no stream is present, close the activity.
      */
-    private fun selectStream(episode: Episode): String {
+    private fun autoSelectStream(episode: Episode): String {
         return if ((Preferences.preferSecondary || episode.priStreamUrl.isEmpty()) && episode.secStreamOmU) {
             episode.secStreamUrl
         } else if (episode.priStreamUrl.isNotEmpty()) {
@@ -445,6 +441,9 @@ class PlayerActivity : AppCompatActivity() {
             return true
         }
 
+        /**
+         * on long press toggle pause/play
+         */
         override fun onLongPress(e: MotionEvent?) {
             togglePausePlay()
         }
