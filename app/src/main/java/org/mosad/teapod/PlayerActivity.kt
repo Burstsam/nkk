@@ -219,9 +219,11 @@ class PlayerActivity : AppCompatActivity() {
                     controlsVisible = controller.isVisible
                 }
 
-                if (remainingTime in 1..20000 && !btnNextEpIsVisible && nextEpisode != null && Preferences.autoplay) {
+                if (remainingTime in 1..20000) {
                     // if the next ep button is not visible, make it visible
-                    withContext(Dispatchers.Main) { showButtonNextEp() }
+                    if (!btnNextEpIsVisible && nextEpisode != null && Preferences.autoplay) {
+                        withContext(Dispatchers.Main) { showButtonNextEp() }
+                    }
                 } else if (btnNextEpIsVisible) {
                     withContext(Dispatchers.Main) { hideButtonNextEp() }
                 }
