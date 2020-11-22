@@ -4,7 +4,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="#f5f5f5"
+    android:background="?themePrimary"
     tools:context=".ui.fragments.AccountFragment">
 
     <ScrollView
@@ -21,7 +21,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:layout_marginTop="12dp"
-                android:background="#ffffff"
+                android:background="?themeSecondary"
                 android:orientation="vertical">
 
                 <TextView
@@ -31,7 +31,6 @@
                     android:paddingStart="7dp"
                     android:paddingEnd="7dp"
                     android:text="@string/account"
-                    android:textColor="@android:color/primary_text_light"
                     android:textSize="16sp"
                     android:textStyle="bold" />
 
@@ -53,7 +52,7 @@
                         android:padding="9dp"
                         android:scaleType="fitXY"
                         android:src="@drawable/ic_baseline_account_box_24"
-                        app:srcCompat="@drawable/ic_baseline_account_box_24" />
+                        app:tint="?iconNoAction" />
 
                     <LinearLayout
                         android:layout_width="match_parent"
@@ -66,7 +65,6 @@
                             android:layout_height="wrap_content"
                             android:layout_weight="1"
                             android:text="@string/account_login_ex"
-                            android:textColor="@android:color/primary_text_light"
                             android:textSize="16sp" />
 
                         <TextView
@@ -75,7 +73,7 @@
                             android:layout_height="wrap_content"
                             android:layout_weight="1"
                             android:text="@string/account_login_desc"
-                            android:textColor="@android:color/secondary_text_light" />
+                            android:textColor="?textSecondary" />
                     </LinearLayout>
 
                 </LinearLayout>
@@ -86,7 +84,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:layout_marginTop="12dp"
-                android:background="#ffffff"
+                android:background="?themeSecondary"
                 android:orientation="vertical">
 
                 <TextView
@@ -96,7 +94,6 @@
                     android:paddingStart="7dp"
                     android:paddingEnd="7dp"
                     android:text="@string/settings"
-                    android:textColor="@android:color/primary_text_light"
                     android:textSize="16sp"
                     android:textStyle="bold" />
 
@@ -117,7 +114,8 @@
                         android:minHeight="48dp"
                         android:padding="9dp"
                         android:scaleType="fitXY"
-                        android:src="@drawable/ic_baseline_subtitles_24" />
+                        android:src="@drawable/ic_baseline_subtitles_24"
+                        app:tint="?iconNoAction" />
 
                     <androidx.constraintlayout.widget.ConstraintLayout
                         android:layout_width="match_parent"
@@ -139,7 +137,6 @@
                                 android:layout_height="wrap_content"
                                 android:layout_weight="1"
                                 android:text="@string/settings_secondary"
-                                android:textColor="@android:color/primary_text_light"
                                 android:textSize="16sp" />
 
                             <TextView
@@ -149,7 +146,7 @@
                                 android:layout_weight="1"
                                 android:maxLines="2"
                                 android:text="@string/settings_secondary_desc"
-                                android:textColor="@android:color/secondary_text_light" />
+                                android:textColor="?textSecondary" />
                         </LinearLayout>
 
                         <com.google.android.material.switchmaterial.SwitchMaterial
@@ -181,7 +178,8 @@
                         android:minWidth="48dp"
                         android:minHeight="48dp"
                         android:padding="9dp"
-                        android:src="@drawable/ic_baseline_autorenew_24" />
+                        android:src="@drawable/ic_baseline_autorenew_24"
+                        app:tint="?iconNoAction"/>
 
                     <androidx.constraintlayout.widget.ConstraintLayout
                         android:layout_width="match_parent"
@@ -202,7 +200,6 @@
                                 android:layout_width="match_parent"
                                 android:layout_height="wrap_content"
                                 android:text="@string/settings_autoplay"
-                                android:textColor="@android:color/primary_text_light"
                                 android:textSize="16sp" />
 
                             <TextView
@@ -210,7 +207,7 @@
                                 android:layout_width="match_parent"
                                 android:layout_height="wrap_content"
                                 android:text="@string/settings_autoplay_desc"
-                                android:textColor="@android:color/secondary_text_light" />
+                                android:textColor="?textSecondary" />
                         </LinearLayout>
 
                         <com.google.android.material.switchmaterial.SwitchMaterial
@@ -232,7 +229,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:layout_marginTop="12dp"
-                android:background="#ffffff"
+                android:background="?themeSecondary"
                 android:orientation="vertical">
 
                 <TextView
@@ -242,7 +239,6 @@
                     android:paddingStart="7dp"
                     android:paddingEnd="7dp"
                     android:text="@string/info"
-                    android:textColor="@android:color/primary_text_light"
                     android:textSize="16sp"
                     android:textStyle="bold" />
 
@@ -263,7 +259,8 @@
                         android:minHeight="48dp"
                         android:padding="9dp"
                         android:scaleType="fitXY"
-                        app:srcCompat="@drawable/ic_baseline_info_24" />
+                        app:srcCompat="@drawable/ic_baseline_info_24"
+                        app:tint="?iconNoAction"/>
 
                     <LinearLayout
                         android:layout_width="match_parent"
@@ -276,7 +273,6 @@
                             android:layout_height="wrap_content"
                             android:layout_weight="1"
                             android:text="@string/info_about"
-                            android:textColor="@android:color/primary_text_light"
                             android:textSize="16sp" />
 
                         <TextView
@@ -285,7 +281,7 @@
                             android:layout_height="wrap_content"
                             android:layout_weight="1"
                             android:text="@string/info_about_desc"
-                            android:textColor="@android:color/secondary_text_light" />
+                            android:textColor="?textSecondary" />
                     </LinearLayout>
 
                 </LinearLayout>
@@ -304,7 +300,6 @@
                     android:paddingStart="48dp"
                     android:paddingEnd="48dp"
                     android:text="@string/licenses"
-                    android:textColor="@android:color/primary_text_light"
                     android:textSize="16sp" />
             </LinearLayout>
 

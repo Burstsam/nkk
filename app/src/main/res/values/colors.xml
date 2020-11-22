@@ -2,8 +2,9 @@
 <resources>
     <!-- base theme colors -->
     <color name="colorPrimary">#66aa00</color>
-    <color name="colorPrimaryDark">#66aa00</color>
-    <color name="colorAccent">#03DAC5</color>
+    <color name="colorPrimaryLight">#99dc45</color>
+    <color name="colorPrimaryDark">#317a00</color>
+    <color name="colorAccent">#607d8b</color>
 
     <!-- light theme colors -->
     <color name="themePrimaryLight">#f7f7f7</color>
@@ -23,5 +24,5 @@
     <color name="iconNoActionDark">#66ffffff</color>
     <color name="buttonBackgroundDark">#ffffff</color>
 
-    <color name="ic_launcher_background">#FFFFFF</color>
+    <color name="ic_launcher_background">#ffffff</color>
 </resources>
