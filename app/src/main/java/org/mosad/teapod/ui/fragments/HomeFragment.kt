@@ -1,5 +1,6 @@
 package org.mosad.teapod.ui.fragments
 
+import android.R.color
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -16,13 +17,19 @@ import org.mosad.teapod.parser.AoDParser
 import org.mosad.teapod.util.StorageController
 import org.mosad.teapod.util.adapter.MediaItemAdapter
 import org.mosad.teapod.util.decoration.MediaItemDecoration
+import java.lang.String
+
 
 class HomeFragment : Fragment() {
 
     private lateinit var adapterMyList: MediaItemAdapter
     private lateinit var adapterNewEpisodes: MediaItemAdapter
 
-    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
+    override fun onCreateView(
+        inflater: LayoutInflater,
+        container: ViewGroup?,
+        savedInstanceState: Bundle?
+    ): View? {
         return inflater.inflate(R.layout.fragment_home, container, false)
     }
 

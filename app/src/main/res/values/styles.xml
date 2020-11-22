@@ -11,9 +11,13 @@
         <item name="themeSecondary">@color/themeSecondaryLight</item>
         <item name="textPrimary">@color/textPrimaryLight</item>
         <item name="textSecondary">@color/textSecondaryLight</item>
-        <item name="android:textColor">@color/textSecondaryLight</item>
+        <item name="android:textColor">@color/textPrimaryLight</item>
         <item name="android:textColorPrimary">@color/textPrimaryLight</item>
         <item name="android:textColorHint">@color/textSecondaryLight</item>
+
+        <item name="iconAction">@color/iconActionLight</item>
+        <item name="iconNoAction">@color/iconNoActionLight</item>
+        <item name="buttonBackground">@color/buttonBackgroundLight</item>
     </style>
 
     <style name="AppThemeDark" parent="AppTheme">
@@ -24,6 +28,10 @@
         <item name="android:textColor">@color/textPrimaryDark</item>
         <item name="android:textColorPrimary">@color/textPrimaryDark</item>
         <item name="android:textColorHint">@color/textSecondaryDark</item>
+
+        <item name="iconAction">@color/iconActionDark</item>
+        <item name="iconNoAction">@color/iconNoActionDark</item>
+        <item name="buttonBackground">@color/buttonBackgroundDark</item>
     </style>
 
     <!-- player theme -->

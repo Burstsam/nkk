@@ -4,7 +4,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="#f5f5f5"
+    android:background="?themePrimary"
     tools:context=".ui.fragments.MediaFragment">
 
     <androidx.core.widget.NestedScrollView
@@ -60,7 +60,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginStart="7dp"
-                    android:background="@drawable/shape_rounden_corner"
+                    android:background="@drawable/shape_rounded_corner"
                     android:paddingStart="3dp"
                     android:paddingTop="2dp"
                     android:paddingEnd="3dp"
@@ -86,11 +86,12 @@
                 android:gravity="center"
                 android:text="@string/button_play"
                 android:textAllCaps="false"
-                android:textColor="@android:color/primary_text_dark"
+                android:textColor="?themePrimary"
                 android:textSize="16sp"
-                app:backgroundTint="#4A4141"
+                app:backgroundTint="?buttonBackground"
                 app:icon="@drawable/ic_baseline_play_arrow_24"
-                app:iconGravity="textStart" />
+                app:iconGravity="textStart"
+                app:iconTint="?themePrimary" />
 
             <TextView
                 android:id="@+id/text_title"
@@ -134,13 +135,14 @@
                         android:layout_width="48dp"
                         android:layout_height="48dp"
                         android:src="@drawable/ic_baseline_add_24"
-                        app:tint="#4A4141" />
+                        app:tint="?buttonBackground" />
 
                     <TextView
                         android:id="@+id/text_my_list_action"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="@string/my_list"
+                        android:textColor="?textSecondary"
                         android:textSize="12sp" />
                 </LinearLayout>
             </LinearLayout>
