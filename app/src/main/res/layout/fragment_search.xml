@@ -16,6 +16,7 @@
         android:iconifiedByDefault="false"
         android:paddingBottom="5dp"
         android:queryHint="@string/search_hint"
+        android:searchIcon="@drawable/ic_baseline_search_24"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent">

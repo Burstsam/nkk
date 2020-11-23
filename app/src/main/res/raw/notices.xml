@@ -60,4 +60,9 @@
         <copyright>Copyright 2020 Wasabeef</copyright>
         <license>Apache Software License 2.0</license>
     </notice>
+    <notice>
+        <name>The Movie Database API</name>
+        <url>https://www.themoviedb.org</url>
+        <copyright>This product uses the TMDb API but is not endorsed or certified by TMDb</copyright>
+    </notice>
 </notices>

@@ -1,6 +1,5 @@
 package org.mosad.teapod.ui.fragments
 
-import android.R.color
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -17,8 +16,6 @@ import org.mosad.teapod.parser.AoDParser
 import org.mosad.teapod.util.StorageController
 import org.mosad.teapod.util.adapter.MediaItemAdapter
 import org.mosad.teapod.util.decoration.MediaItemDecoration
-import java.lang.String
-
 
 class HomeFragment : Fragment() {
 

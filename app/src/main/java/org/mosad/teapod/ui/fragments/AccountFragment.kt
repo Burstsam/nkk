@@ -46,11 +46,24 @@ class AccountFragment : Fragment() {
         }
 
         text_licenses.setOnClickListener {
+            val selectedTheme = requireContext().applicationInfo.theme
+
+            val dialogCss = when (selectedTheme) {
+                R.style.AppTheme_Dark -> R.string.license_dialog_style_dark
+                else -> R.string.license_dialog_style_light
+            }
+
+            val themeId = when (selectedTheme) {
+                R.style.AppTheme_Dark -> R.style.LicensesDialogTheme_Dark
+                else -> R.style.AppTheme_Light
+            }
+
             LicensesDialog.Builder(requireContext())
                 .setNotices(R.raw.notices)
                 .setTitle(R.string.licenses)
                 .setIncludeOwnLicense(true)
-                .setThemeResourceId(R.style.AppTheme)
+                .setThemeResourceId(themeId)
+                .setNoticesCssStyle(dialogCss)
                 .build()
                 .show()
         }

@@ -17,7 +17,7 @@
 
     <!-- dark theme colors -->
     <color name="themePrimaryDark">#000000</color>
-    <color name="themeSecondaryDark">#303030</color>
+    <color name="themeSecondaryDark">#171717</color>
     <color name="textPrimaryDark">#deffffff</color>
     <color name="textSecondaryDark">#99ffffff</color>
     <color name="iconActionDark">#99ffffff</color>

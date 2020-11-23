@@ -6,7 +6,7 @@
         <item name="colorAccent">@color/colorAccent</item>
     </style>
 
-    <style name="AppThemeLight" parent="AppTheme">
+    <style name="AppTheme.Light" parent="AppTheme">
         <item name="themePrimary">@color/themePrimaryLight</item>
         <item name="themeSecondary">@color/themeSecondaryLight</item>
         <item name="textPrimary">@color/textPrimaryLight</item>
@@ -14,13 +14,15 @@
         <item name="android:textColor">@color/textPrimaryLight</item>
         <item name="android:textColorPrimary">@color/textPrimaryLight</item>
         <item name="android:textColorHint">@color/textSecondaryLight</item>
-
         <item name="iconAction">@color/iconActionLight</item>
         <item name="iconNoAction">@color/iconNoActionLight</item>
         <item name="buttonBackground">@color/buttonBackgroundLight</item>
+        <item name="md_background_color">@color/themeSecondaryLight</item>
+        <item name="md_color_title">@color/textPrimaryLight</item>
+        <item name="md_color_content">@color/textSecondaryLight</item>
     </style>
 
-    <style name="AppThemeDark" parent="AppTheme">
+    <style name="AppTheme.Dark" parent="AppTheme">
         <item name="themePrimary">@color/themePrimaryDark</item>
         <item name="themeSecondary">@color/themeSecondaryDark</item>
         <item name="textPrimary">@color/textPrimaryDark</item>
@@ -28,10 +30,16 @@
         <item name="android:textColor">@color/textPrimaryDark</item>
         <item name="android:textColorPrimary">@color/textPrimaryDark</item>
         <item name="android:textColorHint">@color/textSecondaryDark</item>
-
         <item name="iconAction">@color/iconActionDark</item>
         <item name="iconNoAction">@color/iconNoActionDark</item>
         <item name="buttonBackground">@color/buttonBackgroundDark</item>
+        <item name="md_background_color">@color/themeSecondaryDark</item>
+        <item name="md_color_title">@color/textPrimaryDark</item>
+        <item name="md_color_content">@color/textSecondaryDark</item>
+    </style>
+
+    <style name="LicensesDialogTheme.Dark" parent="Theme.AppCompat.Dialog">
+        <item name="android:windowBackground">@color/themeSecondaryDark</item>
     </style>
 
     <!-- player theme -->
