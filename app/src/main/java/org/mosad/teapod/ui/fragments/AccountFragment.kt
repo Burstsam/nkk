@@ -7,16 +7,20 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
 import com.afollestad.materialdialogs.MaterialDialog
+import com.afollestad.materialdialogs.list.listItemsSingleChoice
 import de.psdev.licensesdialog.LicensesDialog
 import kotlinx.android.synthetic.main.fragment_account.*
 import org.mosad.teapod.BuildConfig
+import org.mosad.teapod.MainActivity
 import org.mosad.teapod.R
 import org.mosad.teapod.parser.AoDParser
 import org.mosad.teapod.preferences.EncryptedPreferences
 import org.mosad.teapod.preferences.Preferences
 import org.mosad.teapod.ui.components.LoginDialog
+import org.mosad.teapod.util.DataTypes.Theme
 
 class AccountFragment : Fragment() {
+
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
         return inflater.inflate(R.layout.fragment_account, container, false)
@@ -27,6 +31,11 @@ class AccountFragment : Fragment() {
 
         text_account_login.text = EncryptedPreferences.login
         text_info_about_desc.text = getString(R.string.info_about_desc, BuildConfig.VERSION_NAME, getString(R.string.build_time))
+        text_theme_selected.text = when (Preferences.theme) {
+            Theme.DARK -> getString(R.string.theme_dark)
+            else -> getString(R.string.theme_light)
+        }
+
         switch_secondary.isChecked = Preferences.preferSecondary
         switch_autoplay.isChecked = Preferences.autoplay
 
@@ -38,6 +47,10 @@ class AccountFragment : Fragment() {
             showLoginDialog(true)
         }
 
+        linear_theme.setOnClickListener {
+            showThemeDialog()
+        }
+
         linear_about.setOnClickListener {
             MaterialDialog(requireContext())
                 .title(R.string.info_about)
@@ -46,15 +59,14 @@ class AccountFragment : Fragment() {
         }
 
         text_licenses.setOnClickListener {
-            val selectedTheme = requireContext().applicationInfo.theme
 
-            val dialogCss = when (selectedTheme) {
-                R.style.AppTheme_Dark -> R.string.license_dialog_style_dark
+            val dialogCss = when (Preferences.theme) {
+                Theme.DARK -> R.string.license_dialog_style_dark
                 else -> R.string.license_dialog_style_light
             }
 
-            val themeId = when (selectedTheme) {
-                R.style.AppTheme_Dark -> R.style.LicensesDialogTheme_Dark
+            val themeId = when (Preferences.theme) {
+                Theme.DARK -> R.style.LicensesDialogTheme_Dark
                 else -> R.style.AppTheme_Light
             }
 
@@ -88,6 +100,26 @@ class AccountFragment : Fragment() {
         }.show {
             login = EncryptedPreferences.login
             password = ""
+        }
+    }
+
+    private fun showThemeDialog() {
+        val themes = listOf(
+            resources.getString(R.string.theme_light),
+            resources.getString(R.string.theme_dark)
+        )
+
+        MaterialDialog(requireContext()).show {
+            title(R.string.theme)
+            listItemsSingleChoice(items = themes, initialSelection = Preferences.theme.ordinal) { _, index, _ ->
+                when(index) {
+                    0 -> Preferences.saveTheme(context, Theme.LIGHT)
+                    1 -> Preferences.saveTheme(context, Theme.DARK)
+                    else -> Preferences.saveTheme(context, Theme.LIGHT)
+                }
+
+                (activity as MainActivity).restart()
+            }
         }
     }
 }

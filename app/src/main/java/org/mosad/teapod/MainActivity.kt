@@ -38,6 +38,7 @@ import org.mosad.teapod.preferences.EncryptedPreferences
 import org.mosad.teapod.preferences.Preferences
 import org.mosad.teapod.ui.components.LoginDialog
 import org.mosad.teapod.ui.fragments.*
+import org.mosad.teapod.util.DataTypes
 import org.mosad.teapod.util.StorageController
 import org.mosad.teapod.util.TMDBApiController
 import kotlin.system.measureTimeMillis
@@ -46,12 +47,21 @@ class MainActivity : AppCompatActivity(), BottomNavigationView.OnNavigationItemS
 
     private var activeBaseFragment: Fragment = HomeFragment() // the currently active fragment, home at the start
 
+    companion object {
+        var wasInitialized = false
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
+        if (!wasInitialized) {
+            load()
+        }
+
+        theme.applyStyle(getThemeResource(), true)
+
         setContentView(R.layout.activity_main)
         nav_view.setOnNavigationItemSelectedListener(this)
-
-        load()
 
         supportFragmentManager.commit {
             replace(R.id.nav_host_fragment, activeBaseFragment, activeBaseFragment.javaClass.simpleName)
@@ -102,6 +112,13 @@ class MainActivity : AppCompatActivity(), BottomNavigationView.OnNavigationItemS
         return ret
     }
 
+    private fun getThemeResource(): Int {
+        return when (Preferences.theme) {
+            DataTypes.Theme.DARK -> R.style.AppTheme_Dark
+            else -> R.style.AppTheme_Light
+        }
+    }
+
     private fun load() {
         // running login and list in parallel does not bring any speed improvements
         val time = measureTimeMillis {
@@ -118,8 +135,24 @@ class MainActivity : AppCompatActivity(), BottomNavigationView.OnNavigationItemS
 
             StorageController.load(this)
             AoDParser.initialLoading()
+
+            wasInitialized = true
         }
         Log.i(javaClass.name, "login and list in $time ms")
+    }
+
+    private fun showLoginDialog(firstTry: Boolean) {
+        LoginDialog(this, firstTry).positiveButton {
+            EncryptedPreferences.saveCredentials(login, password, context)
+
+            if (!AoDParser.login()) {
+                showLoginDialog(false)
+                Log.w(javaClass.name, "Login failed, please try again.")
+            }
+        }.negativeButton {
+            Log.i(javaClass.name, "Login canceled, exiting.")
+            finish()
+        }.show()
     }
 
     /**
@@ -159,17 +192,15 @@ class MainActivity : AppCompatActivity(), BottomNavigationView.OnNavigationItemS
         startActivity(intent)
     }
 
-    private fun showLoginDialog(firstTry: Boolean) {
-        LoginDialog(this, firstTry).positiveButton {
-            EncryptedPreferences.saveCredentials(login, password, context)
-
-            if (!AoDParser.login()) {
-                showLoginDialog(false)
-                Log.w(javaClass.name, "Login failed, please try again.")
-            }
-        }.negativeButton {
-            Log.i(javaClass.name, "Login canceled, exiting.")
-            finish()
-        }.show()
+    /**
+     * use custom restart instead of recreate(), since it has animations
+     */
+    fun restart() {
+        val restartIntent = intent
+        restartIntent.addFlags(Intent.FLAG_ACTIVITY_NO_ANIMATION)
+        finish()
+        startActivity(restartIntent)
     }
+
+
 }

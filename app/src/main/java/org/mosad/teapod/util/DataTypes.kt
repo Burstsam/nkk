@@ -6,6 +6,11 @@ class DataTypes {
         MOVIE,
         TVSHOW
     }
+
+    enum class Theme(val str: String) {
+        LIGHT("Light"),
+        DARK("Dark")
+    }
 }
 
 /**
