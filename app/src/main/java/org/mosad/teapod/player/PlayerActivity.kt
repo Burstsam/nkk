@@ -185,7 +185,7 @@ class PlayerActivity : AppCompatActivity() {
     private fun initActions() {
         exo_close_player.setOnClickListener { this.finish() }
         rwd_10.setOnButtonClickListener { rewind() }
-        ffwd_10.setOnButtonClickListener { forward() }
+        ffwd_10.setOnButtonClickListener { fastForward() }
         button_next_ep.setOnClickListener { playNextEpisode() }
     }
 
@@ -273,7 +273,7 @@ class PlayerActivity : AppCompatActivity() {
         rwd_10_indicator.runOnClickAnimation()
     }
 
-    private fun forward() {
+    private fun fastForward() {
         player.seekTo(player.currentPosition + fwdTime)
 
         // hide/show needed components
@@ -403,7 +403,7 @@ class PlayerActivity : AppCompatActivity() {
             if (eventPosX < viewCenterX) {
                 rewind()
             } else {
-                forward()
+                fastForward()
             }
 
             return true
