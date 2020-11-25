@@ -135,7 +135,8 @@
                         android:layout_width="48dp"
                         android:layout_height="48dp"
                         android:src="@drawable/ic_baseline_add_24"
-                        app:tint="?buttonBackground" />
+                        app:tint="?buttonBackground"
+                        android:contentDescription="@string/my_list" />
 
                     <TextView
                         android:id="@+id/text_my_list_action"
@@ -158,5 +159,21 @@
                 tools:listitem="@layout/item_episode" />
         </LinearLayout>
     </androidx.core.widget.NestedScrollView>
+
+    <FrameLayout
+        android:id="@+id/frame_loading"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="?themePrimary"
+        android:visibility="gone">
+
+        <com.google.android.material.progressindicator.ProgressIndicator
+            android:id="@+id/loadingIndicator"
+            style="@style/Widget.MaterialComponents.ProgressIndicator.Circular.Indeterminate"
+            android:layout_width="70dp"
+            android:layout_height="70dp"
+            android:layout_gravity="center"
+            tools:visibility="visible" />
+    </FrameLayout>
 
 </FrameLayout>

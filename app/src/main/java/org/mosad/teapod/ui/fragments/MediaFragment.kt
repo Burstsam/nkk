@@ -13,22 +13,26 @@ import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
 import com.bumptech.glide.request.RequestOptions
 import jp.wasabeef.glide.transformations.BlurTransformation
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import org.mosad.teapod.MainActivity
 import org.mosad.teapod.R
 import org.mosad.teapod.databinding.FragmentMediaBinding
 import org.mosad.teapod.parser.AoDParser
+import org.mosad.teapod.util.*
 import org.mosad.teapod.util.DataTypes.MediaType
-import org.mosad.teapod.util.Episode
-import org.mosad.teapod.util.Media
-import org.mosad.teapod.util.StorageController
-import org.mosad.teapod.util.TMDBResponse
 import org.mosad.teapod.util.adapter.EpisodeItemAdapter
 
-class MediaFragment(private val media: Media, private val tmdb: TMDBResponse) : Fragment() {
+class MediaFragment(private val mediaId: Int) : Fragment() {
 
     private lateinit var binding: FragmentMediaBinding
     private lateinit var adapterRecEpisodes: EpisodeItemAdapter
     private lateinit var viewManager: RecyclerView.LayoutManager
+
+    private lateinit var media: Media
+    private lateinit var tmdb: TMDBResponse
     private lateinit var nextEpisode: Episode
 
     companion object {
@@ -46,15 +50,24 @@ class MediaFragment(private val media: Media, private val tmdb: TMDBResponse) : 
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+        binding.frameLoading.visibility = View.VISIBLE
 
-        initGUI()
-        initActions()
+        GlobalScope.launch {
+            // load the streams for the selected media
+            media = AoDParser.getMediaById(mediaId)
+            tmdb = TMDBApiController().search(media.info.title, media.type)
+
+            withContext(Dispatchers.Main) {
+                updateGUI()
+                initActions()
+            }
+        }
     }
 
     /**
      * if tmdb data is present, use it, else use the aod data
      */
-    private fun initGUI() {
+    private fun updateGUI() = with(binding) {
         // generic gui
         val backdropUrl = if (tmdb.backdropUrl.isNotEmpty()) tmdb.backdropUrl else media.info.posterUrl
         val posterUrl = if (tmdb.posterUrl.isNotEmpty()) tmdb.posterUrl else media.info.posterUrl
@@ -62,27 +75,27 @@ class MediaFragment(private val media: Media, private val tmdb: TMDBResponse) : 
         Glide.with(requireContext()).load(backdropUrl)
             .apply(RequestOptions.placeholderOf(ColorDrawable(Color.DKGRAY)))
             .apply(RequestOptions.bitmapTransform(BlurTransformation(20, 3)))
-            .into(binding.imageBackdrop)
+            .into(imageBackdrop)
 
         Glide.with(requireContext()).load(posterUrl)
-            .into(binding.imagePoster)
+            .into(imagePoster)
 
-        binding.textTitle.text = media.info.title
-        binding.textYear.text = media.info.year.toString()
-        binding.textAge.text = media.info.age.toString()
-        binding.textOverview.text = media.info.shortDesc
+        textTitle.text = media.info.title
+        textYear.text = media.info.year.toString()
+        textAge.text = media.info.age.toString()
+        textOverview.text = media.info.shortDesc
         if (StorageController.myList.contains(media.id)) {
-            Glide.with(requireContext()).load(R.drawable.ic_baseline_check_24).into(binding.imageMyListAction)
+            Glide.with(requireContext()).load(R.drawable.ic_baseline_check_24).into(imageMyListAction)
         } else {
-            Glide.with(requireContext()).load(R.drawable.ic_baseline_add_24).into(binding.imageMyListAction)
+            Glide.with(requireContext()).load(R.drawable.ic_baseline_add_24).into(imageMyListAction)
         }
 
         // specific gui
         if (media.type == MediaType.TVSHOW) {
             adapterRecEpisodes = EpisodeItemAdapter(media.episodes)
             viewManager = LinearLayoutManager(context)
-            binding.recyclerEpisodes.layoutManager = viewManager
-            binding.recyclerEpisodes.adapter = adapterRecEpisodes
+            recyclerEpisodes.layoutManager = viewManager
+            recyclerEpisodes.adapter = adapterRecEpisodes
 
             binding.textEpisodesOrRuntime.text = getString(R.string.text_episodes_count, media.info.episodesCount)
 
@@ -94,16 +107,18 @@ class MediaFragment(private val media: Media, private val tmdb: TMDBResponse) : 
             }
 
             // title is the next episodes title
-            binding.textTitle.text = nextEpisode.title
+            textTitle.text = nextEpisode.title
         } else if (media.type == MediaType.MOVIE) {
-            binding.recyclerEpisodes.visibility = View.GONE
+            recyclerEpisodes.visibility = View.GONE
 
             if (tmdb.runtime > 0) {
-                binding.textEpisodesOrRuntime.text = getString(R.string.text_runtime, tmdb.runtime)
+                textEpisodesOrRuntime.text = getString(R.string.text_runtime, tmdb.runtime)
             } else {
-                binding.textEpisodesOrRuntime.visibility = View.GONE
+                textEpisodesOrRuntime.visibility = View.GONE
             }
         }
+
+        frameLoading.visibility = View.GONE // hide loading indicator
     }
 
     private fun initActions() {
@@ -168,6 +183,5 @@ class MediaFragment(private val media: Media, private val tmdb: TMDBResponse) : 
         adapterRecEpisodes.updateWatchedState(true, media.episodes.indexOf(ep))
         adapterRecEpisodes.notifyDataSetChanged()
     }
-
 
 }

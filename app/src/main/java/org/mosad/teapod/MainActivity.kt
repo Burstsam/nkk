@@ -55,16 +55,13 @@ class MainActivity : AppCompatActivity(), BottomNavigationView.OnNavigationItemS
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        binding = ActivityMainBinding.inflate(layoutInflater)
 
-        if (!wasInitialized) {
-            load()
-        }
-
+        if (!wasInitialized) { load() }
         theme.applyStyle(getThemeResource(), true)
 
-        setContentView(binding.root)
+        binding = ActivityMainBinding.inflate(layoutInflater)
         binding.navView.setOnNavigationItemSelectedListener(this)
+        setContentView(binding.root)
 
         supportFragmentManager.commit {
             replace(R.id.nav_host_fragment, activeBaseFragment, activeBaseFragment.javaClass.simpleName)
@@ -160,30 +157,15 @@ class MainActivity : AppCompatActivity(), BottomNavigationView.OnNavigationItemS
 
     /**
      * Show the media fragment for the selected media.
-     * While loading show the loading fragment.
-     * The loading and media fragment are not stored in activeBaseFragment,
-     * as the don't replace a fragment but are added on top of one.
+     * The media fragment is not stored in activeBaseFragment,
+     * as it doesn't replace a fragment but is added on top of one.
      */
     fun showMediaFragment(mediaId: Int) = GlobalScope.launch {
-        val loadingFragment = LoadingFragment()
-        supportFragmentManager.commit {
-            add(R.id.nav_host_fragment, loadingFragment, "MediaFragment")
-            show(loadingFragment)
-        }
-
-        // load the streams for the selected media
-        val media = AoDParser.getMediaById(mediaId)
-        val tmdb = TMDBApiController().search(media.info.title, media.type)
-
-        val mediaFragment = MediaFragment(media, tmdb)
+        val mediaFragment = MediaFragment(mediaId)
         supportFragmentManager.commit {
             add(R.id.nav_host_fragment, mediaFragment, "MediaFragment")
             addToBackStack(null)
             show(mediaFragment)
-        }
-
-        supportFragmentManager.commit {
-            remove(loadingFragment)
         }
     }
 
