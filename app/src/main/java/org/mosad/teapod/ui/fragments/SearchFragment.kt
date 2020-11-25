@@ -6,20 +6,21 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.SearchView
 import androidx.fragment.app.Fragment
-import kotlinx.android.synthetic.main.fragment_search.*
 import kotlinx.coroutines.*
 import org.mosad.teapod.MainActivity
-import org.mosad.teapod.R
+import org.mosad.teapod.databinding.FragmentSearchBinding
 import org.mosad.teapod.parser.AoDParser
 import org.mosad.teapod.util.decoration.MediaItemDecoration
 import org.mosad.teapod.util.adapter.MediaItemAdapter
 
 class SearchFragment : Fragment() {
 
+    private lateinit var binding: FragmentSearchBinding
     private var adapter : MediaItemAdapter? = null
 
-    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
-        return inflater.inflate(R.layout.fragment_search, container, false)
+    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
+        binding = FragmentSearchBinding.inflate(inflater, container, false)
+        return binding.root
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
@@ -31,12 +32,12 @@ class SearchFragment : Fragment() {
                 context?.let {
                     adapter = MediaItemAdapter(AoDParser.itemMediaList)
                     adapter!!.onItemClick = { mediaId, _ ->
-                        search_text.clearFocus()
+                        binding.searchText.clearFocus()
                         (activity as MainActivity).showMediaFragment(mediaId)
                     }
 
-                    recycler_media_search.adapter = adapter
-                    recycler_media_search.addItemDecoration(MediaItemDecoration(9))
+                    binding.recyclerMediaSearch.adapter = adapter
+                    binding.recyclerMediaSearch.addItemDecoration(MediaItemDecoration(9))
                 }
             }
         }
@@ -45,7 +46,7 @@ class SearchFragment : Fragment() {
     }
 
     private fun initActions() {
-        search_text.setOnQueryTextListener(object : SearchView.OnQueryTextListener {
+        binding.searchText.setOnQueryTextListener(object : SearchView.OnQueryTextListener {
             override fun onQueryTextSubmit(query: String?): Boolean {
                 adapter?.filter?.filter(query)
                 adapter?.notifyDataSetChanged()

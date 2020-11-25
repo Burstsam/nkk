@@ -13,9 +13,9 @@ import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
 import com.bumptech.glide.request.RequestOptions
 import jp.wasabeef.glide.transformations.BlurTransformation
-import kotlinx.android.synthetic.main.fragment_media.*
 import org.mosad.teapod.MainActivity
 import org.mosad.teapod.R
+import org.mosad.teapod.databinding.FragmentMediaBinding
 import org.mosad.teapod.parser.AoDParser
 import org.mosad.teapod.util.DataTypes.MediaType
 import org.mosad.teapod.util.Episode
@@ -26,6 +26,7 @@ import org.mosad.teapod.util.adapter.EpisodeItemAdapter
 
 class MediaFragment(private val media: Media, private val tmdb: TMDBResponse) : Fragment() {
 
+    private lateinit var binding: FragmentMediaBinding
     private lateinit var adapterRecEpisodes: EpisodeItemAdapter
     private lateinit var viewManager: RecyclerView.LayoutManager
     private lateinit var nextEpisode: Episode
@@ -38,8 +39,9 @@ class MediaFragment(private val media: Media, private val tmdb: TMDBResponse) : 
         instance = this
     }
 
-    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
-        return inflater.inflate(R.layout.fragment_media, container, false)
+    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
+        binding = FragmentMediaBinding.inflate(inflater, container, false)
+        return binding.root
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
@@ -60,29 +62,29 @@ class MediaFragment(private val media: Media, private val tmdb: TMDBResponse) : 
         Glide.with(requireContext()).load(backdropUrl)
             .apply(RequestOptions.placeholderOf(ColorDrawable(Color.DKGRAY)))
             .apply(RequestOptions.bitmapTransform(BlurTransformation(20, 3)))
-            .into(image_backdrop)
+            .into(binding.imageBackdrop)
 
         Glide.with(requireContext()).load(posterUrl)
-            .into(image_poster)
+            .into(binding.imagePoster)
 
-        text_title.text = media.info.title
-        text_year.text = media.info.year.toString()
-        text_age.text = media.info.age.toString()
-        text_overview.text = media.info.shortDesc
+        binding.textTitle.text = media.info.title
+        binding.textYear.text = media.info.year.toString()
+        binding.textAge.text = media.info.age.toString()
+        binding.textOverview.text = media.info.shortDesc
         if (StorageController.myList.contains(media.id)) {
-            Glide.with(requireContext()).load(R.drawable.ic_baseline_check_24).into(image_my_list_action)
+            Glide.with(requireContext()).load(R.drawable.ic_baseline_check_24).into(binding.imageMyListAction)
         } else {
-            Glide.with(requireContext()).load(R.drawable.ic_baseline_add_24).into(image_my_list_action)
+            Glide.with(requireContext()).load(R.drawable.ic_baseline_add_24).into(binding.imageMyListAction)
         }
 
         // specific gui
         if (media.type == MediaType.TVSHOW) {
             adapterRecEpisodes = EpisodeItemAdapter(media.episodes)
             viewManager = LinearLayoutManager(context)
-            recycler_episodes.layoutManager = viewManager
-            recycler_episodes.adapter = adapterRecEpisodes
+            binding.recyclerEpisodes.layoutManager = viewManager
+            binding.recyclerEpisodes.adapter = adapterRecEpisodes
 
-            text_episodes_or_runtime.text = getString(R.string.text_episodes_count, media.info.episodesCount)
+            binding.textEpisodesOrRuntime.text = getString(R.string.text_episodes_count, media.info.episodesCount)
 
             // get next episode
             nextEpisode = if (media.episodes.firstOrNull{ !it.watched } != null) {
@@ -92,20 +94,20 @@ class MediaFragment(private val media: Media, private val tmdb: TMDBResponse) : 
             }
 
             // title is the next episodes title
-            text_title.text = nextEpisode.title
+            binding.textTitle.text = nextEpisode.title
         } else if (media.type == MediaType.MOVIE) {
-            recycler_episodes.visibility = View.GONE
+            binding.recyclerEpisodes.visibility = View.GONE
 
             if (tmdb.runtime > 0) {
-                text_episodes_or_runtime.text = getString(R.string.text_runtime, tmdb.runtime)
+                binding.textEpisodesOrRuntime.text = getString(R.string.text_runtime, tmdb.runtime)
             } else {
-                text_episodes_or_runtime.visibility = View.GONE
+                binding.textEpisodesOrRuntime.visibility = View.GONE
             }
         }
     }
 
     private fun initActions() {
-        button_play.setOnClickListener {
+        binding.buttonPlay.setOnClickListener {
             when (media.type) {
                 MediaType.MOVIE -> playStream(media.episodes.first())
                 MediaType.TVSHOW -> playEpisode(nextEpisode)
@@ -114,13 +116,13 @@ class MediaFragment(private val media: Media, private val tmdb: TMDBResponse) : 
         }
 
         // add or remove media from myList
-        linear_my_list_action.setOnClickListener {
+        binding.linearMyListAction.setOnClickListener {
             if (StorageController.myList.contains(media.id)) {
                 StorageController.myList.remove(media.id)
-                Glide.with(requireContext()).load(R.drawable.ic_baseline_add_24).into(image_my_list_action)
+                Glide.with(requireContext()).load(R.drawable.ic_baseline_add_24).into(binding.imageMyListAction)
             } else {
                 StorageController.myList.add(media.id)
-                Glide.with(requireContext()).load(R.drawable.ic_baseline_check_24).into(image_my_list_action)
+                Glide.with(requireContext()).load(R.drawable.ic_baseline_check_24).into(binding.imageMyListAction)
             }
             StorageController.saveMyList(requireContext())
 
@@ -153,7 +155,7 @@ class MediaFragment(private val media: Media, private val tmdb: TMDBResponse) : 
         } else {
             media.episodes.first()
         }
-        text_title.text = nextEpisode.title
+        binding.textTitle.text = nextEpisode.title
     }
 
     private fun playStream(ep: Episode) {

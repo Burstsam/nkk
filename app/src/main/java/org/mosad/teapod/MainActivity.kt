@@ -30,10 +30,11 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.commit
 import com.google.android.material.bottomnavigation.BottomNavigationView
-import kotlinx.android.synthetic.main.activity_main.*
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
+import org.mosad.teapod.databinding.ActivityMainBinding
 import org.mosad.teapod.parser.AoDParser
+import org.mosad.teapod.player.PlayerActivity
 import org.mosad.teapod.preferences.EncryptedPreferences
 import org.mosad.teapod.preferences.Preferences
 import org.mosad.teapod.ui.components.LoginDialog
@@ -45,6 +46,7 @@ import kotlin.system.measureTimeMillis
 
 class MainActivity : AppCompatActivity(), BottomNavigationView.OnNavigationItemSelectedListener {
 
+    private lateinit var binding: ActivityMainBinding
     private var activeBaseFragment: Fragment = HomeFragment() // the currently active fragment, home at the start
 
     companion object {
@@ -53,6 +55,7 @@ class MainActivity : AppCompatActivity(), BottomNavigationView.OnNavigationItemS
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        binding = ActivityMainBinding.inflate(layoutInflater)
 
         if (!wasInitialized) {
             load()
@@ -60,8 +63,8 @@ class MainActivity : AppCompatActivity(), BottomNavigationView.OnNavigationItemS
 
         theme.applyStyle(getThemeResource(), true)
 
-        setContentView(R.layout.activity_main)
-        nav_view.setOnNavigationItemSelectedListener(this)
+        setContentView(binding.root)
+        binding.navView.setOnNavigationItemSelectedListener(this)
 
         supportFragmentManager.commit {
             replace(R.id.nav_host_fragment, activeBaseFragment, activeBaseFragment.javaClass.simpleName)
@@ -73,7 +76,7 @@ class MainActivity : AppCompatActivity(), BottomNavigationView.OnNavigationItemS
             supportFragmentManager.popBackStack()
         } else {
             if (activeBaseFragment !is HomeFragment) {
-                nav_view.selectedItemId = R.id.navigation_home
+                binding.navView.selectedItemId = R.id.navigation_home
             } else {
                 super.onBackPressed()
             }

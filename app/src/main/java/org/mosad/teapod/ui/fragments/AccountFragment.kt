@@ -9,10 +9,10 @@ import androidx.fragment.app.Fragment
 import com.afollestad.materialdialogs.MaterialDialog
 import com.afollestad.materialdialogs.list.listItemsSingleChoice
 import de.psdev.licensesdialog.LicensesDialog
-import kotlinx.android.synthetic.main.fragment_account.*
 import org.mosad.teapod.BuildConfig
 import org.mosad.teapod.MainActivity
 import org.mosad.teapod.R
+import org.mosad.teapod.databinding.FragmentAccountBinding
 import org.mosad.teapod.parser.AoDParser
 import org.mosad.teapod.preferences.EncryptedPreferences
 import org.mosad.teapod.preferences.Preferences
@@ -21,44 +21,46 @@ import org.mosad.teapod.util.DataTypes.Theme
 
 class AccountFragment : Fragment() {
 
+    private lateinit var binding: FragmentAccountBinding
 
-    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
-        return inflater.inflate(R.layout.fragment_account, container, false)
+    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
+        binding = FragmentAccountBinding.inflate(inflater, container, false)
+        return binding.root
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        text_account_login.text = EncryptedPreferences.login
-        text_info_about_desc.text = getString(R.string.info_about_desc, BuildConfig.VERSION_NAME, getString(R.string.build_time))
-        text_theme_selected.text = when (Preferences.theme) {
+        binding.textAccountLogin.text = EncryptedPreferences.login
+        binding.textInfoAboutDesc.text = getString(R.string.info_about_desc, BuildConfig.VERSION_NAME, getString(R.string.build_time))
+        binding.textThemeSelected.text = when (Preferences.theme) {
             Theme.DARK -> getString(R.string.theme_dark)
             else -> getString(R.string.theme_light)
         }
 
-        switch_secondary.isChecked = Preferences.preferSecondary
-        switch_autoplay.isChecked = Preferences.autoplay
+        binding.switchSecondary.isChecked = Preferences.preferSecondary
+        binding.switchAutoplay.isChecked = Preferences.autoplay
 
         initActions()
     }
 
     private fun initActions() {
-        linear_account_login.setOnClickListener {
+        binding.linearAccountLogin.setOnClickListener {
             showLoginDialog(true)
         }
 
-        linear_theme.setOnClickListener {
+        binding.linearTheme.setOnClickListener {
             showThemeDialog()
         }
 
-        linear_about.setOnClickListener {
+        binding.linearInfo.setOnClickListener {
             MaterialDialog(requireContext())
                 .title(R.string.info_about)
                 .message(R.string.info_about_dialog)
                 .show()
         }
 
-        text_licenses.setOnClickListener {
+        binding.textLicenses.setOnClickListener {
 
             val dialogCss = when (Preferences.theme) {
                 Theme.DARK -> R.string.license_dialog_style_dark
@@ -80,12 +82,12 @@ class AccountFragment : Fragment() {
                 .show()
         }
 
-        switch_secondary.setOnClickListener {
-            Preferences.savePreferSecondary(requireContext(), switch_secondary.isChecked)
+        binding.switchSecondary.setOnClickListener {
+            Preferences.savePreferSecondary(requireContext(), binding.switchSecondary.isChecked)
         }
 
-        switch_autoplay.setOnClickListener {
-            Preferences.saveAutoplay(requireContext(), switch_autoplay.isChecked)
+        binding.switchAutoplay.setOnClickListener {
+            Preferences.saveAutoplay(requireContext(), binding.switchAutoplay.isChecked)
         }
     }
 

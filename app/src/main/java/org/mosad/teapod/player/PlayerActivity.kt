@@ -1,4 +1,4 @@
-package org.mosad.teapod
+package org.mosad.teapod.player
 
 import android.animation.Animator
 import android.animation.AnimatorListenerAdapter
@@ -27,7 +27,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import org.mosad.teapod.player.PlayerViewModel
+import org.mosad.teapod.R
 import org.mosad.teapod.preferences.Preferences
 import org.mosad.teapod.util.Episode
 import java.util.*
@@ -36,13 +36,13 @@ import kotlin.concurrent.scheduleAtFixedRate
 
 class PlayerActivity : AppCompatActivity() {
 
+    private val model: PlayerViewModel by viewModels()
+
     private lateinit var player: SimpleExoPlayer
     private lateinit var dataSourceFactory: DataSource.Factory
     private lateinit var controller: StyledPlayerControlView
     private lateinit var gestureDetector: GestureDetectorCompat
     private lateinit var timerUpdates: TimerTask
-
-    private val model: PlayerViewModel by viewModels()
 
     private var playWhenReady = true
     private var currentWindow = 0
@@ -78,7 +78,7 @@ class PlayerActivity : AppCompatActivity() {
         super.onStart()
         if (Util.SDK_INT > 23) {
             initPlayer()
-            if (video_view != null) video_view.onResume()
+            video_view?.onResume()
         }
     }
 
@@ -86,14 +86,14 @@ class PlayerActivity : AppCompatActivity() {
         super.onResume()
         if (Util.SDK_INT <= 23) {
             initPlayer()
-            if (video_view != null) video_view.onResume()
+            video_view?.onResume()
         }
     }
 
     override fun onPause() {
         super.onPause()
         if (Util.SDK_INT <= 23) {
-            if (video_view != null) video_view.onPause()
+            video_view?.onPause()
             releasePlayer()
         }
     }

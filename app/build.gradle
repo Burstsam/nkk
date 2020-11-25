@@ -18,6 +18,10 @@ android {
         setProperty("archivesBaseName", "teapod-$versionName")
     }
 
+    buildFeatures {
+        viewBinding true
+    }
+
     buildTypes {
         release {
             minifyEnabled true

@@ -1,33 +1,29 @@
 package org.mosad.teapod.util.adapter
 
 import android.view.LayoutInflater
-import android.view.View
 import android.view.ViewGroup
 import android.widget.Filter
 import android.widget.Filterable
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
-import kotlinx.android.synthetic.main.item_media.view.*
-import org.mosad.teapod.R
+import org.mosad.teapod.databinding.ItemMediaBinding
 import org.mosad.teapod.util.ItemMedia
 import java.util.*
 
-class MediaItemAdapter(private val media: List<ItemMedia>) : RecyclerView.Adapter<MediaItemAdapter.ViewHolder>(), Filterable {
+class MediaItemAdapter(private val media: List<ItemMedia>) : RecyclerView.Adapter<MediaItemAdapter.MediaViewHolder>(), Filterable {
 
     var onItemClick: ((Int, Int) -> Unit)? = null
     private val filter = MediaFilter()
     private var filteredMedia = media.map { it.copy() }
 
-    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): MediaItemAdapter.ViewHolder {
-        val view = LayoutInflater.from(parent.context).inflate(R.layout.item_media, parent, false)
-
-        return ViewHolder(view)
+    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): MediaItemAdapter.MediaViewHolder {
+        return MediaViewHolder(ItemMediaBinding.inflate(LayoutInflater.from(parent.context), parent, false))
     }
 
-    override fun onBindViewHolder(holder: MediaItemAdapter.ViewHolder, position: Int) {
-        holder.view.apply {
-            text_title.text = filteredMedia[position].title
-            Glide.with(context).load(filteredMedia[position].posterUrl).into(image_poster)
+    override fun onBindViewHolder(holder: MediaItemAdapter.MediaViewHolder, position: Int) {
+        holder.binding.root.apply {
+            holder.binding.textTitle.text = filteredMedia[position].title
+            Glide.with(context).load(filteredMedia[position].posterUrl).into(holder.binding.imagePoster)
         }
     }
 
@@ -39,9 +35,9 @@ class MediaItemAdapter(private val media: List<ItemMedia>) : RecyclerView.Adapte
         return filter
     }
 
-    inner class ViewHolder(val view: View) : RecyclerView.ViewHolder(view) {
+    inner class MediaViewHolder(val binding: ItemMediaBinding) : RecyclerView.ViewHolder(binding.root) {
         init {
-            view.setOnClickListener {
+            binding.root.setOnClickListener {
                 onItemClick?.invoke(filteredMedia[adapterPosition].id, adapterPosition)
             }
         }
