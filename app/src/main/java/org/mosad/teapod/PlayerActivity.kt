@@ -8,6 +8,7 @@ import android.os.Build
 import android.os.Bundle
 import android.util.Log
 import android.view.*
+import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.GestureDetectorCompat
 import androidx.core.view.isVisible
@@ -26,12 +27,9 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import org.mosad.teapod.parser.AoDParser
+import org.mosad.teapod.player.PlayerViewModel
 import org.mosad.teapod.preferences.Preferences
-import org.mosad.teapod.ui.fragments.MediaFragment
-import org.mosad.teapod.util.DataTypes.MediaType
 import org.mosad.teapod.util.Episode
-import org.mosad.teapod.util.Media
 import java.util.*
 import java.util.concurrent.TimeUnit
 import kotlin.concurrent.scheduleAtFixedRate
@@ -44,12 +42,7 @@ class PlayerActivity : AppCompatActivity() {
     private lateinit var gestureDetector: GestureDetectorCompat
     private lateinit var timerUpdates: TimerTask
 
-    private var mediaId = 0
-    private var episodeId = 0
-
-    private var media: Media = Media(0, "", MediaType.OTHER)
-    private var currentEpisode = Episode()
-    private var nextEpisode: Episode? = null
+    private val model: PlayerViewModel by viewModels()
 
     private var playWhenReady = true
     private var currentWindow = 0
@@ -70,8 +63,10 @@ class PlayerActivity : AppCompatActivity() {
             playWhenReady = it.getBoolean(getString(R.string.state_is_playing))
         }
 
-        mediaId = intent.getIntExtra(getString(R.string.intent_media_id), 0)
-        episodeId = intent.getIntExtra(getString(R.string.intent_episode_id), 0)
+        model.loadMedia(
+            intent.getIntExtra(getString(R.string.intent_media_id), 0),
+            intent.getIntExtra(getString(R.string.intent_episode_id), 0)
+        )
 
         gestureDetector = GestureDetectorCompat(this, PlayerGestureListener())
 
@@ -119,21 +114,14 @@ class PlayerActivity : AppCompatActivity() {
     }
 
     private fun initPlayer() {
-        if (mediaId <= 0) {
+        if (model.mediaId <= 0) {
             Log.e(javaClass.name, "No media id was set.")
             this.finish()
         }
 
-        initMedia()
         initExoPlayer()
         initVideoView()
         initTimeUpdates()
-    }
-
-    private fun initMedia() {
-        media = AoDParser.getMediaById(mediaId)
-        currentEpisode = media.episodes.first { it.id == episodeId }
-        nextEpisode = selectNextEpisode()
     }
 
     private fun initExoPlayer() {
@@ -142,7 +130,7 @@ class PlayerActivity : AppCompatActivity() {
         controller = video_view.findViewById(R.id.exo_controller)
 
         val mediaSource = HlsMediaSource.Factory(dataSourceFactory)
-            .createMediaSource(MediaItem.fromUri(Uri.parse(autoSelectStream(currentEpisode))))
+            .createMediaSource(MediaItem.fromUri(Uri.parse(autoSelectStream(model.currentEpisode))))
 
         player.playWhenReady = playWhenReady
         player.setMediaSource(mediaSource)
@@ -165,7 +153,7 @@ class PlayerActivity : AppCompatActivity() {
                     else -> View.VISIBLE
                 }
 
-                if (state == ExoPlayer.STATE_ENDED && nextEpisode != null && Preferences.autoplay) {
+                if (state == ExoPlayer.STATE_ENDED && model.nextEpisode != null && Preferences.autoplay) {
                     playNextEpisode()
                 }
 
@@ -173,7 +161,7 @@ class PlayerActivity : AppCompatActivity() {
         })
 
         controller.isAnimationEnabled = false // disable controls (time-bar) animation
-        exo_text_title.text = currentEpisode.title // set media title
+        exo_text_title.text = model.currentEpisode.title // set media title
     }
 
     @SuppressLint("ClickableViewAccessibility")
@@ -221,7 +209,7 @@ class PlayerActivity : AppCompatActivity() {
 
                 if (remainingTime in 1..20000) {
                     // if the next ep button is not visible, make it visible
-                    if (!btnNextEpIsVisible && nextEpisode != null && Preferences.autoplay) {
+                    if (!btnNextEpIsVisible && model.nextEpisode != null && Preferences.autoplay) {
                         withContext(Dispatchers.Main) { showButtonNextEp() }
                     }
                 } else if (btnNextEpIsVisible) {
@@ -311,7 +299,7 @@ class PlayerActivity : AppCompatActivity() {
         }
     }
 
-    private fun playNextEpisode() = nextEpisode?.let { nextEp ->
+    private fun playNextEpisode() = model.nextEpisode?.let { nextEp ->
         // update the gui
         exo_text_title.text = nextEp.title
         hideButtonNextEp()
@@ -322,12 +310,7 @@ class PlayerActivity : AppCompatActivity() {
         player.setMediaSource(mediaSource)
         player.prepare()
 
-        // watchedCallback for next ep
-        currentEpisode = nextEp // set current ep to next ep
-        episodeId = nextEp.id
-        MediaFragment.instance.updateWatchedState(nextEp)
-
-        nextEpisode = selectNextEpisode()
+        model.nextEpisode()
     }
 
     /**
@@ -344,19 +327,6 @@ class PlayerActivity : AppCompatActivity() {
             Log.e(javaClass.name, "No stream url set.")
             this.finish()
             ""
-        }
-    }
-
-    /**
-     * Based on the current episodeId, get the next episode. If there is no next
-     * episode, return null
-     */
-    private fun selectNextEpisode(): Episode? {
-        val nextEpIndex = media.episodes.indexOfFirst { it.id == currentEpisode.id } + 1
-        return if (nextEpIndex < (media.episodes.size)) {
-            media.episodes[nextEpIndex]
-        } else {
-            null
         }
     }
 
