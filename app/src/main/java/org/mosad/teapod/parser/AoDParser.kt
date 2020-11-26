@@ -235,7 +235,6 @@ object AoDParser {
                 //Log.i(javaClass.name, "New csrf token is $csrfToken")
             }
 
-
             val pl = res.select("input.streamstarter_html5").first()
             val primary = pl.attr("data-playlist")
             val secondary = pl.attr("data-otherplaylist")
@@ -291,7 +290,7 @@ object AoDParser {
                     )
                 }
             }
-            Log.i(javaClass.name, "Loading secondary plalyist finished")
+            Log.i(javaClass.name, "Loading secondary playlist finished")
 
             // parse additional info from the media page
             res.select("table.vertical-table").select("tr").forEach { row ->
@@ -310,15 +309,18 @@ object AoDParser {
             // parse additional information for tv shows
             if (media.type == MediaType.TVSHOW) {
                 res.select("div.three-box-container > div.episodebox").forEach { episodebox ->
-                    val episodeId = episodebox.select("div.flip-front").attr("id").substringAfter("-").toInt()
-                    val episodeShortDesc = episodebox.select("p.episodebox-shorttext").text()
-                    val episodeWatched = episodebox.select("div.episodebox-icons > div").hasClass("status-icon-orange")
-                    val episodeWatchedCallback = episodebox.select("input.streamstarter_html5").eachAttr("data-playlist").first()
+                    // make sure the episode has a streaming link
+                    if (episodebox.select("input.streamstarter_html5").isNotEmpty()) {
+                        val episodeId = episodebox.select("div.flip-front").attr("id").substringAfter("-").toInt()
+                        val episodeShortDesc = episodebox.select("p.episodebox-shorttext").text()
+                        val episodeWatched = episodebox.select("div.episodebox-icons > div").hasClass("status-icon-orange")
+                        val episodeWatchedCallback = episodebox.select("input.streamstarter_html5").eachAttr("data-playlist").first()
 
-                    media.episodes.firstOrNull { it.id == episodeId }?.apply {
-                        shortDesc = episodeShortDesc
-                        watched = episodeWatched
-                        watchedCallback = episodeWatchedCallback
+                        media.episodes.firstOrNull { it.id == episodeId }?.apply {
+                            shortDesc = episodeShortDesc
+                            watched = episodeWatched
+                            watchedCallback = episodeWatchedCallback
+                        }
                     }
                 }
             }
