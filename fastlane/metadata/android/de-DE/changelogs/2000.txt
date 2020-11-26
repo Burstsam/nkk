@@ -1,0 +1,8 @@
+* überarbeitetes Player Interface (#10)
+  * Autoplay für Serien
+  * Gesten um Vor-/Zurückspulen(doppelt tippen), Pause/Abspielen (lang tippen)
+  * verbleibende Zeit und Titel
+* unterstützung für Themes (#13)
+  * helles/dunkles Themes
+  * Primärfarbe angepasst
+* Fehler beim hinzufügen/löschen in "Meine Liste" behoben (#15)
