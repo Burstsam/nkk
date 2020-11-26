@@ -36,7 +36,7 @@
                     android:layout_height="200dp"
                     android:layout_gravity="center"
                     app:shapeAppearance="@style/ShapeAppearance.Teapod.RoundedPoster"
-                    app:srcCompat="@drawable/ic_launcher_background" />
+                    tools:src="@drawable/ic_launcher_background" />
 
             </FrameLayout>
 
