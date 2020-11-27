@@ -3,9 +3,7 @@ package org.mosad.teapod.util
 import android.util.Log
 import com.google.gson.JsonObject
 import com.google.gson.JsonParser
-import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.async
-import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.*
 import java.net.URL
 import java.net.URLEncoder
 import org.mosad.teapod.util.DataTypes.MediaType
@@ -22,12 +20,12 @@ class TMDBApiController {
 
     private val imageUrl = "https://image.tmdb.org/t/p/w500"
 
-    fun search(title: String, type: MediaType): TMDBResponse {
+    suspend fun search(title: String, type: MediaType): TMDBResponse {
         val searchTerm = title.replace("(Sub)", "").trim()
 
         return when (type) {
-            MediaType.MOVIE -> searchMovie(searchTerm)
-            MediaType.TVSHOW -> searchTVShow(searchTerm)
+            MediaType.MOVIE -> searchMovie(searchTerm).await()
+            MediaType.TVSHOW -> searchTVShow(searchTerm).await()
             else -> {
                 Log.e(javaClass.name, "Wrong Type: $type")
                 TMDBResponse()
@@ -36,17 +34,17 @@ class TMDBApiController {
 
     }
 
-    fun searchTVShow(title: String) = runBlocking {
+    fun searchTVShow(title: String): Deferred<TMDBResponse> {
         val url = URL("$searchTVUrl$preparedParameters&query=${URLEncoder.encode(title, "UTF-8")}")
 
-        GlobalScope.async {
+        return GlobalScope.async {
             val response = JsonParser.parseString(url.readText()).asJsonObject
             //println(response)
 
-            return@async if (response.get("total_results").asInt > 0) {
+            if (response.get("total_results").asInt > 0) {
                 response.get("results").asJsonArray.first().asJsonObject.let {
-                    val id = getStringNotNull(it,"id").toInt()
-                    val overview = getStringNotNull(it,"overview")
+                    val id = getStringNotNull(it, "id").toInt()
+                    val overview = getStringNotNull(it, "overview")
                     val posterPath = getStringNotNullPrefix(it, "poster_path", imageUrl)
                     val backdropPath = getStringNotNullPrefix(it, "backdrop_path", imageUrl)
 
@@ -55,18 +53,17 @@ class TMDBApiController {
             } else {
                 TMDBResponse()
             }
-        }.await()
-
+        }
     }
 
-    fun searchMovie(title: String) = runBlocking {
+    fun searchMovie(title: String): Deferred<TMDBResponse> {
         val url = URL("$searchMovieUrl$preparedParameters&query=${URLEncoder.encode(title, "UTF-8")}")
 
-        GlobalScope.async {
+        return GlobalScope.async {
             val response = JsonParser.parseString(url.readText()).asJsonObject
             //println(response)
 
-            return@async if (response.get("total_results").asInt > 0) {
+            if (response.get("total_results").asInt > 0) {
                 response.get("results").asJsonArray.first().asJsonObject.let {
                     val id = getStringNotNull(it,"id").toInt()
                     val overview = getStringNotNull(it,"overview")
@@ -79,9 +76,7 @@ class TMDBApiController {
             } else {
                 TMDBResponse()
             }
-
-
-        }.await()
+        }
     }
 
     /**

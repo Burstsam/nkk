@@ -1,6 +1,7 @@
 package org.mosad.teapod.player
 
 import androidx.lifecycle.ViewModel
+import kotlinx.coroutines.runBlocking
 import org.mosad.teapod.parser.AoDParser
 import org.mosad.teapod.ui.fragments.MediaFragment
 import org.mosad.teapod.util.DataTypes
@@ -25,7 +26,10 @@ class PlayerViewModel : ViewModel() {
         mediaId = iMediaId
         episodeId = iEpisodeId
 
-        media = AoDParser.getMediaById(mediaId)
+        runBlocking {
+            media = AoDParser.getMediaById(mediaId)
+        }
+
         currentEpisode = media.episodes.first { it.id == episodeId }
         nextEpisode = selectNextEpisode()
     }

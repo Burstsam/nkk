@@ -49,12 +49,12 @@ class MediaFragment(private val mediaId: Int) : Fragment() {
         super.onViewCreated(view, savedInstanceState)
         binding.frameLoading.visibility = View.VISIBLE
 
-        GlobalScope.launch {
+        GlobalScope.launch(Dispatchers.Main) {
             // load the streams for the selected media
             media = AoDParser.getMediaById(mediaId)
             tmdb = TMDBApiController().search(media.info.title, media.type)
 
-            withContext(Dispatchers.Main) {
+            if (this@MediaFragment.isAdded) {
                 updateGUI()
                 initActions()
             }

@@ -110,18 +110,18 @@ object AoDParser {
      * get a media by it's ID (int)
      * @return Media
      */
-    fun getMediaById(mediaId: Int): Media {
+    suspend fun getMediaById(mediaId: Int): Media {
         val media = mediaList.first { it.id == mediaId }
 
         if (media.episodes.isEmpty()) {
-            loadStreams(media)
+            loadStreams(media).join()
         }
 
         return media
     }
 
     // TODO don't use jsoup here
-    fun sendCallback(callbackPath: String) = GlobalScope.launch {
+    fun sendCallback(callbackPath: String) = GlobalScope.launch(Dispatchers.IO) {
         val headers = mutableMapOf(
             Pair("Accept", "application/json, text/javascript, */*; q=0.01"),
             Pair("Accept-Language", "de,en-US;q=0.7,en;q=0.3"),
@@ -131,13 +131,11 @@ object AoDParser {
         )
 
         try {
-            withContext(Dispatchers.IO) {
-                Jsoup.connect(baseUrl + callbackPath)
-                    .ignoreContentType(true)
-                    .cookies(sessionCookies)
-                    .headers(headers)
-                    .execute()
-            }
+            Jsoup.connect(baseUrl + callbackPath)
+                .ignoreContentType(true)
+                .cookies(sessionCookies)
+                .headers(headers)
+                .execute()
         } catch (ex: IOException) {
             Log.e(javaClass.name, "Callback for $callbackPath failed.", ex)
         }
@@ -213,38 +211,62 @@ object AoDParser {
      * load streams for the media path, movies have one episode
      * @param media is used as call ba reference
      */
-    private fun loadStreams(media: Media) = runBlocking {
+    private suspend fun loadStreams(media: Media) = GlobalScope.launch(Dispatchers.IO) {
         if (sessionCookies.isEmpty()) login()
 
         if (!loginSuccess) {
             Log.w(javaClass.name, "Login, was not successful.")
-            return@runBlocking
+            return@launch
         }
 
-        withContext(Dispatchers.Default) {
+        // get the media page
+        val res = Jsoup.connect(baseUrl + media.link)
+            .cookies(sessionCookies)
+            .get()
 
-            // get the media page
-            val res = Jsoup.connect(baseUrl + media.link)
-                .cookies(sessionCookies)
-                .get()
+        //println(res)
 
-            //println(res)
+        if (csrfToken.isEmpty()) {
+            csrfToken = res.select("meta[name=csrf-token]").attr("content")
+            //Log.i(javaClass.name, "New csrf token is $csrfToken")
+        }
 
-            if (csrfToken.isEmpty()) {
-                csrfToken = res.select("meta[name=csrf-token]").attr("content")
-                //Log.i(javaClass.name, "New csrf token is $csrfToken")
+        val pl = res.select("input.streamstarter_html5").first()
+        val primary = pl.attr("data-playlist")
+        val secondary = pl.attr("data-otherplaylist")
+        val secondaryIsOmU = secondary.contains("OmU", true)
+
+        // load primary and secondary playlist
+        val primaryPlaylist = parsePlaylistAsync(primary)
+        val secondaryPlaylist = parsePlaylistAsync(secondary)
+
+        primaryPlaylist.await().playlist.forEach { ep ->
+            val epNumber = if (media.type == MediaType.TVSHOW) {
+                ep.title.substringAfter(", Ep. ").toInt()
+            } else {
+                0
             }
 
-            val pl = res.select("input.streamstarter_html5").first()
-            val primary = pl.attr("data-playlist")
-            val secondary = pl.attr("data-otherplaylist")
-            val secondaryIsOmU = secondary.contains("OmU", true)
+            media.episodes.add(
+                Episode(
+                    id = ep.mediaid,
+                    priStreamUrl = ep.sources.first().file,
+                    posterUrl = ep.image,
+                    title = ep.title,
+                    description = ep.description,
+                    number = epNumber
+                )
+            )
+        }
+        Log.i(javaClass.name, "Loading primary playlist finished")
 
-            // load primary and secondary playlist
-            val primaryPlaylist = parsePlaylistAsync(primary)
-            val secondaryPlaylist = parsePlaylistAsync(secondary)
+        secondaryPlaylist.await().playlist.forEach { ep ->
+            val episode = media.episodes.firstOrNull { it.id == ep.mediaid }
 
-            primaryPlaylist.await().playlist.forEach { ep ->
+            if (episode != null) {
+                episode.secStreamUrl = ep.sources.first().file
+                episode.secStreamOmU = secondaryIsOmU
+            } else {
                 val epNumber = if (media.type == MediaType.TVSHOW) {
                     ep.title.substringAfter(", Ep. ").toInt()
                 } else {
@@ -254,7 +276,8 @@ object AoDParser {
                 media.episodes.add(
                     Episode(
                         id = ep.mediaid,
-                        priStreamUrl = ep.sources.first().file,
+                        secStreamUrl = ep.sources.first().file,
+                        secStreamOmU = secondaryIsOmU,
                         posterUrl = ep.image,
                         title = ep.title,
                         description = ep.description,
@@ -262,69 +285,40 @@ object AoDParser {
                     )
                 )
             }
-            Log.i(javaClass.name, "Loading primary playlist finished")
+        }
+        Log.i(javaClass.name, "Loading secondary playlist finished")
 
-            secondaryPlaylist.await().playlist.forEach { ep ->
-                val episode = media.episodes.firstOrNull { it.id == ep.mediaid }
-
-                if (episode != null) {
-                    episode.secStreamUrl = ep.sources.first().file
-                    episode.secStreamOmU = secondaryIsOmU
-                } else {
-                    val epNumber = if (media.type == MediaType.TVSHOW) {
-                        ep.title.substringAfter(", Ep. ").toInt()
-                    } else {
-                        0
-                    }
-
-                    media.episodes.add(
-                        Episode(
-                            id = ep.mediaid,
-                            secStreamUrl = ep.sources.first().file,
-                            secStreamOmU = secondaryIsOmU,
-                            posterUrl = ep.image,
-                            title = ep.title,
-                            description = ep.description,
-                            number = epNumber
-                        )
-                    )
+        // parse additional info from the media page
+        res.select("table.vertical-table").select("tr").forEach { row ->
+            when (row.select("th").text().toLowerCase(Locale.ROOT)) {
+                "produktionsjahr" -> media.info.year = row.select("td").text().toInt()
+                "fsk" -> media.info.age = row.select("td").text().toInt()
+                "episodenanzahl" -> {
+                    media.info.episodesCount = row.select("td").text()
+                        .substringBefore("/")
+                        .filter { it.isDigit() }
+                        .toInt()
                 }
             }
-            Log.i(javaClass.name, "Loading secondary playlist finished")
+        }
 
-            // parse additional info from the media page
-            res.select("table.vertical-table").select("tr").forEach { row ->
-                when (row.select("th").text().toLowerCase(Locale.ROOT)) {
-                    "produktionsjahr" -> media.info.year = row.select("td").text().toInt()
-                    "fsk" -> media.info.age = row.select("td").text().toInt()
-                    "episodenanzahl" -> {
-                        media.info.episodesCount = row.select("td").text()
-                            .substringBefore("/")
-                            .filter{ it.isDigit() }
-                            .toInt()
+        // parse additional information for tv shows
+        if (media.type == MediaType.TVSHOW) {
+            res.select("div.three-box-container > div.episodebox").forEach { episodebox ->
+                // make sure the episode has a streaming link
+                if (episodebox.select("input.streamstarter_html5").isNotEmpty()) {
+                    val episodeId = episodebox.select("div.flip-front").attr("id").substringAfter("-").toInt()
+                    val episodeShortDesc = episodebox.select("p.episodebox-shorttext").text()
+                    val episodeWatched = episodebox.select("div.episodebox-icons > div").hasClass("status-icon-orange")
+                    val episodeWatchedCallback = episodebox.select("input.streamstarter_html5").eachAttr("data-playlist").first()
+
+                    media.episodes.firstOrNull { it.id == episodeId }?.apply {
+                        shortDesc = episodeShortDesc
+                        watched = episodeWatched
+                        watchedCallback = episodeWatchedCallback
                     }
                 }
             }
-
-            // parse additional information for tv shows
-            if (media.type == MediaType.TVSHOW) {
-                res.select("div.three-box-container > div.episodebox").forEach { episodebox ->
-                    // make sure the episode has a streaming link
-                    if (episodebox.select("input.streamstarter_html5").isNotEmpty()) {
-                        val episodeId = episodebox.select("div.flip-front").attr("id").substringAfter("-").toInt()
-                        val episodeShortDesc = episodebox.select("p.episodebox-shorttext").text()
-                        val episodeWatched = episodebox.select("div.episodebox-icons > div").hasClass("status-icon-orange")
-                        val episodeWatchedCallback = episodebox.select("input.streamstarter_html5").eachAttr("data-playlist").first()
-
-                        media.episodes.firstOrNull { it.id == episodeId }?.apply {
-                            shortDesc = episodeShortDesc
-                            watched = episodeWatched
-                            watchedCallback = episodeWatchedCallback
-                        }
-                    }
-                }
-            }
-
         }
     }
 
@@ -336,7 +330,7 @@ object AoDParser {
             return CompletableDeferred(AoDObject(listOf()))
         }
 
-        return GlobalScope.async {
+        return GlobalScope.async(Dispatchers.IO) {
             val headers = mutableMapOf(
                 Pair("Accept", "application/json, text/javascript, */*; q=0.01"),
                 Pair("Accept-Language", "de,en-US;q=0.7,en;q=0.3"),
