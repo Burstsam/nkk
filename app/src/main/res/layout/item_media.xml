@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <com.google.android.material.card.MaterialCardView xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="195dp"
     android:layout_height="wrap_content"
     android:backgroundTint="?themeSecondary"
@@ -23,7 +24,7 @@
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent"
-            app:srcCompat="@color/md_disabled_text_dark_theme" />
+            tools:srcCompat="@color/md_disabled_text_dark_theme" />
 
         <TextView
             android:id="@+id/text_title"

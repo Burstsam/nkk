@@ -21,8 +21,8 @@
     <string name="text_age_ex" translatable="false">6</string>
     <string name="text_episodes_count">%1$d episodes</string>
     <string name="text_runtime">%1$d Minutes</string>
-    <string name="component_episode_title">Episode %1$d %2$s</string>
-    <string name="component_episode_title_sub">Episode %1$d %2$s (Sub)</string>
+    <string name="component_episode_title">Ep. %1$d %2$s</string>
+    <string name="component_episode_title_sub">Ep. %1$d %2$s (Sub)</string>
     <string name="component_poster_desc" translatable="false">episode poster</string>
     <string name="component_watched_desc" translatable="false">already watched</string>
 
