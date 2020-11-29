@@ -20,12 +20,12 @@
         app:fastforward_increment="10000"
         app:rewind_increment="10000" />
 
-    <com.google.android.material.progressindicator.ProgressIndicator
+    <com.google.android.material.progressindicator.CircularProgressIndicator
         android:id="@+id/loading"
-        style="@style/Widget.MaterialComponents.ProgressIndicator.Circular.Indeterminate"
         android:layout_width="70dp"
         android:layout_height="70dp"
         android:layout_gravity="center"
+        android:indeterminate="true"
         app:indicatorColor="@color/exo_white"
         tools:visibility="visible" />
 
