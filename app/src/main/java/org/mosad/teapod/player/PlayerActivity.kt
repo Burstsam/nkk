@@ -29,6 +29,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import org.mosad.teapod.R
 import org.mosad.teapod.preferences.Preferences
+import org.mosad.teapod.util.DataTypes
 import org.mosad.teapod.util.Episode
 import java.util.*
 import java.util.concurrent.TimeUnit
@@ -44,6 +45,7 @@ class PlayerActivity : AppCompatActivity() {
     private lateinit var gestureDetector: GestureDetectorCompat
     private lateinit var timerUpdates: TimerTask
 
+    private var nextEpManually = false
     private var playWhenReady = true
     private var currentWindow = 0
     private var playbackPosition: Long = 0
@@ -129,14 +131,9 @@ class PlayerActivity : AppCompatActivity() {
         dataSourceFactory = DefaultDataSourceFactory(this, Util.getUserAgent(this, "Teapod"))
         controller = video_view.findViewById(R.id.exo_controller)
 
-        val mediaSource = HlsMediaSource.Factory(dataSourceFactory)
-            .createMediaSource(MediaItem.fromUri(Uri.parse(autoSelectStream(model.currentEpisode))))
+        controller.isAnimationEnabled = false // disable controls (time-bar) animation
 
         player.playWhenReady = playWhenReady
-        player.setMediaSource(mediaSource)
-        player.seekTo(playbackPosition)
-        player.prepare()
-
         player.addListener(object : Player.EventListener {
             override fun onPlaybackStateChanged(state: Int) {
                 super.onPlaybackStateChanged(state)
@@ -154,14 +151,16 @@ class PlayerActivity : AppCompatActivity() {
                 }
 
                 if (state == ExoPlayer.STATE_ENDED && model.nextEpisode != null && Preferences.autoplay) {
-                    playNextEpisode()
+                    if (nextEpManually) {
+                        nextEpManually = false
+                    } else {
+                        playNextEpisode()
+                    }
                 }
-
             }
         })
 
-        controller.isAnimationEnabled = false // disable controls (time-bar) animation
-        exo_text_title.text = model.currentEpisode.title // set media title
+        playCurrentMedia(true)
     }
 
     @SuppressLint("ClickableViewAccessibility")
@@ -187,6 +186,7 @@ class PlayerActivity : AppCompatActivity() {
         rwd_10.setOnButtonClickListener { rewind() }
         ffwd_10.setOnButtonClickListener { fastForward() }
         button_next_ep.setOnClickListener { playNextEpisode() }
+        button_next_ep_c.setOnClickListener { playNextEpisode() }
     }
 
     private fun initTimeUpdates() {
@@ -299,18 +299,37 @@ class PlayerActivity : AppCompatActivity() {
         }
     }
 
-    private fun playNextEpisode() = model.nextEpisode?.let { nextEp ->
-        // update the gui
-        exo_text_title.text = nextEp.title
+    private fun playNextEpisode() = model.nextEpisode?.let {
+        model.nextEpisode() // current = next, next = new or null
         hideButtonNextEp()
 
+        nextEpManually = true
+        playCurrentMedia(false)
+    }
+
+    /**
+     * start playing a episode
+     * Note: movies are episodes too!
+     */
+    private fun playCurrentMedia(seekToPosition: Boolean) {
+        // update the gui
+        exo_text_title.text = if (model.media.type == DataTypes.MediaType.TVSHOW) {
+            getString(R.string.component_episode_title, model.currentEpisode.number, model.currentEpisode.description)
+        } else {
+            model.currentEpisode.title
+        }
+
+        if (model.nextEpisode == null) {
+            button_next_ep_c.visibility = View.GONE
+        }
+
         player.clearMediaItems() //remove previous item
-        val mediaSource = HlsMediaSource.Factory(dataSourceFactory)
-            .createMediaSource(MediaItem.fromUri(Uri.parse(autoSelectStream(nextEp))))
+        val mediaSource = HlsMediaSource.Factory(dataSourceFactory).createMediaSource(
+            MediaItem.fromUri(Uri.parse(autoSelectStream(model.currentEpisode)))
+        )
+        if (seekToPosition) player.seekTo(playbackPosition)
         player.setMediaSource(mediaSource)
         player.prepare()
-
-        model.nextEpisode()
     }
 
     /**

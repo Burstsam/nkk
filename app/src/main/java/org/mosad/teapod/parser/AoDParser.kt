@@ -302,7 +302,7 @@ object AoDParser {
             }
         }
 
-        // parse additional information for tv shows
+        // parse additional information for tv shows the episode title (description) is loaded from the "api"
         if (media.type == MediaType.TVSHOW) {
             res.select("div.three-box-container > div.episodebox").forEach { episodebox ->
                 // make sure the episode has a streaming link

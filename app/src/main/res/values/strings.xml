@@ -52,9 +52,11 @@
     <string name="forward_10">forward 10 seconds</string>
     <string name="rwd_10_s" translatable="false">- 10 s</string>
     <string name="fwd_10_s" translatable="false">+ 10 s</string>
+    <string name="next_episode">Next Episode</string>
     <string name="time_min_sec" translatable="false">%1$02d:%2$02d</string>
     <string name="time_hour_min_sec" translatable="false">%1$d:%2$02d:%3$02d</string>
-    <string name="next_episode">Next Episode</string>
+    <string name="episode">Episode</string>
+    <string name="episodes">Episodes</string>
 
     <!-- dialogs -->
     <string name="save">save</string>

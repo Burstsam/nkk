@@ -16,8 +16,8 @@
     <string name="button_play">Abspielen</string>
     <string name="text_episodes_count">%1$d Episoden</string>
     <string name="text_runtime">%1$d Minuten</string>
-    <string name="component_episode_title">Ep. %1$d %2$s</string>
-    <string name="component_episode_title_sub">Ep. %1$d %2$s (OmU)</string>
+    <string name="component_episode_title">Flg. %1$d %2$s</string>
+    <string name="component_episode_title_sub">Flg. %1$d %2$s (OmU)</string>
 
     <!-- settings fragment -->
     <string name="account">Account</string>
@@ -40,7 +40,9 @@
     <string name="rewind_10">10 Sekunden zurück</string>
     <string name="play_pause">Abspielen/Pause</string>
     <string name="forward_10">10 Sekunden vorwärts</string>
-    <string name="next_episode">Nächste Episode</string>
+    <string name="next_episode">Nächste Folge</string>
+    <string name="episode">Folge</string>
+    <string name="episodes">Folgen</string>
 
     <!-- dialogs -->
     <string name="save">speichern</string>
