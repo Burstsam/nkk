@@ -11,7 +11,22 @@ class DataTypes {
         LIGHT("Light"),
         DARK("Dark")
     }
+
+    enum class License(val short: String, val long: String) {
+        APACHE2("AL 2.0", "Apache License Version 2.0"),
+        MIT("MIT", "MIT License"),
+        GPL3("GPL 3", "GNU General Public License Version 3"),
+        BSD2("BSD 2", "BSD 2-Clause License")
+    }
 }
+
+data class ThirdPartyComponent(
+    val name: String,
+    val year: String,
+    val copyrightOwner: String,
+    val link: String,
+    val license: DataTypes.License
+)
 
 /**
  * this class is used to represent the item media

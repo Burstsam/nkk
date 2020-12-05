@@ -52,7 +52,7 @@
         <name>Glide</name>
         <url>https://github.com/bumptech/glide</url>
         <copyright>Copyright Google, Inc</copyright>
-        <license>BSD 3-Clause License</license>
+        <license>BSD 2-Clause License</license>
     </notice>
     <notice>
         <name>Glide Transformations</name>

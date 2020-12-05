@@ -38,9 +38,10 @@
                     android:id="@+id/linear_account_login"
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
-                    android:layout_margin="7dp"
+                    android:foreground="?android:selectableItemBackground"
                     android:gravity="center"
-                    android:orientation="horizontal">
+                    android:orientation="horizontal"
+                    android:padding="7dp">
 
                     <ImageView
                         android:id="@+id/imageView"
@@ -101,9 +102,9 @@
                     android:id="@+id/linear_settings_secondary"
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
-                    android:layout_margin="7dp"
                     android:gravity="center"
-                    android:orientation="horizontal">
+                    android:orientation="horizontal"
+                    android:padding="7dp">
 
                     <ImageView
                         android:id="@+id/imageView3"
@@ -166,9 +167,9 @@
                     android:id="@+id/linear_settings_autoplay"
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
-                    android:layout_margin="7dp"
                     android:gravity="center"
-                    android:orientation="horizontal">
+                    android:orientation="horizontal"
+                    android:padding="7dp">
 
                     <ImageView
                         android:id="@+id/imageView4"
@@ -179,7 +180,7 @@
                         android:minHeight="48dp"
                         android:padding="9dp"
                         android:src="@drawable/ic_baseline_autorenew_24"
-                        app:tint="?iconNoAction"/>
+                        app:tint="?iconNoAction" />
 
                     <androidx.constraintlayout.widget.ConstraintLayout
                         android:layout_width="match_parent"
@@ -226,9 +227,10 @@
                     android:id="@+id/linear_theme"
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
-                    android:layout_margin="7dp"
+                    android:foreground="?android:selectableItemBackground"
                     android:gravity="center"
-                    android:orientation="horizontal">
+                    android:orientation="horizontal"
+                    android:padding="7dp">
 
                     <ImageView
                         android:id="@+id/imageViewTheme"
@@ -290,9 +292,10 @@
                     android:id="@+id/linear_about"
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
-                    android:layout_margin="7dp"
+                    android:foreground="?android:selectableItemBackground"
                     android:gravity="center"
-                    android:orientation="horizontal">
+                    android:orientation="horizontal"
+                    android:padding="7dp">
 
                     <ImageView
                         android:id="@+id/imageView2"
@@ -304,7 +307,7 @@
                         android:padding="9dp"
                         android:scaleType="fitXY"
                         app:srcCompat="@drawable/ic_baseline_info_24"
-                        app:tint="?iconNoAction"/>
+                        app:tint="?iconNoAction" />
 
                     <LinearLayout
                         android:layout_width="match_parent"
@@ -330,21 +333,6 @@
 
                 </LinearLayout>
 
-                <View
-                    android:id="@+id/divider"
-                    android:layout_width="match_parent"
-                    android:layout_height="1dp"
-                    android:background="?android:attr/listDivider" />
-
-                <TextView
-                    android:id="@+id/text_licenses"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_margin="7dp"
-                    android:paddingStart="48dp"
-                    android:paddingEnd="48dp"
-                    android:text="@string/licenses"
-                    android:textSize="16sp" />
             </LinearLayout>
 
         </LinearLayout>

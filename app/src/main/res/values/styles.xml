@@ -37,6 +37,7 @@
 
         <!-- without this, the unchecked single choice buttons while be black -->
         <item name="md_color_widget_unchecked">@color/textSecondaryDark</item>
+        <item name="colorControlHighlight">#22ffffff</item>
     </style>
 
     <style name="LicensesDialogTheme.Dark" parent="Theme.AppCompat.Dialog">

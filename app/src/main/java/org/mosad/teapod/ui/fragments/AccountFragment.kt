@@ -8,7 +8,6 @@ import android.view.ViewGroup
 import androidx.fragment.app.Fragment
 import com.afollestad.materialdialogs.MaterialDialog
 import com.afollestad.materialdialogs.list.listItemsSingleChoice
-import de.psdev.licensesdialog.LicensesDialog
 import org.mosad.teapod.BuildConfig
 import org.mosad.teapod.MainActivity
 import org.mosad.teapod.R
@@ -54,32 +53,7 @@ class AccountFragment : Fragment() {
         }
 
         binding.linearInfo.setOnClickListener {
-            MaterialDialog(requireContext())
-                .title(R.string.info_about)
-                .message(R.string.info_about_dialog)
-                .show()
-        }
-
-        binding.textLicenses.setOnClickListener {
-
-            val dialogCss = when (Preferences.theme) {
-                Theme.DARK -> R.string.license_dialog_style_dark
-                else -> R.string.license_dialog_style_light
-            }
-
-            val themeId = when (Preferences.theme) {
-                Theme.DARK -> R.style.LicensesDialogTheme_Dark
-                else -> R.style.AppTheme_Light
-            }
-
-            LicensesDialog.Builder(requireContext())
-                .setNotices(R.raw.notices)
-                .setTitle(R.string.licenses)
-                .setIncludeOwnLicense(true)
-                .setThemeResourceId(themeId)
-                .setNoticesCssStyle(dialogCss)
-                .build()
-                .show()
+            (activity as MainActivity).showAboutFragment()
         }
 
         binding.switchSecondary.setOnClickListener {

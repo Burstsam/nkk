@@ -169,6 +169,15 @@ class MainActivity : AppCompatActivity(), BottomNavigationView.OnNavigationItemS
         }
     }
 
+    fun showAboutFragment() {
+        val aboutFragment = AboutFragment()
+        supportFragmentManager.commit {
+            replace(R.id.nav_host_fragment, aboutFragment, "AboutFragment")
+            addToBackStack(aboutFragment.javaClass.name)
+            show(aboutFragment)
+        }
+    }
+
     fun startPlayer(mediaId: Int, episodeId: Int) {
         val intent = Intent(this, PlayerActivity::class.java).apply {
             putExtra(getString(R.string.intent_media_id), mediaId)
