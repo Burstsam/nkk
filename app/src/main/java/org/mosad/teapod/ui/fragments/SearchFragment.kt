@@ -33,7 +33,7 @@ class SearchFragment : Fragment() {
                     adapter = MediaItemAdapter(AoDParser.itemMediaList)
                     adapter!!.onItemClick = { mediaId, _ ->
                         binding.searchText.clearFocus()
-                        (activity as MainActivity).showMediaFragment(mediaId)
+                        (activity as MainActivity).showFragment(MediaFragment(mediaId))
                     }
 
                     binding.recyclerMediaSearch.adapter = adapter

@@ -30,8 +30,6 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.commit
 import com.google.android.material.bottomnavigation.BottomNavigationView
-import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.launch
 import org.mosad.teapod.databinding.ActivityMainBinding
 import org.mosad.teapod.parser.AoDParser
 import org.mosad.teapod.player.PlayerActivity
@@ -41,7 +39,6 @@ import org.mosad.teapod.ui.components.LoginDialog
 import org.mosad.teapod.ui.fragments.*
 import org.mosad.teapod.util.DataTypes
 import org.mosad.teapod.util.StorageController
-import org.mosad.teapod.util.TMDBApiController
 import kotlin.system.measureTimeMillis
 
 class MainActivity : AppCompatActivity(), BottomNavigationView.OnNavigationItemSelectedListener {
@@ -156,25 +153,15 @@ class MainActivity : AppCompatActivity(), BottomNavigationView.OnNavigationItemS
     }
 
     /**
-     * Show the media fragment for the selected media.
-     * The media fragment is not stored in activeBaseFragment,
-     * as it doesn't replace a fragment but is added on top of one.
+     * Show a fragment on top of the current fragment.
+     * The current fragment is replaced and the new one is added
+     * to the back stack.
      */
-    fun showMediaFragment(mediaId: Int) = GlobalScope.launch {
-        val mediaFragment = MediaFragment(mediaId)
+    fun showFragment(fragment: Fragment) {
         supportFragmentManager.commit {
-            add(R.id.nav_host_fragment, mediaFragment, "MediaFragment")
-            addToBackStack(null)
-            show(mediaFragment)
-        }
-    }
-
-    fun showAboutFragment() {
-        val aboutFragment = AboutFragment()
-        supportFragmentManager.commit {
-            replace(R.id.nav_host_fragment, aboutFragment, "AboutFragment")
-            addToBackStack(aboutFragment.javaClass.name)
-            show(aboutFragment)
+            replace(R.id.nav_host_fragment, fragment, fragment.javaClass.simpleName)
+            addToBackStack(fragment.javaClass.name)
+            show(fragment)
         }
     }
 

@@ -57,7 +57,7 @@ class HomeFragment : Fragment() {
 
         adapterMyList = MediaItemAdapter(myListMedia)
         adapterMyList.onItemClick = { mediaId, _ ->
-            (activity as MainActivity).showMediaFragment(mediaId)
+            (activity as MainActivity).showFragment(MediaFragment(mediaId))
         }
 
         binding.recyclerMyList.adapter = adapterMyList
@@ -65,7 +65,7 @@ class HomeFragment : Fragment() {
 
     private fun initActions() {
         adapterNewEpisodes.onItemClick = { mediaId, _ ->
-            (activity as MainActivity).showMediaFragment(mediaId)
+            (activity as MainActivity).showFragment(MediaFragment(mediaId))
         }
     }
 }

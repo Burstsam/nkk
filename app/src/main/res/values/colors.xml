@@ -7,22 +7,23 @@
     <color name="colorAccent">#607d8b</color>
 
     <!-- light theme colors -->
-    <color name="themePrimaryLight">#f7f7f7</color>
+    <color name="themePrimaryLight">#ffffff</color>
     <color name="themeSecondaryLight">#ffffff</color>
     <color name="textPrimaryLight">#de000000</color>
     <color name="textSecondaryLight">#99000000</color>
-    <color name="iconActionLight">#99000000</color>
-    <color name="iconNoActionLight">#66000000</color>
+    <color name="textBackgroundLight">#55000000</color>
+    <color name="iconColorLight">#99000000</color>
     <color name="buttonBackgroundLight">#000000</color>
 
     <!-- dark theme colors -->
-    <color name="themePrimaryDark">#000000</color>
+    <color name="themePrimaryDark">#121212</color>
     <color name="themeSecondaryDark">#202020</color>
     <color name="textPrimaryDark">#deffffff</color>
     <color name="textSecondaryDark">#99ffffff</color>
-    <color name="iconActionDark">#99ffffff</color>
-    <color name="iconNoActionDark">#66ffffff</color>
+    <color name="textBackgroundDark">#55ffffff</color>
+    <color name="iconColorDark">#99ffffff</color>
     <color name="buttonBackgroundDark">#ffffff</color>
+    <color name="controlHighlightDark">#11ffffff</color>
 
     <color name="ic_launcher_background">#ffffff</color>
 </resources>

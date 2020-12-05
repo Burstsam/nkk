@@ -49,6 +49,7 @@
     <string name="theme_dark">Dark</string>
 
     <!-- about fragment -->
+    <string name="teapod_repo" translatable="false">git.mosad.xyz/Seil0/teapod</string>
     <string name="tmdb_notice" translatable="false">This product uses the TMDb API but is not endorsed or certified by TMDb.</string>
     <string name="third_party_heading">Third Party Licenses</string>
     <string name="third_party_component_desc">© %1$s %2$s under %3$s</string>

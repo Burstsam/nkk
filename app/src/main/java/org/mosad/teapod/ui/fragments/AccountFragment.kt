@@ -53,7 +53,7 @@ class AccountFragment : Fragment() {
         }
 
         binding.linearInfo.setOnClickListener {
-            (activity as MainActivity).showAboutFragment()
+            (activity as MainActivity).showFragment(AboutFragment())
         }
 
         binding.switchSecondary.setOnClickListener {
