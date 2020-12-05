@@ -95,6 +95,7 @@
             android:id="@+id/exo_progress_placeholder"
             android:layout_width="0dp"
             android:layout_height="@dimen/exo_styled_progress_layout_height"
+            android:layout_marginBottom="2dp"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toStartOf="@+id/exo_remaining"
             app:layout_constraintStart_toStartOf="parent"
@@ -103,9 +104,9 @@
         <TextView
             android:id="@+id/exo_remaining"
             style="@style/ExoStyledControls.TimeText.Position"
+            android:layout_height="0dp"
             app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintTop_toTopOf="parent" />
+            app:layout_constraintEnd_toEndOf="parent" />
     </androidx.constraintlayout.widget.ConstraintLayout>
 
     <androidx.constraintlayout.widget.ConstraintLayout
