@@ -47,6 +47,7 @@ object AoDParser {
 
     private val mediaList = arrayListOf<Media>()
     val itemMediaList = arrayListOf<ItemMedia>()
+    val highlightsList = arrayListOf<ItemMedia>()
     val newEpisodesList = arrayListOf<ItemMedia>()
 
     fun login(): Boolean = runBlocking {
@@ -95,7 +96,7 @@ object AoDParser {
      */
     fun initialLoading() = runBlocking {
         val newEPJob = GlobalScope.async {
-            listNewEpisodes()
+            loadHome()
         }
 
         val listJob = GlobalScope.async {
@@ -182,9 +183,9 @@ object AoDParser {
     }
 
     /**
-     * load all new episodes from AoD into newEpisodesList
+     * load new episodes and highlights
      */
-    private fun listNewEpisodes() = runBlocking {
+    private fun loadHome() = runBlocking {
         if (sessionCookies.isEmpty()) login()
 
         withContext(Dispatchers.Default) {
@@ -192,6 +193,7 @@ object AoDParser {
                 .cookies(sessionCookies)
                 .get()
 
+            // get all new episodes from AoD
             newEpisodesList.clear()
             resHome.select("div.jcarousel-container-new").select("li").forEach {
                 if (it.select("span").hasClass("neweps")) {
@@ -202,6 +204,18 @@ object AoDParser {
 
                     newEpisodesList.add(ItemMedia(mediaId, mediaTitle, mediaImage))
                 }
+            }
+
+            // get highlights from AoD
+            highlightsList.clear()
+            resHome.select("#aod-highlights").select("div.news-item").forEach {
+                val mediaId = it.select("div.news-item-text").select("a.serienlink")
+                    .attr("href").substringAfterLast("/").toInt()
+                val mediaTitle = it.select("div.news-title").select("h2").text()
+                val mediaImage = it.select("img").attr("src")
+
+                highlightsList.add(ItemMedia(mediaId, mediaTitle, mediaImage))
+
             }
 
         }

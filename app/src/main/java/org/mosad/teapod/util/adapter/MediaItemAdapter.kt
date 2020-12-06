@@ -10,11 +10,11 @@ import org.mosad.teapod.databinding.ItemMediaBinding
 import org.mosad.teapod.util.ItemMedia
 import java.util.*
 
-class MediaItemAdapter(private val media: List<ItemMedia>) : RecyclerView.Adapter<MediaItemAdapter.MediaViewHolder>(), Filterable {
+class MediaItemAdapter(private val initMedia: List<ItemMedia>) : RecyclerView.Adapter<MediaItemAdapter.MediaViewHolder>(), Filterable {
 
     var onItemClick: ((Int, Int) -> Unit)? = null
     private val filter = MediaFilter()
-    private var filteredMedia = media.map { it.copy() }
+    private var filteredMedia = initMedia.map { it.copy() }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): MediaItemAdapter.MediaViewHolder {
         return MediaViewHolder(ItemMediaBinding.inflate(LayoutInflater.from(parent.context), parent, false))
@@ -35,6 +35,10 @@ class MediaItemAdapter(private val media: List<ItemMedia>) : RecyclerView.Adapte
         return filter
     }
 
+    fun updateMediaList(mediaList: List<ItemMedia>) {
+        filteredMedia = mediaList
+    }
+
     inner class MediaViewHolder(val binding: ItemMediaBinding) : RecyclerView.ViewHolder(binding.root) {
         init {
             binding.root.setOnClickListener {
@@ -49,9 +53,9 @@ class MediaItemAdapter(private val media: List<ItemMedia>) : RecyclerView.Adapte
             val results = FilterResults()
 
             val filteredList = if (filterTerm.isEmpty()) {
-                media
+                initMedia
             } else {
-                media.filter {
+                initMedia.filter {
                     it.title.toLowerCase(Locale.ROOT).contains(filterTerm)
                 }
             }

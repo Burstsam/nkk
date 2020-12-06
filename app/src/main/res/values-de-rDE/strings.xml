@@ -6,6 +6,7 @@
     <string name="title_account">Account</string>
 
     <!-- home fragment -->
+    <string name="highlight_media">Highlight</string>
     <string name="my_list">Meine Liste</string>
     <string name="new_episodes">Neue Episoden</string>
 
@@ -24,13 +25,6 @@
     <string name="account_login_desc">Zum bearbeiten tippen</string>
     <string name="info">Info</string>
     <string name="info_about_desc">Version %1$s (%2$s)</string>
-    <string name="info_about_dialog">
-        Teapod ist eine inoffizielle App für Anime on Demand.
-        Sie wird unter den Bedingungen der GNU GPL 3 oder höher zur Verfügung gestellt.
-        \n\n
-        © 2020 seil0@mosad.xyz
-    </string>
-    <string name="licenses">Lizenzen</string>
     <string name="settings">Einstellungen</string>
     <string name="settings_secondary">Bevorzuge alternativen Stream</string>
     <string name="settings_secondary_desc">Untertitle-Stream verwenden, sofern vorhanden</string>
@@ -41,6 +35,12 @@
     <string name="theme_dark">Dunkel</string>
 
     <!-- about fragment -->
+    <string name="about_info">
+        Teapod ist eine inoffizielle App für Anime on Demand.
+        Sie wird unter den Bedingungen der GNU GPL 3 oder höher zur Verfügung gestellt.
+        \n\n
+        © 2020 seil0@mosad.xyz
+    </string>
     <string name="third_party_heading">Lizenzen von Drittanbietern</string>
     <string name="third_party_component_desc">© %1$s %2$s unter %3$s</string>
 

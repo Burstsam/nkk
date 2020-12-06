@@ -6,6 +6,7 @@
     <string name="title_account">Account</string>
 
     <!-- home fragment -->
+    <string name="highlight_media">Highlight</string>
     <string name="my_list">My list</string>
     <string name="new_episodes">New episodes</string>
 
@@ -33,12 +34,6 @@
     <string name="info">Info</string>
     <string name="info_about" translatable="false">Teapod by @Seil0</string>
     <string name="info_about_desc">Version %1$s (%2$s)</string>
-    <string name="info_about_dialog">
-        Teapod is an unofficial app for anime on demand.
-        It is published under the terms and conditions of the GNU GPL 3 or later.
-        \n\n
-        © 2020 seil0@mosad.xyz</string>
-    <string name="licenses">Licenses</string>
     <string name="settings">Settings</string>
     <string name="settings_secondary">Prefer secondary (sub) stream</string>
     <string name="settings_secondary_desc">Use the subtitles stream if present</string>
@@ -49,8 +44,14 @@
     <string name="theme_dark">Dark</string>
 
     <!-- about fragment -->
-    <string name="teapod_repo" translatable="false">git.mosad.xyz/Seil0/teapod</string>
+    <string name="about_info">
+        Teapod is an unofficial app for anime on demand.
+        It is published under the terms and conditions of the GNU GPL 3 or later.
+        \n\n
+        © 2020 seil0@mosad.xyz
+    </string>
     <string name="tmdb_notice" translatable="false">This product uses the TMDb API but is not endorsed or certified by TMDb.</string>
+    <string name="teapod_repo" translatable="false">git.mosad.xyz/Seil0/teapod</string>
     <string name="third_party_heading">Third Party Licenses</string>
     <string name="third_party_component_desc">© %1$s %2$s under %3$s</string>
 

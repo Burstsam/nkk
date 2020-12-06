@@ -18,6 +18,97 @@
             android:orientation="vertical">
 
             <LinearLayout
+                android:id="@+id/linear_highlight"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:orientation="vertical"
+                android:paddingBottom="7dp">
+
+                <ImageView
+                    android:id="@+id/image_highlight"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:contentDescription="@string/highlight_media"
+                    app:layout_constraintDimensionRatio="H,16:9"
+                    tools:src="@drawable/ic_launcher_background" />
+
+                <TextView
+                    android:id="@+id/text_highlight_title"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="7dp"
+                    android:text="@string/text_title_ex"
+                    android:textAlignment="center"
+                    android:textSize="16sp" />
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:layout_marginTop="7dp"
+                    android:gravity="center"
+                    android:orientation="horizontal">
+
+                    <Space
+                        android:layout_width="0dp"
+                        android:layout_height="1dp"
+                        android:layout_weight="1" />
+
+                    <TextView
+                        android:id="@+id/text_highlight_my_list"
+                        android:layout_width="64dp"
+                        android:layout_height="wrap_content"
+                        android:gravity="center"
+                        android:text="@string/my_list"
+                        android:textColor="?textSecondary"
+                        android:textSize="12sp"
+                        app:drawableTint="?buttonBackground"
+                        app:drawableTopCompat="@drawable/ic_baseline_add_24" />
+
+                    <Space
+                        android:layout_width="0dp"
+                        android:layout_height="1dp"
+                        android:layout_weight="1" />
+
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/button_play_highlight"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:gravity="center"
+                        android:text="@string/button_play"
+                        android:textAllCaps="false"
+                        android:textColor="?themePrimary"
+                        android:textSize="16sp"
+                        app:backgroundTint="?buttonBackground"
+                        app:icon="@drawable/ic_baseline_play_arrow_24"
+                        app:iconGravity="textStart"
+                        app:iconTint="?themePrimary" />
+
+                    <Space
+                        android:layout_width="0dp"
+                        android:layout_height="1dp"
+                        android:layout_weight="1" />
+
+                    <TextView
+                        android:id="@+id/text_highlight_info"
+                        android:layout_width="64dp"
+                        android:layout_height="wrap_content"
+                        android:gravity="center"
+                        android:text="@string/info"
+                        android:textColor="?textSecondary"
+                        android:textSize="12sp"
+                        app:drawableTint="?buttonBackground"
+                        app:drawableTopCompat="@drawable/ic_baseline_info_24" />
+
+                    <Space
+                        android:layout_width="0dp"
+                        android:layout_height="1dp"
+                        android:layout_weight="1" />
+
+                </LinearLayout>
+            </LinearLayout>
+
+            <LinearLayout
+                android:id="@+id/linear_my_list"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:orientation="vertical"
@@ -45,6 +136,7 @@
             </LinearLayout>
 
             <LinearLayout
+                android:id="@+id/linear_new_episodes"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:orientation="vertical"
