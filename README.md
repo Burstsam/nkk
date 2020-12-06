@@ -16,17 +16,17 @@ A unofficial App for Anime-on-Demand.
 [<img src="https://www.mosad.xyz/images/Teapod/Teapod_Search_200px.png" width=180>](https://www.mosad.xyz/images/Teapod/Teapod_Search.png)
 
 ### License
-This App is licensed under the terms and conditions of GPL 3. This Project is not associated with Anime-on-Demand in any way.
+This App is licensed under the terms and conditions of GPL 3. This Project is not associated with Anime-on-Demand in any way. Using this app may violates the ToS of AoD.
 
 ### Known Issues
-If a tv show is selected, the first episode will be marked as already watched. This is due to the difficulties of parsing. The Parser is designed to be as easy to maintain and fail safe as possible.
+If a tv show is selected, the first episode will be marked as already watched. This is due to the the parsing. The Parser is designed to be easy to maintain and as fail safe as possible.
 
 ### Used Libraries
 * AndroidX: https://developer.android.com/jetpack/androidx
 * Material Components for Android: https://github.com/material-components/material-components-android
+* Material design icons: https://github.com/google/material-design-icons
 * ExoPlayer: https://github.com/google/ExoPlayer
 * Gson: https://github.com/google/gson
-* Material design icons: https://github.com/google/material-design-icons
 * Material Dialogs: https://github.com/afollestad/material-dialogs
 * Jsoup: https://jsoup.org
 * kotlinx.coroutines: https://github.com/Kotlin/kotlinx.coroutines
