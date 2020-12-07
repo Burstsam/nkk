@@ -210,12 +210,13 @@ object AoDParser {
             highlightsList.clear()
             resHome.select("#aod-highlights").select("div.news-item").forEach {
                 val mediaId = it.select("div.news-item-text").select("a.serienlink")
-                    .attr("href").substringAfterLast("/").toInt()
+                    .attr("href").substringAfterLast("/").toIntOrNull()
                 val mediaTitle = it.select("div.news-title").select("h2").text()
                 val mediaImage = it.select("img").attr("src")
 
-                highlightsList.add(ItemMedia(mediaId, mediaTitle, mediaImage))
-
+                if (mediaId != null) {
+                    highlightsList.add(ItemMedia(mediaId, mediaTitle, mediaImage))
+                }
             }
 
         }
