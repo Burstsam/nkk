@@ -45,10 +45,12 @@ object AoDParser {
     private var csrfToken: String = ""
     private var loginSuccess = false
 
-    private val mediaList = arrayListOf<Media>()
-    val itemMediaList = arrayListOf<ItemMedia>()
+    private val mediaList = arrayListOf<Media>() // actual media (data)
+    val itemMediaList = arrayListOf<ItemMedia>() // gui media
     val highlightsList = arrayListOf<ItemMedia>()
     val newEpisodesList = arrayListOf<ItemMedia>()
+    val newSimulcastsList = arrayListOf<ItemMedia>()
+    val newTitlesList = arrayListOf<ItemMedia>()
 
     fun login(): Boolean = runBlocking {
 
@@ -95,7 +97,7 @@ object AoDParser {
      * -> blocking
      */
     fun initialLoading() = runBlocking {
-        val newEPJob = GlobalScope.async {
+        val loadHomeJob = GlobalScope.async {
             loadHome()
         }
 
@@ -103,7 +105,7 @@ object AoDParser {
             listAnimes()
         }
 
-        newEPJob.await()
+        loadHomeJob.await()
         listJob.await()
     }
 
@@ -183,7 +185,7 @@ object AoDParser {
     }
 
     /**
-     * load new episodes and highlights
+     * load new episodes, titles and highlights
      */
     private fun loadHome() = runBlocking {
         if (sessionCookies.isEmpty()) login()
@@ -192,19 +194,6 @@ object AoDParser {
             val resHome = Jsoup.connect(baseUrl)
                 .cookies(sessionCookies)
                 .get()
-
-            // get all new episodes from AoD
-            newEpisodesList.clear()
-            resHome.select("div.jcarousel-container-new").select("li").forEach {
-                if (it.select("span").hasClass("neweps")) {
-                    val mediaId = it.select("a.thumbs").attr("href")
-                        .substringAfterLast("/").toInt()
-                    val mediaImage = it.select("a.thumbs > img").attr("src")
-                    val mediaTitle = "${it.select("a").text()} - ${it.select("span.neweps").text()}"
-
-                    newEpisodesList.add(ItemMedia(mediaId, mediaTitle, mediaImage))
-                }
-            }
 
             // get highlights from AoD
             highlightsList.clear()
@@ -216,6 +205,45 @@ object AoDParser {
 
                 if (mediaId != null) {
                     highlightsList.add(ItemMedia(mediaId, mediaTitle, mediaImage))
+                }
+            }
+
+            // get all new episodes from AoD
+            newEpisodesList.clear()
+            resHome.select("h2:contains(Neue Episoden)").next().select("li").forEach {
+                val mediaId = it.select("a.thumbs").attr("href")
+                    .substringAfterLast("/").toIntOrNull()
+                val mediaImage = it.select("a.thumbs > img").attr("src")
+                val mediaTitle = "${it.select("a").text()} - ${it.select("span.neweps").text()}"
+
+                if (mediaId != null) {
+                    newEpisodesList.add(ItemMedia(mediaId, mediaTitle, mediaImage))
+                }
+            }
+
+            // get new simulcasts from AoD
+            newSimulcastsList.clear()
+            resHome.select("h2:contains(Neue Simulcasts)").next().select("li").forEach {
+                val mediaId = it.select("a.thumbs").attr("href")
+                    .substringAfterLast("/").toIntOrNull()
+                val mediaImage = it.select("a.thumbs > img").attr("src")
+                val mediaTitle = it.select("a").text()
+
+                if (mediaId != null) {
+                    newSimulcastsList.add(ItemMedia(mediaId, mediaTitle, mediaImage))
+                }
+            }
+
+            // get new titles from AoD
+            newTitlesList.clear()
+            resHome.select("h2:contains(Neue Anime-Titel)").next().select("li").forEach {
+                val mediaId = it.select("a.thumbs").attr("href")
+                    .substringAfterLast("/").toIntOrNull()
+                val mediaImage = it.select("a.thumbs > img").attr("src")
+                val mediaTitle = it.select("a").text()
+
+                if (mediaId != null) {
+                    newTitlesList.add(ItemMedia(mediaId, mediaTitle, mediaImage))
                 }
             }
 

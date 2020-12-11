@@ -28,6 +28,8 @@ class HomeFragment : Fragment() {
     private lateinit var binding: FragmentHomeBinding
     private lateinit var adapterMyList: MediaItemAdapter
     private lateinit var adapterNewEpisodes: MediaItemAdapter
+    private lateinit var adapterNewSimulcasts: MediaItemAdapter
+    private lateinit var adapterNewTitles: MediaItemAdapter
 
     private lateinit var highlightMedia: ItemMedia
 
@@ -65,6 +67,8 @@ class HomeFragment : Fragment() {
     private fun initRecyclerViews() {
         binding.recyclerMyList.addItemDecoration(MediaItemDecoration(9))
         binding.recyclerNewEpisodes.addItemDecoration(MediaItemDecoration(9))
+        binding.recyclerNewSimulcasts.addItemDecoration(MediaItemDecoration(9))
+        binding.recyclerNewTitles.addItemDecoration(MediaItemDecoration(9))
 
         // my list
         val myListMedia = StorageController.myList.map { elementId ->
@@ -81,6 +85,14 @@ class HomeFragment : Fragment() {
         // new episodes
         adapterNewEpisodes = MediaItemAdapter(AoDParser.newEpisodesList)
         binding.recyclerNewEpisodes.adapter = adapterNewEpisodes
+
+        // new simulcasts
+        adapterNewSimulcasts = MediaItemAdapter(AoDParser.newSimulcastsList)
+        binding.recyclerNewSimulcasts.adapter = adapterNewSimulcasts
+
+        // new titles
+        adapterNewTitles = MediaItemAdapter(AoDParser.newTitlesList)
+        binding.recyclerNewTitles.adapter = adapterNewTitles
     }
 
     private fun initActions() {
@@ -112,6 +124,14 @@ class HomeFragment : Fragment() {
         }
 
         adapterNewEpisodes.onItemClick = { mediaId, _ ->
+            (activity as MainActivity).showFragment(MediaFragment(mediaId))
+        }
+
+        adapterNewSimulcasts.onItemClick = { mediaId, _ ->
+            (activity as MainActivity).showFragment(MediaFragment(mediaId))
+        }
+
+        adapterNewTitles.onItemClick = { mediaId, _ ->
             (activity as MainActivity).showFragment(MediaFragment(mediaId))
         }
     }

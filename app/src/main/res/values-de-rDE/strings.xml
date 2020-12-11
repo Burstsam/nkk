@@ -9,6 +9,8 @@
     <string name="highlight_media">Highlight</string>
     <string name="my_list">Meine Liste</string>
     <string name="new_episodes">Neue Episoden</string>
+    <string name="new_simulcasts">Neue Simulcasts</string>
+    <string name="new_titles">Neue Titel</string>
 
     <!-- search fragment -->
     <string name="search_hint">Suche nach Filmen und Serien</string>
