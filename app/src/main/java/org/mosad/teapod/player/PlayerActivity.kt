@@ -29,6 +29,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import org.mosad.teapod.R
 import org.mosad.teapod.preferences.Preferences
+import org.mosad.teapod.ui.components.EpisodesPlayer
 import org.mosad.teapod.util.DataTypes
 import org.mosad.teapod.util.Episode
 import java.util.*
@@ -151,6 +152,7 @@ class PlayerActivity : AppCompatActivity() {
                 }
 
                 if (state == ExoPlayer.STATE_ENDED && model.nextEpisode != null && Preferences.autoplay) {
+                    // if next episode btn was clicked, skipp playNextEpisode() on STATE_ENDED
                     if (nextEpManually) {
                         nextEpManually = false
                     } else {
@@ -187,6 +189,7 @@ class PlayerActivity : AppCompatActivity() {
         ffwd_10.setOnButtonClickListener { fastForward() }
         button_next_ep.setOnClickListener { playNextEpisode() }
         button_next_ep_c.setOnClickListener { playNextEpisode() }
+        button_episodes.setOnClickListener { showEpisodesList() }
     }
 
     private fun initTimeUpdates() {
@@ -314,7 +317,11 @@ class PlayerActivity : AppCompatActivity() {
     private fun playCurrentMedia(seekToPosition: Boolean) {
         // update the gui
         exo_text_title.text = if (model.media.type == DataTypes.MediaType.TVSHOW) {
-            getString(R.string.component_episode_title, model.currentEpisode.number, model.currentEpisode.description)
+            getString(
+                R.string.component_episode_title,
+                model.currentEpisode.number,
+                model.currentEpisode.description
+            )
         } else {
             model.currentEpisode.title
         }
@@ -399,6 +406,11 @@ class PlayerActivity : AppCompatActivity() {
                 }
             })
 
+    }
+
+    private fun showEpisodesList() {
+        val rootView = window.decorView.rootView as ViewGroup
+        EpisodesPlayer(rootView, model)
     }
 
     inner class PlayerGestureListener : GestureDetector.SimpleOnGestureListener() {
