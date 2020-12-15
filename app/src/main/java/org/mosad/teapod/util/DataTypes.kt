@@ -61,6 +61,7 @@ data class Info(
 
 /**
  * if secStreamOmU == true, then a secondary stream is present
+ * number = episode number (0..n)
  */
 data class Episode(
     val id: Int = 0,

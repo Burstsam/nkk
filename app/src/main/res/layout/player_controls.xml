@@ -138,7 +138,6 @@
             android:layout_marginEnd="7dp"
             android:text="@string/episodes"
             android:textAllCaps="false"
-            android:visibility="gone"
             app:icon="@drawable/ic_baseline_video_library_24"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toStartOf="@+id/button_next_ep_c"
