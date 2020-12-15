@@ -155,12 +155,6 @@ class MediaFragment(private val mediaId: Int) : Fragment() {
     private fun playEpisode(ep: Episode) {
         playStream(ep)
 
-        // update watched state
-        updateWatchedState(ep)
-        //AoDParser.sendCallback(ep.watchedCallback)
-        //adapterRecEpisodes.updateWatchedState(true, media.episodes.indexOf(ep))
-        //adapterRecEpisodes.notifyDataSetChanged()
-
         // update nextEpisode
         nextEpisode = if (media.episodes.firstOrNull{ !it.watched } != null) {
             media.episodes.first{ !it.watched }

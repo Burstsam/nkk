@@ -29,8 +29,8 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import org.mosad.teapod.R
 import org.mosad.teapod.preferences.Preferences
+import org.mosad.teapod.ui.components.EpisodesListPlayer
 import org.mosad.teapod.util.DataTypes
-import org.mosad.teapod.util.Episode
 import java.util.*
 import java.util.concurrent.TimeUnit
 import kotlin.concurrent.scheduleAtFixedRate
@@ -124,6 +124,12 @@ class PlayerActivity : AppCompatActivity() {
         initExoPlayer()
         initVideoView()
         initTimeUpdates()
+
+        // add listener after initial media is started
+        model.currentEpisodeChangedListener.add {
+            nextEpManually = true // make sure on STATE_ENDED doesn't skip another episode
+            playCurrentMedia(false)
+        }
     }
 
     private fun initExoPlayer() {
@@ -151,16 +157,16 @@ class PlayerActivity : AppCompatActivity() {
                 }
 
                 if (state == ExoPlayer.STATE_ENDED && model.nextEpisode != null && Preferences.autoplay) {
-                    if (nextEpManually) {
-                        nextEpManually = false
-                    } else {
+                    // if next episode btn was clicked, skipp playNextEpisode() on STATE_ENDED
+                    if (!nextEpManually) {
                         playNextEpisode()
                     }
+                    nextEpManually = false
                 }
             }
         })
 
-        playCurrentMedia(true)
+        playCurrentMedia(true) // start initial media
     }
 
     @SuppressLint("ClickableViewAccessibility")
@@ -187,6 +193,7 @@ class PlayerActivity : AppCompatActivity() {
         ffwd_10.setOnButtonClickListener { fastForward() }
         button_next_ep.setOnClickListener { playNextEpisode() }
         button_next_ep_c.setOnClickListener { playNextEpisode() }
+        button_episodes.setOnClickListener { showEpisodesList() }
     }
 
     private fun initTimeUpdates() {
@@ -292,19 +299,12 @@ class PlayerActivity : AppCompatActivity() {
     }
 
     private fun togglePausePlay() {
-        if (player.isPlaying) {
-            player.pause()
-        } else {
-            player.play()
-        }
+        if (player.isPlaying) player.pause() else player.play()
     }
 
     private fun playNextEpisode() = model.nextEpisode?.let {
         model.nextEpisode() // current = next, next = new or null
         hideButtonNextEp()
-
-        nextEpManually = true
-        playCurrentMedia(false)
     }
 
     /**
@@ -314,7 +314,11 @@ class PlayerActivity : AppCompatActivity() {
     private fun playCurrentMedia(seekToPosition: Boolean) {
         // update the gui
         exo_text_title.text = if (model.media.type == DataTypes.MediaType.TVSHOW) {
-            getString(R.string.component_episode_title, model.currentEpisode.number, model.currentEpisode.description)
+            getString(
+                R.string.component_episode_title,
+                model.currentEpisode.number,
+                model.currentEpisode.description
+            )
         } else {
             model.currentEpisode.title
         }
@@ -323,30 +327,16 @@ class PlayerActivity : AppCompatActivity() {
             button_next_ep_c.visibility = View.GONE
         }
 
+        // update player/media item
+        player.playWhenReady = true
         player.clearMediaItems() //remove previous item
         val mediaSource = HlsMediaSource.Factory(dataSourceFactory).createMediaSource(
-            MediaItem.fromUri(Uri.parse(autoSelectStream(model.currentEpisode)))
+            MediaItem.fromUri(Uri.parse(model.autoSelectStream(model.currentEpisode)))
         )
         if (seekToPosition) player.seekTo(playbackPosition)
         player.setMediaSource(mediaSource)
         player.prepare()
-    }
 
-    /**
-     * If preferSecondary or priStreamUrl is empty and secondary is present (secStreamOmU),
-     * use the secondary stream. Else, if the primary stream is set use the primary stream.
-     * If no stream is present, close the activity.
-     */
-    private fun autoSelectStream(episode: Episode): String {
-        return if ((Preferences.preferSecondary || episode.priStreamUrl.isEmpty()) && episode.secStreamOmU) {
-            episode.secStreamUrl
-        } else if (episode.priStreamUrl.isNotEmpty()) {
-            episode.priStreamUrl
-        } else {
-            Log.e(javaClass.name, "No stream url set.")
-            this.finish()
-            ""
-        }
     }
 
     /**
@@ -383,8 +373,6 @@ class PlayerActivity : AppCompatActivity() {
             .setListener(null)
     }
 
-
-
     /**
      * hide the next episode button
      * TODO improve the hide animation
@@ -399,6 +387,17 @@ class PlayerActivity : AppCompatActivity() {
                 }
             })
 
+    }
+
+    private fun showEpisodesList() {
+        val episodesList = EpisodesListPlayer(this, model = model).apply {
+            onViewRemovedAction = { player.play() }
+        }
+        player_layout.addView(episodesList)
+
+        // hide player controls and pause playback
+        player.pause()
+        controller.hideImmediately()
     }
 
     inner class PlayerGestureListener : GestureDetector.SimpleOnGestureListener() {
@@ -419,11 +418,7 @@ class PlayerActivity : AppCompatActivity() {
             val viewCenterX = video_view.measuredWidth / 2
 
             // if the event position is on the left side rewind, if it's on the right forward
-            if (eventPosX < viewCenterX) {
-                rewind()
-            } else {
-                fastForward()
-            }
+            if (eventPosX < viewCenterX) rewind() else fastForward()
 
             return true
         }

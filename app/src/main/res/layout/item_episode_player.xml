@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="wrap_content"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:padding="7dp" >
+
+    <FrameLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content">
+
+        <com.google.android.material.imageview.ShapeableImageView
+            android:id="@+id/image_episode"
+            android:layout_width="192dp"
+            android:layout_height="108dp"
+            android:contentDescription="@string/component_poster_desc"
+            app:shapeAppearance="@style/ShapeAppearance.Teapod.RoundedPoster"
+            app:srcCompat="@color/md_disabled_text_dark_theme" />
+
+        <ImageView
+            android:id="@+id/image_episode_play"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:background="@drawable/bg_circle__black_transparent_24dp"
+            android:contentDescription="@string/button_play"
+            app:srcCompat="@drawable/ic_baseline_play_arrow_24"
+            app:tint="#FFFFFF" />
+    </FrameLayout>
+
+    <TextView
+        android:id="@+id/text_episode_title2"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="7dp"
+        android:text="@string/component_episode_title"
+        android:textColor="@color/textPrimaryDark"
+        android:textSize="16sp" />
+
+    <TextView
+        android:id="@+id/text_episode_desc2"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_marginTop="5dp"
+        android:text="@string/text_overview_ex"
+        android:textColor="@color/textPrimaryDark"/>
+
+</LinearLayout>
