@@ -10,10 +10,10 @@ A unofficial App for Anime-on-Demand.
 * prefer the OmU version via the app settings
 
 ## Screenshots
-[<img src="https://www.mosad.xyz/images/Teapod/Teapod_Home_200px.png" width=180>](https://www.mosad.xyz/images/Teapod/Teapod_Home.png)
-[<img src="https://www.mosad.xyz/images/Teapod/Teapod_Library_200px.png" width=180>](https://www.mosad.xyz/images/Teapod/Teapod_Library.png)
-[<img src="https://www.mosad.xyz/images/Teapod/Teapod_Media_200px.png" width=180>](https://www.mosad.xyz/images/Teapod/Teapod_Media.png)
-[<img src="https://www.mosad.xyz/images/Teapod/Teapod_Search_200px.png" width=180>](https://www.mosad.xyz/images/Teapod/Teapod_Search.png)
+[<img src="https://www.mosad.xyz/images/Teapod/Teapod_Home.webp" width=180>](https://www.mosad.xyz/images/Teapod/Teapod_Home.webp)
+[<img src="https://www.mosad.xyz/images/Teapod/Teapod_Library.webp" width=180>](https://www.mosad.xyz/images/Teapod/Teapod_Library.webp)
+[<img src="https://www.mosad.xyz/images/Teapod/Teapod_Media.webp" width=180>](https://www.mosad.xyz/images/Teapod/Teapod_Media.webp)
+[<img src="https://www.mosad.xyz/images/Teapod/Teapod_Search.webp" width=180>](https://www.mosad.xyz/images/Teapod/Teapod_Search.webp)
 
 ### License
 This App is licensed under the terms and conditions of GPL 3. This Project is not associated with Anime-on-Demand in any way. Using this app may violates the ToS of AoD.
