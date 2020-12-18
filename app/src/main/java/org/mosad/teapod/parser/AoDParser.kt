@@ -32,6 +32,7 @@ import org.mosad.teapod.util.*
 import org.mosad.teapod.util.DataTypes.MediaType
 import java.io.IOException
 import java.util.*
+import kotlin.random.Random
 
 object AoDParser {
 
@@ -247,6 +248,10 @@ object AoDParser {
                 }
             }
 
+            // if highlights is empty, add a random new title
+            if (highlightsList.isEmpty()) {
+                highlightsList.add(newTitlesList[Random.nextInt(0, newTitlesList.size)])
+            }
         }
     }
 
