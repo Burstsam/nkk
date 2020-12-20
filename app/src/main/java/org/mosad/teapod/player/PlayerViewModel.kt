@@ -65,6 +65,10 @@ class PlayerViewModel : ViewModel() {
         }
     }
 
+    fun changeLanguage(id: Int) {
+        println("new Language is ABC with id $id")
+    }
+
     /**
      * update currentEpisode, episodeId, nextEpisode to new episode
      * updateWatchedState for the next (now current) episode

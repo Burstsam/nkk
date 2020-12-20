@@ -30,6 +30,7 @@ import kotlinx.coroutines.withContext
 import org.mosad.teapod.R
 import org.mosad.teapod.preferences.Preferences
 import org.mosad.teapod.ui.components.EpisodesListPlayer
+import org.mosad.teapod.ui.components.LanguageSettingsPlayer
 import org.mosad.teapod.util.DataTypes
 import java.util.*
 import java.util.concurrent.TimeUnit
@@ -192,8 +193,9 @@ class PlayerActivity : AppCompatActivity() {
         rwd_10.setOnButtonClickListener { rewind() }
         ffwd_10.setOnButtonClickListener { fastForward() }
         button_next_ep.setOnClickListener { playNextEpisode() }
-        button_next_ep_c.setOnClickListener { playNextEpisode() }
+        button_language.setOnClickListener { showLanguageSettings() }
         button_episodes.setOnClickListener { showEpisodesList() }
+        button_next_ep_c.setOnClickListener { playNextEpisode() }
     }
 
     private fun initTimeUpdates() {
@@ -394,6 +396,17 @@ class PlayerActivity : AppCompatActivity() {
             onViewRemovedAction = { player.play() }
         }
         player_layout.addView(episodesList)
+
+        // hide player controls and pause playback
+        player.pause()
+        controller.hide()
+    }
+
+    private fun showLanguageSettings() {
+        val languageSettings = LanguageSettingsPlayer(this, model = model).apply {
+            onViewRemovedAction = { player.play() }
+        }
+        player_layout.addView(languageSettings)
 
         // hide player controls and pause playback
         player.pause()

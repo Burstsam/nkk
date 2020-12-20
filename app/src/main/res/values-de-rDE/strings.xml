@@ -52,8 +52,9 @@
     <string name="play_pause">Abspielen/Pause</string>
     <string name="forward_10">10 Sekunden vorwärts</string>
     <string name="next_episode">Nächste Folge</string>
-    <string name="episode">Folge</string>
+    <string name="language">Sprache</string>
     <string name="episodes">Folgen</string>
+    <string name="episode">Folge</string>
 
     <!-- dialogs -->
     <string name="save">speichern</string>

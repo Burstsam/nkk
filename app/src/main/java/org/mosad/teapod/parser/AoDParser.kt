@@ -250,7 +250,11 @@ object AoDParser {
 
             // if highlights is empty, add a random new title
             if (highlightsList.isEmpty()) {
-                highlightsList.add(newTitlesList[Random.nextInt(0, newTitlesList.size)])
+                if (newTitlesList.isNotEmpty()) {
+                    highlightsList.add(newTitlesList[Random.nextInt(0, newTitlesList.size)])
+                } else {
+                    highlightsList.add(ItemMedia(0,"", ""))
+                }
             }
         }
     }

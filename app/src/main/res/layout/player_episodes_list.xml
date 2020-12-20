@@ -4,7 +4,9 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="#73000000">
+    android:background="#73000000"
+    android:clickable="true"
+    android:focusable="true">
 
     <LinearLayout
         android:id="@+id/linearLayout3"
@@ -20,7 +22,8 @@
 
         <ImageButton
             android:id="@+id/button_close_episodes_list"
-            style="@style/ExoStyledControls.Button.Center"
+            android:background="@android:color/transparent"
+            android:scaleType="fitXY"
             android:layout_width="44dp"
             android:layout_height="44dp"
             android:contentDescription="@string/close_player"
