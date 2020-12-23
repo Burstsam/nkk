@@ -23,18 +23,6 @@ This App is licensed under the terms and conditions of GPL 3. This Project is no
 ### Known Issues
 If a tv show is selected, the first episode will be marked as already watched. This is due to parsing the website. The Parser is designed to be easy to maintain and as fail safe as possible.
 
-### Used Libraries
-* AndroidX: https://developer.android.com/jetpack/androidx
-* Material Components for Android: https://github.com/material-components/material-components-android
-* Material design icons: https://github.com/google/material-design-icons
-* ExoPlayer: https://github.com/google/ExoPlayer
-* Gson: https://github.com/google/gson
-* Material Dialogs: https://github.com/afollestad/material-dialogs
-* Jsoup: https://jsoup.org
-* kotlinx.coroutines: https://github.com/Kotlin/kotlinx.coroutines
-* Glide: https://github.com/bumptech/glide
-* Glide Transformations: https://github.com/wasabeef/glide-transformations
-
 #### Why is it called Teapod?
 Teapod is a Acronym for "The ultimate anime app on demand", hence this project is called Teapod and not Teapot.
 
