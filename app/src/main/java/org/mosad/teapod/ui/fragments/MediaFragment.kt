@@ -171,8 +171,12 @@ class MediaFragment(private val mediaId: Int) : Fragment() {
 
     fun updateWatchedState(ep: Episode) {
         AoDParser.sendCallback(ep.watchedCallback)
-        adapterRecEpisodes.updateWatchedState(true, media.episodes.indexOf(ep))
-        adapterRecEpisodes.notifyDataSetChanged()
+
+        // only notify adapter, if initialized
+        if (this::adapterRecEpisodes.isInitialized) {
+            adapterRecEpisodes.updateWatchedState(true, media.episodes.indexOf(ep))
+            adapterRecEpisodes.notifyDataSetChanged()
+        }
     }
 
 }

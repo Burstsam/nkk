@@ -49,7 +49,7 @@ data class Media(
     val link: String,
     val type: DataTypes.MediaType,
     val info: Info = Info(),
-    var episodes: ArrayList<Episode> = arrayListOf()
+    val episodes: ArrayList<Episode> = arrayListOf()
 ) {
     fun hasEpisode(id: Int) = episodes.any { it.id == id }
     fun getEpisodeById(id: Int) = episodes.first { it.id == id }
@@ -71,11 +71,11 @@ data class Info(
 data class Episode(
     val id: Int = 0,
     val streams: MutableList<Stream> = mutableListOf(),
-    var title: String = "",
-    var posterUrl: String = "",
-    var description: String = "",
+    val title: String = "",
+    val posterUrl: String = "",
+    val description: String = "",
     var shortDesc: String = "",
-    var number: Int = 0,
+    val number: Int = 0,
     var watched: Boolean = false,
     var watchedCallback: String = ""
 ) {

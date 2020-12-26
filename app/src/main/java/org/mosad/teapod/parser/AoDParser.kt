@@ -315,7 +315,6 @@ object AoDParser {
                             description = ep.description,
                             number = getNumberFromTitle(ep.title, media.type)
                         ))
-                        println(getNumberFromTitle(ep.title, media.type))
                     }
                 } catch (ex: Exception) {
                     Log.w(javaClass.name, "Could not parse episode information.", ex)

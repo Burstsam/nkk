@@ -28,15 +28,15 @@ class EpisodesListPlayer @JvmOverloads constructor(
         }
 
         model?.let {
-            adapterRecEpisodes = PlayerEpisodeItemAdapter(it.media.episodes)
+            adapterRecEpisodes = PlayerEpisodeItemAdapter(model.media.episodes)
 
             adapterRecEpisodes.onImageClick = { _, position ->
                 (this.parent as ViewGroup).removeView(this)
-                it.currentEpisode = it.media.episodes[position]
+                model.currentEpisode = model.media.episodes[position]
             }
 
             binding.recyclerEpisodesPlayer.adapter = adapterRecEpisodes
-            binding.recyclerEpisodesPlayer.scrollToPosition(it.currentEpisode.number - 1) // number != index
+            binding.recyclerEpisodesPlayer.scrollToPosition(model.currentEpisode.number - 1) // number != index
         }
     }
 

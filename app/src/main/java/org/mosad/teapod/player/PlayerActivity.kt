@@ -3,7 +3,6 @@ package org.mosad.teapod.player
 import android.animation.Animator
 import android.animation.AnimatorListenerAdapter
 import android.annotation.SuppressLint
-import android.net.Uri
 import android.os.Build
 import android.os.Bundle
 import android.util.Log
@@ -13,13 +12,8 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.GestureDetectorCompat
 import androidx.core.view.isVisible
 import com.google.android.exoplayer2.ExoPlayer
-import com.google.android.exoplayer2.MediaItem
 import com.google.android.exoplayer2.Player
-import com.google.android.exoplayer2.SimpleExoPlayer
-import com.google.android.exoplayer2.source.hls.HlsMediaSource
 import com.google.android.exoplayer2.ui.StyledPlayerControlView
-import com.google.android.exoplayer2.upstream.DataSource
-import com.google.android.exoplayer2.upstream.DefaultDataSourceFactory
 import com.google.android.exoplayer2.util.Util
 import kotlinx.android.synthetic.main.activity_player.*
 import kotlinx.android.synthetic.main.player_controls.*
@@ -40,8 +34,6 @@ class PlayerActivity : AppCompatActivity() {
 
     private val model: PlayerViewModel by viewModels()
 
-    private lateinit var player: SimpleExoPlayer
-    private lateinit var dataSourceFactory: DataSource.Factory
     private lateinit var controller: StyledPlayerControlView
     private lateinit var gestureDetector: GestureDetectorCompat
     private lateinit var timerUpdates: TimerTask
@@ -52,8 +44,8 @@ class PlayerActivity : AppCompatActivity() {
     private var playbackPosition: Long = 0
     private var remainingTime: Long = 0
 
-    private val rwdTime = 10000
-    private val fwdTime = 10000
+    private val rwdTime: Long = 10000.unaryMinus()
+    private val fwdTime: Long = 10000
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -117,8 +109,8 @@ class PlayerActivity : AppCompatActivity() {
     }
 
     private fun initPlayer() {
-        if (model.mediaId <= 0) {
-            Log.e(javaClass.name, "No media id was set.")
+        if (model.media.id < 0) {
+            Log.e(javaClass.name, "No media was set.")
             this.finish()
         }
 
@@ -134,14 +126,12 @@ class PlayerActivity : AppCompatActivity() {
     }
 
     private fun initExoPlayer() {
-        player = SimpleExoPlayer.Builder(this).build()
-        dataSourceFactory = DefaultDataSourceFactory(this, Util.getUserAgent(this, "Teapod"))
         controller = video_view.findViewById(R.id.exo_controller)
 
         controller.isAnimationEnabled = false // disable controls (time-bar) animation
 
-        player.playWhenReady = playWhenReady
-        player.addListener(object : Player.EventListener {
+        model.player.playWhenReady = playWhenReady
+        model.player.addListener(object : Player.EventListener {
             override fun onPlaybackStateChanged(state: Int) {
                 super.onPlaybackStateChanged(state)
 
@@ -172,7 +162,7 @@ class PlayerActivity : AppCompatActivity() {
 
     @SuppressLint("ClickableViewAccessibility")
     private fun initVideoView() {
-        video_view.player = player
+        video_view.player = model.player
 
         // when the player controls get hidden, hide the bars too
         video_view.setControllerVisibilityListener {
@@ -208,10 +198,10 @@ class PlayerActivity : AppCompatActivity() {
                 var btnNextEpIsVisible: Boolean
                 var controlsVisible: Boolean
 
-                withContext(Dispatchers.Main) {
-                    remainingTime = player.duration - player.currentPosition
-                    remainingTime = if (remainingTime < 0) 0 else remainingTime
+                remainingTime = model.player.duration - model.player.currentPosition
+                remainingTime = if (remainingTime < 0) 0 else remainingTime
 
+                withContext(Dispatchers.Main) {
                     btnNextEpIsVisible = button_next_ep.isVisible
                     controlsVisible = controller.isVisible
                 }
@@ -234,10 +224,10 @@ class PlayerActivity : AppCompatActivity() {
     }
 
     private fun releasePlayer(){
-        playbackPosition = player.currentPosition
-        currentWindow = player.currentWindowIndex
-        playWhenReady = player.playWhenReady
-        player.release()
+        playbackPosition = model.player.currentPosition
+        currentWindow = model.player.currentWindowIndex
+        playWhenReady = model.player.playWhenReady
+        model.player.release()
         timerUpdates.cancel()
 
         Log.d(javaClass.name, "Released player")
@@ -265,7 +255,7 @@ class PlayerActivity : AppCompatActivity() {
      */
 
     private fun rewind() {
-        player.seekTo(player.currentPosition - rwdTime)
+        model.seekToOffset(rwdTime)
 
         // hide/show needed components
         exo_double_tap_indicator.visibility = View.VISIBLE
@@ -283,7 +273,7 @@ class PlayerActivity : AppCompatActivity() {
     }
 
     private fun fastForward() {
-        player.seekTo(player.currentPosition + fwdTime)
+        model.seekToOffset(fwdTime)
 
         // hide/show needed components
         exo_double_tap_indicator.visibility = View.VISIBLE
@@ -298,10 +288,6 @@ class PlayerActivity : AppCompatActivity() {
 
         // run animation
         ffwd_10_indicator.runOnClickAnimation()
-    }
-
-    private fun togglePausePlay() {
-        if (player.isPlaying) player.pause() else player.play()
     }
 
     private fun playNextEpisode() = model.nextEpisode?.let {
@@ -330,15 +316,8 @@ class PlayerActivity : AppCompatActivity() {
         }
 
         // update player/media item
-        player.playWhenReady = true
-        player.clearMediaItems() //remove previous item
-        val mediaSource = HlsMediaSource.Factory(dataSourceFactory).createMediaSource(
-            MediaItem.fromUri(Uri.parse(model.autoSelectStream(model.currentEpisode)))
-        )
-        if (seekToPosition) player.seekTo(playbackPosition)
-        player.setMediaSource(mediaSource)
-        player.prepare()
-
+        val seekPosition =  if (seekToPosition) playbackPosition else 0
+        model.playMedia(model.currentEpisode, true, seekPosition)
     }
 
     /**
@@ -393,23 +372,23 @@ class PlayerActivity : AppCompatActivity() {
 
     private fun showEpisodesList() {
         val episodesList = EpisodesListPlayer(this, model = model).apply {
-            onViewRemovedAction = { player.play() }
+            onViewRemovedAction = { model.player.play() }
         }
         player_layout.addView(episodesList)
 
         // hide player controls and pause playback
-        player.pause()
+        model.player.pause()
         controller.hide()
     }
 
     private fun showLanguageSettings() {
         val languageSettings = LanguageSettingsPlayer(this, model = model).apply {
-            onViewRemovedAction = { player.play() }
+            onViewRemovedAction = { model.player.play() }
         }
         player_layout.addView(languageSettings)
 
         // hide player controls and pause playback
-        player.pause()
+        model.player.pause()
         controller.hideImmediately()
     }
 
@@ -447,7 +426,7 @@ class PlayerActivity : AppCompatActivity() {
          * on long press toggle pause/play
          */
         override fun onLongPress(e: MotionEvent?) {
-            togglePausePlay()
+            model.togglePausePlay()
         }
 
     }
