@@ -31,6 +31,7 @@ import org.mosad.teapod.preferences.EncryptedPreferences
 import org.mosad.teapod.util.*
 import org.mosad.teapod.util.DataTypes.MediaType
 import java.io.IOException
+import java.lang.NumberFormatException
 import java.util.*
 import kotlin.random.Random
 
@@ -293,49 +294,42 @@ object AoDParser {
         val secondaryPlaylist = parsePlaylistAsync(secondary)
 
         primaryPlaylist.await().playlist.forEach { ep ->
-            val epNumber = if (media.type == MediaType.TVSHOW) {
-                ep.title.substringAfter(", Ep. ").toInt()
-            } else {
-                0
-            }
-
-            media.episodes.add(
-                Episode(
+            try {
+                media.episodes.add(Episode(
                     id = ep.mediaid,
                     priStreamUrl = ep.sources.first().file,
                     posterUrl = ep.image,
                     title = ep.title,
                     description = ep.description,
-                    number = epNumber
-                )
-            )
+                    number = getNumberFromTitle(ep.title, media.type)
+                ))
+            } catch (ex: Exception) {
+                Log.w(javaClass.name, "Could not parse episode information.", ex)
+            }
         }
         Log.i(javaClass.name, "Loading primary playlist finished")
 
         secondaryPlaylist.await().playlist.forEach { ep ->
-            val episode = media.episodes.firstOrNull { it.id == ep.mediaid }
+            try {
+                val episode = media.episodes.firstOrNull { it.id == ep.mediaid }
 
-            if (episode != null) {
-                episode.secStreamUrl = ep.sources.first().file
-                episode.secStreamOmU = secondaryIsOmU
-            } else {
-                val epNumber = if (media.type == MediaType.TVSHOW) {
-                    ep.title.substringAfter(", Ep. ").toInt()
+                // if media contains already a episode with this id, add as secondary, else add as primary
+                if (episode != null) {
+                    episode.secStreamUrl = ep.sources.first().file
+                    episode.secStreamOmU = secondaryIsOmU
                 } else {
-                    0
-                }
-
-                media.episodes.add(
-                    Episode(
+                    media.episodes.add(Episode(
                         id = ep.mediaid,
                         secStreamUrl = ep.sources.first().file,
                         secStreamOmU = secondaryIsOmU,
                         posterUrl = ep.image,
                         title = ep.title,
                         description = ep.description,
-                        number = epNumber
-                    )
-                )
+                        number = getNumberFromTitle(ep.title, media.type)
+                    ))
+                }
+            } catch (ex: Exception) {
+                Log.w(javaClass.name, "Could not parse episode information.", ex)
             }
         }
         Log.i(javaClass.name, "Loading secondary playlist finished")
@@ -413,6 +407,24 @@ object AoDParser {
                         mediaid = it.asJsonObject.get("mediaid").asInt
                     )
                 })
+        }
+    }
+
+    /**
+     * get the episode number from the title
+     * @param title the episode title, containing a number after "Ep."
+     * @param type the media type, if not TVSHOW, return 0
+     * @return the episode number, on NumberFormatException return 0
+     */
+    private fun getNumberFromTitle(title: String, type: MediaType): Int {
+        return if (type == MediaType.TVSHOW) {
+            try {
+                title.substringAfter(", Ep. ").toInt()
+            } catch (nex: NumberFormatException) {
+                0
+            }
+        } else {
+            0
         }
     }
 
