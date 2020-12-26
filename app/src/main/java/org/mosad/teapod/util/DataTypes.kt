@@ -1,5 +1,8 @@
 package org.mosad.teapod.util
 
+import java.util.*
+import kotlin.collections.ArrayList
+
 class DataTypes {
     enum class MediaType {
         OTHER,
@@ -47,7 +50,10 @@ data class Media(
     val type: DataTypes.MediaType,
     val info: Info = Info(),
     var episodes: ArrayList<Episode> = arrayListOf()
-)
+) {
+    fun hasEpisode(id: Int) = episodes.any { it.id == id }
+    fun getEpisodeById(id: Int) = episodes.first { it.id == id }
+}
 
 data class Info(
     var title: String = "",
@@ -60,23 +66,37 @@ data class Info(
 )
 
 /**
- * if secStreamOmU == true, then a secondary stream is present
  * number = episode number (0..n)
  */
 data class Episode(
     val id: Int = 0,
+    val streams: MutableList<Stream> = mutableListOf(),
     var title: String = "",
-    var priStreamUrl: String = "",
-    var secStreamUrl: String = "",
-    var secStreamOmU: Boolean = false,
     var posterUrl: String = "",
     var description: String = "",
     var shortDesc: String = "",
     var number: Int = 0,
     var watched: Boolean = false,
     var watchedCallback: String = ""
+) {
+    /**
+     * get the preferred stream
+     * @return the preferred stream, if not present use the first stream
+     */
+    fun getPreferredStream(language: Locale) =
+        streams.firstOrNull { it.language == language } ?: streams.first()
+
+    fun hasDub() = streams.any { it.language == Locale.GERMAN }
+}
+
+data class Stream(
+    val url: String,
+    val language : Locale
 )
 
+/**
+ * this class is used for tmdb responses
+ */
 data class TMDBResponse(
     val id: Int = 0,
     val title: String = "",
@@ -86,7 +106,13 @@ data class TMDBResponse(
     var runtime: Int = 0
 )
 
-data class AoDObject(val playlist: List<Playlist>)
+/**
+ * this class is used to represent the aod json API?
+ */
+data class AoDObject(
+    val playlist: List<Playlist>,
+    val extLanguage: String
+)
 
 data class Playlist(
     val sources: List<Source>,

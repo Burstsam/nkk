@@ -9,6 +9,8 @@ import org.mosad.teapod.ui.fragments.MediaFragment
 import org.mosad.teapod.util.DataTypes
 import org.mosad.teapod.util.Episode
 import org.mosad.teapod.util.Media
+import java.util.*
+import kotlin.collections.ArrayList
 import kotlin.properties.Delegates
 
 /**
@@ -55,13 +57,10 @@ class PlayerViewModel : ViewModel() {
      * If no stream is present, return empty string.
      */
     fun autoSelectStream(episode: Episode): String {
-        return if ((Preferences.preferSecondary || episode.priStreamUrl.isEmpty()) && episode.secStreamOmU) {
-            episode.secStreamUrl
-        } else if (episode.priStreamUrl.isNotEmpty()) {
-            episode.priStreamUrl
+        return if (Preferences.preferSecondary) {
+            episode.getPreferredStream(Locale.JAPANESE).url
         } else {
-            Log.e(javaClass.name, "No stream url set. ${episode.id}")
-            ""
+            episode.getPreferredStream(Locale.GERMAN).url
         }
     }
 

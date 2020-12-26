@@ -22,10 +22,10 @@ class PlayerEpisodeItemAdapter(private val episodes: List<Episode>) : RecyclerVi
         val context = holder.binding.root.context
         val ep = episodes[position]
 
-        val titleText = if (ep.priStreamUrl.isEmpty() && ep.secStreamOmU) {
-            context.getString(R.string.component_episode_title_sub, ep.number, ep.description)
-        } else {
+        val titleText = if (ep.hasDub()) {
             context.getString(R.string.component_episode_title, ep.number, ep.description)
+        } else {
+            context.getString(R.string.component_episode_title_sub, ep.number, ep.description)
         }
 
         holder.binding.textEpisodeTitle2.text = titleText

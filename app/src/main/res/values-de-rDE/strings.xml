@@ -28,8 +28,8 @@
     <string name="info">Info</string>
     <string name="info_about_desc">Version %1$s (%2$s)</string>
     <string name="settings">Einstellungen</string>
-    <string name="settings_secondary">Bevorzuge alternativen Stream</string>
-    <string name="settings_secondary_desc">Untertitle-Stream verwenden, sofern vorhanden</string>
+    <string name="settings_secondary">Bevorzuge Japanisch (OmU)</string>
+    <string name="settings_secondary_desc">Japanisch verwenden, sofern vorhanden</string>
     <string name="settings_autoplay">Autoplay</string>
     <string name="settings_autoplay_desc">Nächste Episode automatisch abspielen</string>
     <string name="theme">Design</string>

@@ -284,55 +284,45 @@ object AoDParser {
             //Log.i(javaClass.name, "New csrf token is $csrfToken")
         }
 
-        val pl = res.select("input.streamstarter_html5").first()
-        val primary = pl.attr("data-playlist")
-        val secondary = pl.attr("data-otherplaylist")
-        val secondaryIsOmU = secondary.contains("OmU", true)
+        val besides = res.select("div.besides").first()
+        val playlists = besides.select("input.streamstarter_html5").map { streamstarter ->
+            parsePlaylistAsync(
+                streamstarter.attr("data-playlist"),
+                streamstarter.attr("data-lang")
+            )
+        }.awaitAll()
 
-        // load primary and secondary playlist
-        val primaryPlaylist = parsePlaylistAsync(primary)
-        val secondaryPlaylist = parsePlaylistAsync(secondary)
-
-        primaryPlaylist.await().playlist.forEach { ep ->
-            try {
-                media.episodes.add(Episode(
-                    id = ep.mediaid,
-                    priStreamUrl = ep.sources.first().file,
-                    posterUrl = ep.image,
-                    title = ep.title,
-                    description = ep.description,
-                    number = getNumberFromTitle(ep.title, media.type)
-                ))
-            } catch (ex: Exception) {
-                Log.w(javaClass.name, "Could not parse episode information.", ex)
+        playlists.forEach { aod ->
+            // TODO improve language handling
+            val locale = when (aod.extLanguage) {
+                "ger" -> Locale.GERMAN
+                "jap" -> Locale.JAPANESE
+                else -> Locale.ROOT
             }
-        }
-        Log.i(javaClass.name, "Loading primary playlist finished")
 
-        secondaryPlaylist.await().playlist.forEach { ep ->
-            try {
-                val episode = media.episodes.firstOrNull { it.id == ep.mediaid }
-
-                // if media contains already a episode with this id, add as secondary, else add as primary
-                if (episode != null) {
-                    episode.secStreamUrl = ep.sources.first().file
-                    episode.secStreamOmU = secondaryIsOmU
-                } else {
-                    media.episodes.add(Episode(
-                        id = ep.mediaid,
-                        secStreamUrl = ep.sources.first().file,
-                        secStreamOmU = secondaryIsOmU,
-                        posterUrl = ep.image,
-                        title = ep.title,
-                        description = ep.description,
-                        number = getNumberFromTitle(ep.title, media.type)
-                    ))
+            aod.playlist.forEach { ep ->
+                try {
+                    if (media.hasEpisode(ep.mediaid)) {
+                        media.getEpisodeById(ep.mediaid).streams.add(
+                            Stream(ep.sources.first().file, locale)
+                        )
+                    } else {
+                        media.episodes.add(Episode(
+                            id = ep.mediaid,
+                            streams = mutableListOf(Stream(ep.sources.first().file, locale)),
+                            posterUrl = ep.image,
+                            title = ep.title,
+                            description = ep.description,
+                            number = getNumberFromTitle(ep.title, media.type)
+                        ))
+                        println(getNumberFromTitle(ep.title, media.type))
+                    }
+                } catch (ex: Exception) {
+                    Log.w(javaClass.name, "Could not parse episode information.", ex)
                 }
-            } catch (ex: Exception) {
-                Log.w(javaClass.name, "Could not parse episode information.", ex)
             }
         }
-        Log.i(javaClass.name, "Loading secondary playlist finished")
+        Log.i(javaClass.name, "Loaded playlists successfully")
 
         // parse additional info from the media page
         res.select("table.vertical-table").select("tr").forEach { row ->
@@ -371,9 +361,9 @@ object AoDParser {
     /**
      * don't use Gson().fromJson() as we don't have any control over the api and it may change
      */
-    private fun parsePlaylistAsync(playlistPath: String): Deferred<AoDObject> {
+    private fun parsePlaylistAsync(playlistPath: String, language: String): Deferred<AoDObject> {
         if (playlistPath == "[]") {
-            return CompletableDeferred(AoDObject(listOf()))
+            return CompletableDeferred(AoDObject(listOf(), language))
         }
 
         return GlobalScope.async(Dispatchers.IO) {
@@ -406,7 +396,9 @@ object AoDParser {
                         description = it.asJsonObject.get("description").asString,
                         mediaid = it.asJsonObject.get("mediaid").asInt
                     )
-                })
+                },
+                language
+            )
         }
     }
 
