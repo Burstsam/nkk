@@ -194,10 +194,11 @@ class PlayerActivity : AppCompatActivity() {
                 var btnNextEpIsVisible: Boolean
                 var controlsVisible: Boolean
 
-                remainingTime = model.player.duration - model.player.currentPosition
-                remainingTime = if (remainingTime < 0) 0 else remainingTime
-
                 withContext(Dispatchers.Main) {
+                    if (model.player.duration > 0) {
+                        remainingTime = model.player.duration - model.player.currentPosition
+                        remainingTime = if (remainingTime < 0) 0 else remainingTime
+                    }
                     btnNextEpIsVisible = button_next_ep.isVisible
                     controlsVisible = controller.isVisible
                 }
