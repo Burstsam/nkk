@@ -32,7 +32,7 @@ class EpisodesListPlayer @JvmOverloads constructor(
 
             adapterRecEpisodes.onImageClick = { _, position ->
                 (this.parent as ViewGroup).removeView(this)
-                model.currentEpisode = model.media.episodes[position]
+                model.playEpisode(model.media.episodes[position], replace = true)
             }
 
             binding.recyclerEpisodesPlayer.adapter = adapterRecEpisodes

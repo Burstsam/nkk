@@ -14,6 +14,7 @@ import androidx.core.view.children
 import org.mosad.teapod.R
 import org.mosad.teapod.databinding.PlayerLanguageSettingsBinding
 import org.mosad.teapod.player.PlayerViewModel
+import java.util.*
 
 class LanguageSettingsPlayer @JvmOverloads constructor(
     context: Context,
@@ -25,13 +26,13 @@ class LanguageSettingsPlayer @JvmOverloads constructor(
     private val binding = PlayerLanguageSettingsBinding.inflate(LayoutInflater.from(context), this, true)
     var onViewRemovedAction: (() -> Unit)? = null // TODO find a better solution for this
 
-    private var currentStreamUrl = model?.currentStreamUrl ?: ""
+    private var currentLanguage = model?.currentLanguage ?: Locale.ROOT
 
     init {
         model?.let {
             model.currentEpisode.streams.forEach { stream ->
-                addLanguage(stream.language.displayName, stream.url == currentStreamUrl) {
-                    currentStreamUrl = stream.url
+                addLanguage(stream.language.displayName, stream.language == currentLanguage) {
+                    currentLanguage = stream.language
                     updateSelectedLanguage(it as TextView)
                 }
             }
@@ -40,7 +41,7 @@ class LanguageSettingsPlayer @JvmOverloads constructor(
         binding.buttonCloseLanguageSettings.setOnClickListener { close() }
         binding.buttonCancel.setOnClickListener { close() }
         binding.buttonSelect.setOnClickListener {
-            model?.changeLanguage(currentStreamUrl)
+            model?.setLanguage(currentLanguage)
             close()
         }
     }

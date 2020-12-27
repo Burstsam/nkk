@@ -38,7 +38,6 @@ class PlayerActivity : AppCompatActivity() {
     private lateinit var gestureDetector: GestureDetectorCompat
     private lateinit var timerUpdates: TimerTask
 
-    private var nextEpManually = false
     private var playWhenReady = true
     private var currentWindow = 0
     private var playbackPosition: Long = 0
@@ -62,12 +61,12 @@ class PlayerActivity : AppCompatActivity() {
             intent.getIntExtra(getString(R.string.intent_media_id), 0),
             intent.getIntExtra(getString(R.string.intent_episode_id), 0)
         )
-
+        model.currentEpisodeChangedListener.add { onMediaChanged() }
         gestureDetector = GestureDetectorCompat(this, PlayerGestureListener())
 
+        initGUI()
         initActions()
     }
-
 
     override fun onStart() {
         super.onStart()
@@ -117,17 +116,10 @@ class PlayerActivity : AppCompatActivity() {
         initExoPlayer()
         initVideoView()
         initTimeUpdates()
-
-        // add listener after initial media is started
-        model.currentEpisodeChangedListener.add {
-            nextEpManually = true // make sure on STATE_ENDED doesn't skip another episode
-            playCurrentMedia(false)
-        }
     }
 
     private fun initExoPlayer() {
         controller = video_view.findViewById(R.id.exo_controller)
-
         controller.isAnimationEnabled = false // disable controls (time-bar) animation
 
         model.player.playWhenReady = playWhenReady
@@ -148,16 +140,13 @@ class PlayerActivity : AppCompatActivity() {
                 }
 
                 if (state == ExoPlayer.STATE_ENDED && model.nextEpisode != null && Preferences.autoplay) {
-                    // if next episode btn was clicked, skipp playNextEpisode() on STATE_ENDED
-                    if (!nextEpManually) {
-                        playNextEpisode()
-                    }
-                    nextEpManually = false
+                    playNextEpisode()
                 }
             }
         })
 
-        playCurrentMedia(true) // start initial media
+        // start playing the current episode, after all needed player components have been initialized
+        model.playEpisode(model.currentEpisode, true, playbackPosition)
     }
 
     @SuppressLint("ClickableViewAccessibility")
@@ -186,6 +175,12 @@ class PlayerActivity : AppCompatActivity() {
         button_language.setOnClickListener { showLanguageSettings() }
         button_episodes.setOnClickListener { showEpisodesList() }
         button_next_ep_c.setOnClickListener { playNextEpisode() }
+    }
+
+    private fun initGUI() {
+        if (model.media.type == DataTypes.MediaType.MOVIE) {
+            button_episodes.visibility = View.GONE
+        }
     }
 
     private fun initTimeUpdates() {
@@ -251,6 +246,17 @@ class PlayerActivity : AppCompatActivity() {
     }
 
     /**
+     * update title text and next ep button visibility, set ignoreNextStateEnded
+     */
+    private fun onMediaChanged() {
+        exo_text_title.text = model.getMediaTitle()
+
+        if (model.nextEpisode == null) {
+            button_next_ep_c.visibility = View.GONE
+        }
+    }
+
+    /**
      * TODO set position of rewind/fast forward indicators programmatically
      */
 
@@ -290,34 +296,9 @@ class PlayerActivity : AppCompatActivity() {
         ffwd_10_indicator.runOnClickAnimation()
     }
 
-    private fun playNextEpisode() = model.nextEpisode?.let {
-        model.nextEpisode() // current = next, next = new or null
+    private fun playNextEpisode() {
+        model.playNextEpisode()
         hideButtonNextEp()
-    }
-
-    /**
-     * start playing a episode
-     * Note: movies are episodes too!
-     */
-    private fun playCurrentMedia(seekToPosition: Boolean) {
-        // update the gui
-        exo_text_title.text = if (model.media.type == DataTypes.MediaType.TVSHOW) {
-            getString(
-                R.string.component_episode_title,
-                model.currentEpisode.number,
-                model.currentEpisode.description
-            )
-        } else {
-            model.currentEpisode.title
-        }
-
-        if (model.nextEpisode == null) {
-            button_next_ep_c.visibility = View.GONE
-        }
-
-        // update player/media item
-        val seekPosition =  if (seekToPosition) playbackPosition else 0
-        model.playMedia(model.currentEpisode, true, seekPosition)
     }
 
     /**
