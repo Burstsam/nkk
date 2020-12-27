@@ -118,6 +118,7 @@ class PlayerActivity : AppCompatActivity() {
         initTimeUpdates()
     }
 
+    // TODO if view model was not destroyed, don't start a new media
     private fun initExoPlayer() {
         controller = video_view.findViewById(R.id.exo_controller)
         controller.isAnimationEnabled = false // disable controls (time-bar) animation
@@ -222,10 +223,8 @@ class PlayerActivity : AppCompatActivity() {
         playbackPosition = model.player.currentPosition
         currentWindow = model.player.currentWindowIndex
         playWhenReady = model.player.playWhenReady
-        model.player.release()
+        model.player.pause()
         timerUpdates.cancel()
-
-        Log.d(javaClass.name, "Released player")
     }
 
     /**

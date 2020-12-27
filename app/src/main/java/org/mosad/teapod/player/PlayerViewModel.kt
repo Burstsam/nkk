@@ -2,6 +2,7 @@ package org.mosad.teapod.player
 
 import android.app.Application
 import android.net.Uri
+import android.util.Log
 import androidx.lifecycle.AndroidViewModel
 import com.google.android.exoplayer2.C
 import com.google.android.exoplayer2.MediaItem
@@ -41,6 +42,13 @@ class PlayerViewModel(application: Application) : AndroidViewModel(application) 
         internal set
     var currentLanguage: Locale = Locale.ROOT
         internal set
+
+    override fun onCleared() {
+        super.onCleared()
+        player.release()
+
+        Log.d(javaClass.name, "Released player")
+    }
 
     fun loadMedia(mediaId: Int, episodeId: Int) {
         runBlocking {
