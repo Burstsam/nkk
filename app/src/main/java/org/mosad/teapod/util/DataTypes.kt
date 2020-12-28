@@ -69,7 +69,7 @@ data class Info(
  * number = episode number (0..n)
  */
 data class Episode(
-    val id: Int = 0,
+    val id: Int = -1,
     val streams: MutableList<Stream> = mutableListOf(),
     val title: String = "",
     val posterUrl: String = "",

@@ -64,8 +64,12 @@ class PlayerActivity : AppCompatActivity() {
         model.currentEpisodeChangedListener.add { onMediaChanged() }
         gestureDetector = GestureDetectorCompat(this, PlayerGestureListener())
 
+        controller = video_view.findViewById(R.id.exo_controller)
+        controller.isAnimationEnabled = false // disable controls (time-bar) animation
+
         initGUI()
         initActions()
+        initExoPlayer() // call in onCreate, exoplayer lives in view model
     }
 
     override fun onStart() {
@@ -113,16 +117,20 @@ class PlayerActivity : AppCompatActivity() {
             this.finish()
         }
 
-        initExoPlayer()
         initVideoView()
         initTimeUpdates()
+
+        // if the player is ready or buffering we can simply play the file again, else do nothing
+        if ((model.player.playbackState == ExoPlayer.STATE_READY || model.player.playbackState == ExoPlayer.STATE_BUFFERING)
+        ) {
+            model.player.play()
+        }
     }
 
-    // TODO if view model was not destroyed, don't start a new media
+    /**
+     * set play when ready and listeners
+     */
     private fun initExoPlayer() {
-        controller = video_view.findViewById(R.id.exo_controller)
-        controller.isAnimationEnabled = false // disable controls (time-bar) animation
-
         model.player.playWhenReady = playWhenReady
         model.player.addListener(object : Player.EventListener {
             override fun onPlaybackStateChanged(state: Int) {
