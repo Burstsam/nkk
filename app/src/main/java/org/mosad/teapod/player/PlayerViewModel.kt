@@ -61,7 +61,6 @@ class PlayerViewModel(application: Application) : AndroidViewModel(application) 
     }
 
     fun setLanguage(language: Locale) {
-        println("new language is: $language")
         currentLanguage = language
 
         val seekTime = player.currentPosition

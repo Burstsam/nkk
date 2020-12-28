@@ -34,6 +34,7 @@ class EpisodesListPlayer @JvmOverloads constructor(
                 (this.parent as ViewGroup).removeView(this)
                 model.playEpisode(model.media.episodes[position], replace = true)
             }
+            adapterRecEpisodes.currentSelected = model.currentEpisode.number - 1
 
             binding.recyclerEpisodesPlayer.adapter = adapterRecEpisodes
             binding.recyclerEpisodesPlayer.scrollToPosition(model.currentEpisode.number - 1) // number != index

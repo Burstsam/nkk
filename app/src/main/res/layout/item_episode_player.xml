@@ -38,6 +38,14 @@
         android:textColor="@color/textPrimaryDark"
         android:textSize="16sp" />
 
+    <View
+        android:id="@+id/divider"
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:layout_marginTop="5dp"
+        android:layout_marginBottom="5dp"
+        android:background="@color/textSecondaryDark" />
+
     <TextView
         android:id="@+id/text_episode_desc2"
         android:layout_width="match_parent"
