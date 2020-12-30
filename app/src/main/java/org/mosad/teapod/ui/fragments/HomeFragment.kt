@@ -51,16 +51,18 @@ class HomeFragment : Fragment() {
     }
 
     private fun initHighlight() {
-        highlightMedia =  AoDParser.highlightsList[0]
+        if (AoDParser.highlightsList.isNotEmpty()) {
+            highlightMedia =  AoDParser.highlightsList[0]
 
-        binding.textHighlightTitle.text = highlightMedia.title
-        Glide.with(requireContext()).load(highlightMedia.posterUrl)
-            .into(binding.imageHighlight)
+            binding.textHighlightTitle.text = highlightMedia.title
+            Glide.with(requireContext()).load(highlightMedia.posterUrl)
+                .into(binding.imageHighlight)
 
-        if (StorageController.myList.contains(highlightMedia.id)) {
-            loadIntoCompoundDrawable(R.drawable.ic_baseline_check_24, binding.textHighlightMyList)
-        } else {
-            loadIntoCompoundDrawable(R.drawable.ic_baseline_add_24, binding.textHighlightMyList)
+            if (StorageController.myList.contains(highlightMedia.id)) {
+                loadIntoCompoundDrawable(R.drawable.ic_baseline_check_24, binding.textHighlightMyList)
+            } else {
+                loadIntoCompoundDrawable(R.drawable.ic_baseline_add_24, binding.textHighlightMyList)
+            }
         }
     }
 

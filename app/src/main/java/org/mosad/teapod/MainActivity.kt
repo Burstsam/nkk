@@ -121,7 +121,7 @@ class MainActivity : AppCompatActivity(), BottomNavigationView.OnNavigationItemS
         val time = measureTimeMillis {
             Preferences.load(this)
 
-            // make sure credentials are set
+            // make sure credentials are set, run's async
             EncryptedPreferences.readCredentials(this)
             if (EncryptedPreferences.password.isEmpty()) {
                 showLoginDialog(true)
