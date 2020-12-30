@@ -45,6 +45,7 @@ class PlayerActivity : AppCompatActivity() {
 
     private val rwdTime: Long = 10000.unaryMinus()
     private val fwdTime: Long = 10000
+    private val defaultShowTimeoutMs = 5000
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -67,9 +68,9 @@ class PlayerActivity : AppCompatActivity() {
         controller = video_view.findViewById(R.id.exo_controller)
         controller.isAnimationEnabled = false // disable controls (time-bar) animation
 
+        initExoPlayer() // call in onCreate, exoplayer lives in view model
         initGUI()
         initActions()
-        initExoPlayer() // call in onCreate, exoplayer lives in view model
     }
 
     override fun onStart() {
@@ -364,10 +365,7 @@ class PlayerActivity : AppCompatActivity() {
             onViewRemovedAction = { model.player.play() }
         }
         player_layout.addView(episodesList)
-
-        // hide player controls and pause playback
-        model.player.pause()
-        controller.hide()
+        pauseAndHideControls()
     }
 
     private fun showLanguageSettings() {
@@ -375,10 +373,16 @@ class PlayerActivity : AppCompatActivity() {
             onViewRemovedAction = { model.player.play() }
         }
         player_layout.addView(languageSettings)
+        pauseAndHideControls()
+    }
 
-        // hide player controls and pause playback
-        model.player.pause()
-        controller.hideImmediately()
+    /**
+     * pause playback and hide controls
+     */
+    private fun pauseAndHideControls() {
+        model.player.pause() // showTimeoutMs is set to 0 when calling pause, but why
+        controller.showTimeoutMs = defaultShowTimeoutMs // fix showTimeoutMs set to 0
+        controller.hide()
     }
 
     inner class PlayerGestureListener : GestureDetector.SimpleOnGestureListener() {
