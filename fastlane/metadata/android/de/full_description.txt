@@ -5,7 +5,7 @@ Teapod ist eine inoffizielle App für Anime-on-Demand (AoD).
 * Bevorzuge die OmU Version über die App-Einstellungen
 * Speicher deine lieblings Anime in "Meine Liste"
 
-Zur Verfügung gestellt unter den Bedingungen der GNU GPL 3 oder höher.
+Um Teapod zu verwenden musst du dich mit deinem AoD Account anmelden.
 Dieses Projekt ist in keiner Weise mit Anime-on-Demand verbunden.
 
 Bitte melde Fehler und Probleme an support@mosad.xyz

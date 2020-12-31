@@ -1,0 +1,7 @@
+* the Home screen now contains Highlights, new Simulcasts and new Titles
+* Player Interface 2 (#16)
+  * episodes list
+  * language selection
+* the about dialog has been reworked (#17)
+* a few issues with the AoDParses have been resolved (#20)
+* theme colors now better reflect the material design guidelines

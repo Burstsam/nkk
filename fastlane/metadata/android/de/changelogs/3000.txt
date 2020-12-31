@@ -1,0 +1,7 @@
+* Die Startseite zeigt nun Highlights, neue Simulcast und neue Titel an
+* Player Interface 2 (#16)
+  * Episodenübersicht
+  * Sprachauswahl
+* Der Infodialog wurde überarbeitet (#17)
+* Einige Fehler beim Parsen der AoD Webseite wurden behoben (#20)
+* Die Themes wurden besser an die Material Design Richtlinien angepasst
