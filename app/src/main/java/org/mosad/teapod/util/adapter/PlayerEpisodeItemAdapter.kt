@@ -40,8 +40,10 @@ class PlayerEpisodeItemAdapter(private val episodes: List<Episode>) : RecyclerVi
         }
 
         // hide the play icon, if it's the current episode
-        if (currentSelected == position) {
-            holder.binding.imageEpisodePlay.visibility = View.GONE
+        holder.binding.imageEpisodePlay.visibility = if (currentSelected == position) {
+            View.GONE
+        } else {
+            View.VISIBLE
         }
     }
 

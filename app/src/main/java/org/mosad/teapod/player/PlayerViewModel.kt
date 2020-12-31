@@ -33,6 +33,7 @@ class PlayerViewModel(application: Application) : AndroidViewModel(application) 
     val dataSourceFactory = DefaultDataSourceFactory(application, Util.getUserAgent(application, "Teapod"))
 
     val currentEpisodeChangedListener = ArrayList<() -> Unit>()
+    val preferredLanguage = if (Preferences.preferSecondary) Locale.JAPANESE else Locale.GERMAN
 
     var media: Media = Media(-1, "", DataTypes.MediaType.OTHER)
         internal set
@@ -56,8 +57,8 @@ class PlayerViewModel(application: Application) : AndroidViewModel(application) 
         }
 
         currentEpisode = media.getEpisodeById(episodeId)
-        currentLanguage = if (Preferences.preferSecondary) Locale.JAPANESE else Locale.GERMAN
         nextEpisode = selectNextEpisode()
+        currentLanguage = currentEpisode.getPreferredStream(preferredLanguage).language
     }
 
     fun setLanguage(language: Locale) {
@@ -94,12 +95,14 @@ class PlayerViewModel(application: Application) : AndroidViewModel(application) 
      * updateWatchedState for the next (now current) episode
      */
     fun playEpisode(episode: Episode, replace: Boolean = false, seekPosition: Long = 0) {
+        val preferredStream = episode.getPreferredStream(currentLanguage)
+        currentLanguage = preferredStream.language // update current language, since it may have changed
         currentEpisode = episode
         nextEpisode = selectNextEpisode()
         currentEpisodeChangedListener.forEach { it() } // update player gui (title)
 
         val mediaSource = HlsMediaSource.Factory(dataSourceFactory).createMediaSource(
-            MediaItem.fromUri(Uri.parse( episode.getPreferredStream(currentLanguage).url))
+            MediaItem.fromUri(Uri.parse(preferredStream.url))
         )
         playMedia(mediaSource, replace, seekPosition)
 
