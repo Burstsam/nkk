@@ -50,7 +50,7 @@
         Teapod is an unofficial app for anime on demand.
         It is published under the terms and conditions of the GNU GPL 3 or later.
         \n\n
-        © 2020 seil0@mosad.xyz
+        © 2020-2021 seil0@mosad.xyz
     </string>
     <string name="tmdb_notice" translatable="false">This product uses the TMDb API but is not endorsed or certified by TMDb.</string>
     <string name="teapod_repo" translatable="false">git.mosad.xyz/Seil0/teapod</string>

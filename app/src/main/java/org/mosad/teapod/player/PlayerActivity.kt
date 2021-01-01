@@ -260,8 +260,10 @@ class PlayerActivity : AppCompatActivity() {
     private fun onMediaChanged() {
         exo_text_title.text = model.getMediaTitle()
 
-        if (model.nextEpisode == null) {
-            button_next_ep_c.visibility = View.GONE
+        button_next_ep_c.visibility = if (model.nextEpisode == null) {
+            View.GONE
+        } else {
+            View.VISIBLE
         }
     }
 

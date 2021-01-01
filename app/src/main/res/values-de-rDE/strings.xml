@@ -41,7 +41,7 @@
         Teapod ist eine inoffizielle App für Anime on Demand.
         Sie wird unter den Bedingungen der GNU GPL 3 oder höher zur Verfügung gestellt.
         \n\n
-        © 2020 seil0@mosad.xyz
+        © 2020-2021 seil0@mosad.xyz
     </string>
     <string name="third_party_heading">Lizenzen von Drittanbietern</string>
     <string name="third_party_component_desc">© %1$s %2$s unter %3$s</string>
