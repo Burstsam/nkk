@@ -125,6 +125,14 @@ object AoDParser {
         return media
     }
 
+    fun markAsWatched(mediaId: Int, episodeId: Int) = GlobalScope.launch {
+        val episode = getMediaById(mediaId).getEpisodeById(episodeId)
+        episode.watched = true
+        sendCallback(episode.watchedCallback)
+
+        Log.d(javaClass.name, "Marked episode ${episode.id} as watched")
+    }
+
     // TODO don't use jsoup here
     fun sendCallback(callbackPath: String) = GlobalScope.launch(Dispatchers.IO) {
         val headers = mutableMapOf(

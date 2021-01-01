@@ -32,14 +32,6 @@ class MediaFragment(private val mediaId: Int) : Fragment() {
     private lateinit var tmdb: TMDBResponse
     private lateinit var nextEpisode: Episode
 
-    companion object {
-        lateinit var instance: MediaFragment
-    }
-
-    init {
-        instance = this
-    }
-
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
         binding = FragmentMediaBinding.inflate(inflater, container, false)
         return binding.root
@@ -58,6 +50,19 @@ class MediaFragment(private val mediaId: Int) : Fragment() {
                 updateGUI()
                 initActions()
             }
+        }
+    }
+
+    override fun onResume() {
+        super.onResume()
+
+        // only notify adapter, if initialized
+        if (this::adapterRecEpisodes.isInitialized) {
+            // TODO find a better solution for this
+            media.episodes.forEachIndexed() { index, episode ->
+                adapterRecEpisodes.updateWatchedState(episode.watched, index)
+            }
+            adapterRecEpisodes.notifyDataSetChanged()
         }
     }
 
@@ -167,16 +172,6 @@ class MediaFragment(private val mediaId: Int) : Fragment() {
     private fun playStream(ep: Episode) {
         Log.d(javaClass.name, "Starting Player with  mediaId: ${media.id}")
         (activity as MainActivity).startPlayer(media.id, ep.id)
-    }
-
-    fun updateWatchedState(ep: Episode) {
-        AoDParser.sendCallback(ep.watchedCallback)
-
-        // only notify adapter, if initialized
-        if (this::adapterRecEpisodes.isInitialized) {
-            adapterRecEpisodes.updateWatchedState(true, media.episodes.indexOf(ep))
-            adapterRecEpisodes.notifyDataSetChanged()
-        }
     }
 
 }

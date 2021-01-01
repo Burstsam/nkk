@@ -106,7 +106,10 @@ class PlayerViewModel(application: Application) : AndroidViewModel(application) 
         )
         playMedia(mediaSource, replace, seekPosition)
 
-        MediaFragment.instance.updateWatchedState(currentEpisode) // watchedCallback for the new episode
+        // if episodes has not been watched, mark as watched
+        if (!episode.watched) {
+            AoDParser.markAsWatched(media.id, episode.id)
+        }
     }
 
     fun playMedia(source: MediaSource, replace: Boolean = false, seekPosition: Long = 0) {
