@@ -1,4 +1,4 @@
-Teapod is a unoffical App for Anime-on-Demand (AoD).
+Teapod is a unofficial App for Anime-on-Demand (AoD).
 
 * Watch all animes from AoD on your Android device
 * Native Player based on ExoPayer

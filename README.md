@@ -19,10 +19,13 @@ Teapod is a unofficial App for Anime-on-Demand (AoD). It allows you to watch all
 [<img src="https://www.mosad.xyz/images/Teapod/Teapod_Search.webp" width=180>](https://www.mosad.xyz/images/Teapod/Teapod_Search.webp)
 
 ### License
-This App is licensed under the terms and conditions of GPL 3. This Project is not associated with Anime-on-Demand in any way. Using this app may violates the ToS of AoD.
+This Project is not associated with Anime-on-Demand in any way. Using this app may violates the ToS of AoD. Teapod is licensed under the terms and conditions of GPL 3.
 
 ### Known Issues
-If a tv show is selected, the first episode will be marked as already watched. This is due to parsing the website. The Parser is designed to be easy to maintain and as fail safe as possible.
+If a tv show is selected, the first episode will be marked as watched. This is due to parsing the website.
+
+### Contributing
+If you want to contribute to Teapod and need an account on this gitea instance, please write me an [email](seil0@mosad.xyz).
 
 #### Why is it called Teapod?
 Teapod is a Acronym for "The ultimate anime app on demand", hence this project is called Teapod and not Teapot.
