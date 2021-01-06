@@ -3,11 +3,16 @@ package org.mosad.teapod.player
 import android.animation.Animator
 import android.animation.AnimatorListenerAdapter
 import android.annotation.SuppressLint
+import android.app.PictureInPictureParams
+import android.content.pm.PackageManager
+import android.content.res.Configuration
 import android.os.Build
 import android.os.Bundle
 import android.util.Log
+import android.util.Rational
 import android.view.*
 import androidx.activity.viewModels
+import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.GestureDetectorCompat
 import androidx.core.view.isVisible
@@ -73,6 +78,11 @@ class PlayerActivity : AppCompatActivity() {
         initActions()
     }
 
+    /**
+     * once minimum is android 7.0 this can be simplified
+     * only onStart and onStop should be needed then
+     * see: https://developer.android.com/guide/topics/ui/picture-in-picture#continuing_playback
+     */
     override fun onStart() {
         super.onStart()
         if (Util.SDK_INT > 23) {
@@ -83,6 +93,8 @@ class PlayerActivity : AppCompatActivity() {
 
     override fun onResume() {
         super.onResume()
+        if (isInPiPMode()) { return }
+
         if (Util.SDK_INT <= 23) {
             initPlayer()
             video_view?.onResume()
@@ -91,6 +103,8 @@ class PlayerActivity : AppCompatActivity() {
 
     override fun onPause() {
         super.onPause()
+        if (isInPiPMode()) { return }
+
         if (Util.SDK_INT <= 23) {
             video_view?.onPause()
             releasePlayer()
@@ -110,6 +124,38 @@ class PlayerActivity : AppCompatActivity() {
         outState.putLong(getString(R.string.state_resume_position), playbackPosition)
         outState.putBoolean(getString(R.string.state_is_playing), playWhenReady)
         super.onSaveInstanceState(outState)
+    }
+
+    /**
+     * previous to android n, don't override
+     */
+    @RequiresApi(Build.VERSION_CODES.N)
+    override fun onUserLeaveHint() {
+        super.onUserLeaveHint()
+
+        // start pip mode, if supported
+        if (packageManager.hasSystemFeature(PackageManager.FEATURE_PICTURE_IN_PICTURE)) {
+            if (Build.VERSION.SDK_INT < Build.VERSION_CODES.O) {
+                @Suppress("deprecation")
+                enterPictureInPictureMode()
+            } else {
+                val width = model.player.videoFormat?.width ?: 0
+                val height = model.player.videoFormat?.height ?: 0
+                val params = PictureInPictureParams.Builder()
+                    .setAspectRatio(Rational(width, height))
+                    .build()
+                enterPictureInPictureMode(params)
+            }
+        }
+    }
+
+    override fun onPictureInPictureModeChanged(isInPictureInPictureMode: Boolean, newConfig: Configuration?) {
+        super.onPictureInPictureModeChanged(isInPictureInPictureMode, newConfig)
+
+        // Hide the full-screen UI (controls, etc.) while in picture-in-picture mode.
+        if (isInPictureInPictureMode) {
+            controller.hideImmediately()
+        }
     }
 
     private fun initPlayer() {
@@ -178,7 +224,9 @@ class PlayerActivity : AppCompatActivity() {
     }
 
     private fun initActions() {
-        exo_close_player.setOnClickListener { this.finish() }
+        exo_close_player.setOnClickListener {
+            this.finish()
+        }
         rwd_10.setOnButtonClickListener { rewind() }
         ffwd_10.setOnButtonClickListener { fastForward() }
         button_next_ep.setOnClickListener { playNextEpisode() }
@@ -213,8 +261,8 @@ class PlayerActivity : AppCompatActivity() {
                 }
 
                 if (remainingTime in 1..20000) {
-                    // if the next ep button is not visible, make it visible
-                    if (!btnNextEpIsVisible && model.nextEpisode != null && Preferences.autoplay) {
+                    // if the next ep button is not visible, make it visible. Don't show in pip mode
+                    if (!btnNextEpIsVisible && model.nextEpisode != null && Preferences.autoplay && !isInPiPMode()) {
                         withContext(Dispatchers.Main) { showButtonNextEp() }
                     }
                 } else if (btnNextEpIsVisible) {
@@ -229,7 +277,7 @@ class PlayerActivity : AppCompatActivity() {
         }
     }
 
-    private fun releasePlayer(){
+    private fun releasePlayer() {
         playbackPosition = model.player.currentPosition
         currentWindow = model.player.currentWindowIndex
         playWhenReady = model.player.playWhenReady
@@ -378,6 +426,14 @@ class PlayerActivity : AppCompatActivity() {
         pauseAndHideControls()
     }
 
+    private fun isInPiPMode(): Boolean {
+        return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+            isInPictureInPictureMode
+        } else {
+            false // pip mode not supported
+        }
+    }
+
     /**
      * pause playback and hide controls
      */
@@ -393,7 +449,10 @@ class PlayerActivity : AppCompatActivity() {
          * on single tap hide or show the controls
          */
         override fun onSingleTapConfirmed(e: MotionEvent?): Boolean {
-            if (controller.isVisible) controller.hide() else  controller.show()
+            if (!isInPiPMode()) {
+                if (controller.isVisible) controller.hide() else  controller.show()
+            }
+
             return true
         }
 
