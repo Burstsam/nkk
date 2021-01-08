@@ -3,7 +3,10 @@ package org.mosad.teapod.player
 import android.animation.Animator
 import android.animation.AnimatorListenerAdapter
 import android.annotation.SuppressLint
+import android.app.ActivityManager
 import android.app.PictureInPictureParams
+import android.content.Context
+import android.content.Intent
 import android.content.pm.PackageManager
 import android.content.res.Configuration
 import android.os.Build
@@ -35,6 +38,7 @@ import java.util.*
 import java.util.concurrent.TimeUnit
 import kotlin.concurrent.scheduleAtFixedRate
 
+
 class PlayerActivity : AppCompatActivity() {
 
     private val model: PlayerViewModel by viewModels()
@@ -43,6 +47,7 @@ class PlayerActivity : AppCompatActivity() {
     private lateinit var gestureDetector: GestureDetectorCompat
     private lateinit var timerUpdates: TimerTask
 
+    private var wasInPIP = false
     private var playWhenReady = true
     private var currentWindow = 0
     private var playbackPosition: Long = 0
@@ -117,6 +122,10 @@ class PlayerActivity : AppCompatActivity() {
             video_view?.onPause()
             releasePlayer()
         }
+
+        if (wasInPIP) {
+            navToLauncherTask()
+        }
     }
 
     override fun onSaveInstanceState(outState: Bundle) {
@@ -146,10 +155,15 @@ class PlayerActivity : AppCompatActivity() {
                     .build()
                 enterPictureInPictureMode(params)
             }
+
+            wasInPIP = isInPiPMode()
         }
     }
 
-    override fun onPictureInPictureModeChanged(isInPictureInPictureMode: Boolean, newConfig: Configuration?) {
+    override fun onPictureInPictureModeChanged(
+        isInPictureInPictureMode: Boolean,
+        newConfig: Configuration?
+    ) {
         super.onPictureInPictureModeChanged(isInPictureInPictureMode, newConfig)
 
         // Hide the full-screen UI (controls, etc.) while in picture-in-picture mode.
@@ -431,6 +445,21 @@ class PlayerActivity : AppCompatActivity() {
             isInPictureInPictureMode
         } else {
             false // pip mode not supported
+        }
+    }
+
+    /**
+     * Bring up launcher task to front
+     */
+    private fun navToLauncherTask() {
+        val activityManager = (this.getSystemService(Context.ACTIVITY_SERVICE) as ActivityManager)
+        activityManager.appTasks.forEach { task ->
+            val baseIntent = task.taskInfo.baseIntent
+            val categories = baseIntent.categories
+            if (categories != null && categories.contains(Intent.CATEGORY_LAUNCHER)) {
+                task.moveToFront()
+                return
+            }
         }
     }
 
