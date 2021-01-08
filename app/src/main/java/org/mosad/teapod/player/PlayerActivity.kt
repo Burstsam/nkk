@@ -3,9 +3,7 @@ package org.mosad.teapod.player
 import android.animation.Animator
 import android.animation.AnimatorListenerAdapter
 import android.annotation.SuppressLint
-import android.app.ActivityManager
 import android.app.PictureInPictureParams
-import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.content.res.Configuration
@@ -13,7 +11,9 @@ import android.os.Build
 import android.os.Bundle
 import android.util.Log
 import android.util.Rational
-import android.view.*
+import android.view.GestureDetector
+import android.view.MotionEvent
+import android.view.View
 import androidx.activity.viewModels
 import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AppCompatActivity
@@ -34,10 +34,12 @@ import org.mosad.teapod.preferences.Preferences
 import org.mosad.teapod.ui.components.EpisodesListPlayer
 import org.mosad.teapod.ui.components.LanguageSettingsPlayer
 import org.mosad.teapod.util.DataTypes
+import org.mosad.teapod.util.hideBars
+import org.mosad.teapod.util.isInPiPMode
+import org.mosad.teapod.util.navToLauncherTask
 import java.util.*
 import java.util.concurrent.TimeUnit
 import kotlin.concurrent.scheduleAtFixedRate
-
 
 class PlayerActivity : AppCompatActivity() {
 
@@ -47,7 +49,7 @@ class PlayerActivity : AppCompatActivity() {
     private lateinit var gestureDetector: GestureDetectorCompat
     private lateinit var timerUpdates: TimerTask
 
-    private var wasInPIP = false
+    private var wasInPiP = false
     private var playWhenReady = true
     private var currentWindow = 0
     private var playbackPosition: Long = 0
@@ -123,9 +125,8 @@ class PlayerActivity : AppCompatActivity() {
             releasePlayer()
         }
 
-        if (wasInPIP) {
-            navToLauncherTask()
-        }
+        // if the player was in pip, it's on a different task
+        if (wasInPiP) { navToLauncherTask() }
     }
 
     override fun onSaveInstanceState(outState: Bundle) {
@@ -133,6 +134,22 @@ class PlayerActivity : AppCompatActivity() {
         outState.putLong(getString(R.string.state_resume_position), playbackPosition)
         outState.putBoolean(getString(R.string.state_is_playing), playWhenReady)
         super.onSaveInstanceState(outState)
+    }
+
+    /**
+     * used, when the player is in pip and the user selects a new media
+     */
+    override fun onNewIntent(intent: Intent?) {
+        super.onNewIntent(intent)
+
+        // when the intent changed, lead the new media and play it
+        intent?.let {
+            model.loadMedia(
+                it.getIntExtra(getString(R.string.intent_media_id), 0),
+                it.getIntExtra(getString(R.string.intent_episode_id), 0)
+            )
+            model.playEpisode(model.currentEpisode, replace = true)
+        }
     }
 
     /**
@@ -156,7 +173,7 @@ class PlayerActivity : AppCompatActivity() {
                 enterPictureInPictureMode(params)
             }
 
-            wasInPIP = isInPiPMode()
+            wasInPiP = isInPiPMode()
         }
     }
 
@@ -322,7 +339,15 @@ class PlayerActivity : AppCompatActivity() {
     private fun onMediaChanged() {
         exo_text_title.text = model.getMediaTitle()
 
+        // hide the next ep button, if there is none
         button_next_ep_c.visibility = if (model.nextEpisode == null) {
+            View.GONE
+        } else {
+            View.VISIBLE
+        }
+
+        // hide the episodes button, if the media type changed
+        button_episodes.visibility = if (model.media.type == DataTypes.MediaType.MOVIE) {
             View.GONE
         } else {
             View.VISIBLE
@@ -375,27 +400,6 @@ class PlayerActivity : AppCompatActivity() {
     }
 
     /**
-     * hide the status and navigation bar
-     */
-    private fun hideBars() {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
-            window.setDecorFitsSystemWindows(false)
-            window.insetsController?.apply {
-                hide(WindowInsets.Type.statusBars() or WindowInsets.Type.navigationBars())
-                systemBarsBehavior = WindowInsetsController.BEHAVIOR_SHOW_BARS_BY_SWIPE
-            }
-        } else {
-            @Suppress("deprecation")
-            window.decorView.systemUiVisibility = (View.SYSTEM_UI_FLAG_IMMERSIVE
-                    or View.SYSTEM_UI_FLAG_LAYOUT_STABLE
-                    or View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
-                    or View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
-                    or View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
-                    or View.SYSTEM_UI_FLAG_FULLSCREEN)
-        }
-    }
-
-    /**
      * show the next episode button
      * TODO improve the show animation
      */
@@ -438,29 +442,6 @@ class PlayerActivity : AppCompatActivity() {
         }
         player_layout.addView(languageSettings)
         pauseAndHideControls()
-    }
-
-    private fun isInPiPMode(): Boolean {
-        return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
-            isInPictureInPictureMode
-        } else {
-            false // pip mode not supported
-        }
-    }
-
-    /**
-     * Bring up launcher task to front
-     */
-    private fun navToLauncherTask() {
-        val activityManager = (this.getSystemService(Context.ACTIVITY_SERVICE) as ActivityManager)
-        activityManager.appTasks.forEach { task ->
-            val baseIntent = task.taskInfo.baseIntent
-            val categories = baseIntent.categories
-            if (categories != null && categories.contains(Intent.CATEGORY_LAUNCHER)) {
-                task.moveToFront()
-                return
-            }
-        }
     }
 
     /**

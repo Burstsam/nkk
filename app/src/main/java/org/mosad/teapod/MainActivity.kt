@@ -165,6 +165,9 @@ class MainActivity : AppCompatActivity(), BottomNavigationView.OnNavigationItemS
         }
     }
 
+    /**
+     * start the player as new activity
+     */
     fun startPlayer(mediaId: Int, episodeId: Int) {
         val intent = Intent(this, PlayerActivity::class.java).apply {
             putExtra(getString(R.string.intent_media_id), mediaId)
