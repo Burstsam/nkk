@@ -1,5 +1,7 @@
 package org.mosad.teapod.util.adapter
 
+import android.graphics.Color
+import android.graphics.drawable.ColorDrawable
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.core.content.ContextCompat
@@ -34,6 +36,7 @@ class EpisodeItemAdapter(private val episodes: List<Episode>) : RecyclerView.Ada
 
         if (episodes[position].posterUrl.isNotEmpty()) {
             Glide.with(context).load(ep.posterUrl)
+                .apply(RequestOptions.placeholderOf(ColorDrawable(Color.DKGRAY)))
                 .apply(RequestOptions.bitmapTransform(RoundedCornersTransformation(10, 0)))
                 .into(holder.binding.imageEpisode)
         }

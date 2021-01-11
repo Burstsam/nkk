@@ -8,8 +8,6 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
-import androidx.recyclerview.widget.LinearLayoutManager
-import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
 import com.bumptech.glide.request.RequestOptions
 import jp.wasabeef.glide.transformations.BlurTransformation
@@ -26,7 +24,6 @@ class MediaFragment(private val mediaId: Int) : Fragment() {
 
     private lateinit var binding: FragmentMediaBinding
     private lateinit var adapterRecEpisodes: EpisodeItemAdapter
-    private lateinit var viewManager: RecyclerView.LayoutManager
 
     private lateinit var media: Media
     private lateinit var tmdb: TMDBResponse
@@ -95,8 +92,6 @@ class MediaFragment(private val mediaId: Int) : Fragment() {
         // specific gui
         if (media.type == MediaType.TVSHOW) {
             adapterRecEpisodes = EpisodeItemAdapter(media.episodes)
-            viewManager = LinearLayoutManager(context)
-            recyclerEpisodes.layoutManager = viewManager
             recyclerEpisodes.adapter = adapterRecEpisodes
 
             binding.textEpisodesOrRuntime.text = getString(R.string.text_episodes_count, media.info.episodesCount)
