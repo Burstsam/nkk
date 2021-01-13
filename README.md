@@ -25,7 +25,7 @@ This Project is not associated with Anime-on-Demand in any way. Using this app m
 If a tv show is selected, the first episode will be marked as watched. This is due to parsing the website.
 
 ### Contributing
-If you want to contribute to Teapod and need an account on this gitea instance, please write me an email: seil0@mosad.xyz
+Currentl you need to have an AoD account to contrtibut to Teapod . Contributing without on is kind of impossible.If you want to contribute to Teapod and need an account on this gitea instance, please write me an email.
 
 #### Why is it called Teapod?
 Teapod is a Acronym for "The ultimate anime app on demand", hence this project is called Teapod and not Teapot.
