@@ -75,6 +75,8 @@
     <!-- dialogs -->
     <string name="save">save</string>
     <string name="cancel">@android:string/cancel</string>
+    <string name="dialog_timeout_head">Login failed</string>
+    <string name="dialog_timeout_desc">Looks like the server is taking to long to respond. Please try again later.</string>
 
     <!-- etc -->
     <string name="login">Login</string>

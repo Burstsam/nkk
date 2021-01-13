@@ -59,6 +59,8 @@
     <!-- dialogs -->
     <string name="save">speichern</string>
     <string name="cancel">@android:string/cancel</string>
+    <string name="dialog_timeout_head">Anmelden fehlgeschlagen</string>
+    <string name="dialog_timeout_desc">Der Server scheint langsam zu antworten. Bitte versuche es später noch einmal.</string>
 
     <!-- etc -->
     <string name="login">Login</string>

@@ -78,7 +78,7 @@ object AoDParser {
 
             val resLogin = Jsoup.connect(baseUrl + loginPath)
                 .method(Connection.Method.POST)
-                .timeout(60000) // login can take some time
+                .timeout(60000) // login can take some time default is 60000 (60 sec)
                 .data(data)
                 .postDataCharset("UTF-8")
                 .cookies(authCookies)
@@ -96,20 +96,11 @@ object AoDParser {
 
     /**
      * initially load all media and home screen data
-     * -> blocking
      */
-    fun initialLoading() = runBlocking {
-        val loadHomeJob = GlobalScope.async {
-            loadHome()
-        }
-
-        val listJob = GlobalScope.async {
+    fun initialLoading() = listOf(
+            loadHome(),
             listAnimes()
-        }
-
-        loadHomeJob.await()
-        listJob.await()
-    }
+    )
 
     /**
      * get a media by it's ID (int)
@@ -134,7 +125,7 @@ object AoDParser {
     }
 
     // TODO don't use jsoup here
-    fun sendCallback(callbackPath: String) = GlobalScope.launch(Dispatchers.IO) {
+    private fun sendCallback(callbackPath: String) = GlobalScope.launch(Dispatchers.IO) {
         val headers = mutableMapOf(
             Pair("Accept", "application/json, text/javascript, */*; q=0.01"),
             Pair("Accept-Language", "de,en-US;q=0.7,en;q=0.3"),
@@ -158,112 +149,99 @@ object AoDParser {
     /**
      * load all media from aod into itemMediaList and mediaList
      */
-    private fun listAnimes()  = runBlocking {
-        if (sessionCookies.isEmpty()) login()
+    private fun listAnimes() = GlobalScope.launch(Dispatchers.IO) {
+        val resAnimes = Jsoup.connect(baseUrl + libraryPath).get()
+        //println(resAnimes)
 
-        withContext(Dispatchers.Default) {
-            val resAnimes = Jsoup.connect(baseUrl + libraryPath)
-                .cookies(sessionCookies)
-                .get()
-
-            //println(resAnimes)
-
-            itemMediaList.clear()
-            mediaList.clear()
-            resAnimes.select("div.animebox").forEach {
-                val type = if (it.select("p.animebox-link").select("a").text().toLowerCase(Locale.ROOT) == "zur serie") {
-                    MediaType.TVSHOW
-                } else {
-                    MediaType.MOVIE
-                }
-                val mediaTitle = it.select("h3.animebox-title").text()
-                val mediaLink = it.select("p.animebox-link").select("a").attr("href")
-                val mediaImage = it.select("p.animebox-image").select("img").attr("src")
-                val mediaShortText = it.select("p.animebox-shorttext").text()
-                val mediaId = mediaLink.substringAfterLast("/").toInt()
-
-                itemMediaList.add(ItemMedia(mediaId, mediaTitle, mediaImage))
-                mediaList.add(Media(mediaId, mediaLink, type).apply {
-                    info.title = mediaTitle
-                    info.posterUrl = mediaImage
-                    info.shortDesc = mediaShortText
-                })
+        itemMediaList.clear()
+        mediaList.clear()
+        resAnimes.select("div.animebox").forEach {
+            val type = if (it.select("p.animebox-link").select("a").text().toLowerCase(Locale.ROOT) == "zur serie") {
+                MediaType.TVSHOW
+            } else {
+                MediaType.MOVIE
             }
+            val mediaTitle = it.select("h3.animebox-title").text()
+            val mediaLink = it.select("p.animebox-link").select("a").attr("href")
+            val mediaImage = it.select("p.animebox-image").select("img").attr("src")
+            val mediaShortText = it.select("p.animebox-shorttext").text()
+            val mediaId = mediaLink.substringAfterLast("/").toInt()
 
-            Log.i(javaClass.name, "Total library size is: ${mediaList.size}")
+            itemMediaList.add(ItemMedia(mediaId, mediaTitle, mediaImage))
+            mediaList.add(Media(mediaId, mediaLink, type).apply {
+                info.title = mediaTitle
+                info.posterUrl = mediaImage
+                info.shortDesc = mediaShortText
+            })
         }
+
+        Log.i(javaClass.name, "Total library size is: ${mediaList.size}")
     }
 
     /**
      * load new episodes, titles and highlights
      */
-    private fun loadHome() = runBlocking {
-        if (sessionCookies.isEmpty()) login()
+    private fun loadHome() = GlobalScope.launch(Dispatchers.IO) {
+         val resHome = Jsoup.connect(baseUrl).get()
 
-        withContext(Dispatchers.Default) {
-            val resHome = Jsoup.connect(baseUrl)
-                .cookies(sessionCookies)
-                .get()
+        // get highlights from AoD
+        highlightsList.clear()
+        resHome.select("#aod-highlights").select("div.news-item").forEach {
+            val mediaId = it.select("div.news-item-text").select("a.serienlink")
+                .attr("href").substringAfterLast("/").toIntOrNull()
+            val mediaTitle = it.select("div.news-title").select("h2").text()
+            val mediaImage = it.select("img").attr("src")
 
-            // get highlights from AoD
-            highlightsList.clear()
-            resHome.select("#aod-highlights").select("div.news-item").forEach {
-                val mediaId = it.select("div.news-item-text").select("a.serienlink")
-                    .attr("href").substringAfterLast("/").toIntOrNull()
-                val mediaTitle = it.select("div.news-title").select("h2").text()
-                val mediaImage = it.select("img").attr("src")
-
-                if (mediaId != null) {
-                    highlightsList.add(ItemMedia(mediaId, mediaTitle, mediaImage))
-                }
+            if (mediaId != null) {
+                highlightsList.add(ItemMedia(mediaId, mediaTitle, mediaImage))
             }
+        }
 
-            // get all new episodes from AoD
-            newEpisodesList.clear()
-            resHome.select("h2:contains(Neue Episoden)").next().select("li").forEach {
-                val mediaId = it.select("a.thumbs").attr("href")
-                    .substringAfterLast("/").toIntOrNull()
-                val mediaImage = it.select("a.thumbs > img").attr("src")
-                val mediaTitle = "${it.select("a").text()} - ${it.select("span.neweps").text()}"
+        // get all new episodes from AoD
+        newEpisodesList.clear()
+        resHome.select("h2:contains(Neue Episoden)").next().select("li").forEach {
+            val mediaId = it.select("a.thumbs").attr("href")
+                .substringAfterLast("/").toIntOrNull()
+            val mediaImage = it.select("a.thumbs > img").attr("src")
+            val mediaTitle = "${it.select("a").text()} - ${it.select("span.neweps").text()}"
 
-                if (mediaId != null) {
-                    newEpisodesList.add(ItemMedia(mediaId, mediaTitle, mediaImage))
-                }
+            if (mediaId != null) {
+                newEpisodesList.add(ItemMedia(mediaId, mediaTitle, mediaImage))
             }
+        }
 
-            // get new simulcasts from AoD
-            newSimulcastsList.clear()
-            resHome.select("h2:contains(Neue Simulcasts)").next().select("li").forEach {
-                val mediaId = it.select("a.thumbs").attr("href")
-                    .substringAfterLast("/").toIntOrNull()
-                val mediaImage = it.select("a.thumbs > img").attr("src")
-                val mediaTitle = it.select("a").text()
+        // get new simulcasts from AoD
+        newSimulcastsList.clear()
+        resHome.select("h2:contains(Neue Simulcasts)").next().select("li").forEach {
+            val mediaId = it.select("a.thumbs").attr("href")
+                .substringAfterLast("/").toIntOrNull()
+            val mediaImage = it.select("a.thumbs > img").attr("src")
+            val mediaTitle = it.select("a").text()
 
-                if (mediaId != null) {
-                    newSimulcastsList.add(ItemMedia(mediaId, mediaTitle, mediaImage))
-                }
+            if (mediaId != null) {
+                newSimulcastsList.add(ItemMedia(mediaId, mediaTitle, mediaImage))
             }
+        }
 
-            // get new titles from AoD
-            newTitlesList.clear()
-            resHome.select("h2:contains(Neue Anime-Titel)").next().select("li").forEach {
-                val mediaId = it.select("a.thumbs").attr("href")
-                    .substringAfterLast("/").toIntOrNull()
-                val mediaImage = it.select("a.thumbs > img").attr("src")
-                val mediaTitle = it.select("a").text()
+        // get new titles from AoD
+        newTitlesList.clear()
+        resHome.select("h2:contains(Neue Anime-Titel)").next().select("li").forEach {
+            val mediaId = it.select("a.thumbs").attr("href")
+                .substringAfterLast("/").toIntOrNull()
+            val mediaImage = it.select("a.thumbs > img").attr("src")
+            val mediaTitle = it.select("a").text()
 
-                if (mediaId != null) {
-                    newTitlesList.add(ItemMedia(mediaId, mediaTitle, mediaImage))
-                }
+            if (mediaId != null) {
+                newTitlesList.add(ItemMedia(mediaId, mediaTitle, mediaImage))
             }
+        }
 
-            // if highlights is empty, add a random new title
-            if (highlightsList.isEmpty()) {
-                if (newTitlesList.isNotEmpty()) {
-                    highlightsList.add(newTitlesList[Random.nextInt(0, newTitlesList.size)])
-                } else {
-                    highlightsList.add(ItemMedia(0,"", ""))
-                }
+        // if highlights is empty, add a random new title
+        if (highlightsList.isEmpty()) {
+            if (newTitlesList.isNotEmpty()) {
+                highlightsList.add(newTitlesList[Random.nextInt(0, newTitlesList.size)])
+            } else {
+                highlightsList.add(ItemMedia(0,"", ""))
             }
         }
     }
@@ -272,7 +250,7 @@ object AoDParser {
      * load streams for the media path, movies have one episode
      * @param media is used as call ba reference
      */
-    private suspend fun loadStreams(media: Media) = GlobalScope.launch(Dispatchers.IO) {
+    private fun loadStreams(media: Media) = GlobalScope.launch(Dispatchers.IO) {
         if (sessionCookies.isEmpty()) login()
 
         if (!loginSuccess) {
@@ -363,6 +341,7 @@ object AoDParser {
                 }
             }
         }
+        Log.i(javaClass.name, "media loaded successfully")
     }
 
     /**
