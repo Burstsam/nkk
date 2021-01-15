@@ -1,4 +1,4 @@
-package org.mosad.teapod.player
+package org.mosad.teapod.activity.player
 
 import android.animation.Animator
 import android.animation.AnimatorListenerAdapter

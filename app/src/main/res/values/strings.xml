@@ -72,6 +72,16 @@
     <string name="episodes">Episodes</string>
     <string name="episode">Episode</string>
 
+    <!-- Onboarding -->
+    <string name="skip">Skip</string>
+    <string name="next">Next</string>
+    <string name="start">Start</string>
+    <string name="on_welcome">Welcome!\nTeapod is an unofficial App for AoD.</string>
+    <string name="on_get_started">Get started</string>
+    <string name="on_login_heading">Login</string>
+    <string name="on_login_desc">To use Teapod you need to log in with your AoD account. Your Login-Data will be stored encrypted on your device.</string>
+    <string name="on_login_failed">Could not login! Make sure Username and Password are correct and try again.</string>
+
     <!-- dialogs -->
     <string name="save">save</string>
     <string name="cancel">@android:string/cancel</string>
@@ -81,7 +91,7 @@
     <!-- etc -->
     <string name="login">Login</string>
     <string name="login_desc">You need to login before you can use Teapod. The Login-Data will be stored encrypted on your device.</string>
-    <string name="login_failed_desc">Could not login. Please try again.</string>
+    <string name="login_failed_desc"> Please try again.</string>
     <string name="password">Password</string>
 
     <!-- save keys -->

@@ -13,7 +13,7 @@ import android.widget.TextView
 import androidx.core.view.children
 import org.mosad.teapod.R
 import org.mosad.teapod.databinding.PlayerLanguageSettingsBinding
-import org.mosad.teapod.player.PlayerViewModel
+import org.mosad.teapod.activity.player.PlayerViewModel
 import java.util.*
 
 class LanguageSettingsPlayer @JvmOverloads constructor(

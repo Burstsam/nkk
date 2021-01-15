@@ -11,7 +11,7 @@ object Preferences {
         internal set
     var autoplay = true
         internal set
-    var theme = DataTypes.Theme.LIGHT
+    var theme = DataTypes.Theme.DARK
         internal set
 
     private fun getSharedPref(context: Context): SharedPreferences {
@@ -62,8 +62,8 @@ object Preferences {
         )
         theme = DataTypes.Theme.valueOf(
             sharedPref.getString(
-                context.getString(R.string.save_key_theme), DataTypes.Theme.LIGHT.toString()
-            ) ?:  DataTypes.Theme.LIGHT.toString()
+                context.getString(R.string.save_key_theme), DataTypes.Theme.DARK.toString()
+            ) ?:  DataTypes.Theme.DARK.toString()
         )
     }
 

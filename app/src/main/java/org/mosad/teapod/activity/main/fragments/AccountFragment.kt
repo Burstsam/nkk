@@ -1,4 +1,4 @@
-package org.mosad.teapod.ui.fragments
+package org.mosad.teapod.activity.main.fragments
 
 import android.os.Bundle
 import android.util.Log
@@ -9,7 +9,7 @@ import androidx.fragment.app.Fragment
 import com.afollestad.materialdialogs.MaterialDialog
 import com.afollestad.materialdialogs.list.listItemsSingleChoice
 import org.mosad.teapod.BuildConfig
-import org.mosad.teapod.MainActivity
+import org.mosad.teapod.activity.main.MainActivity
 import org.mosad.teapod.R
 import org.mosad.teapod.databinding.FragmentAccountBinding
 import org.mosad.teapod.parser.AoDParser

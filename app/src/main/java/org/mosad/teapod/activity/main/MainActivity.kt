@@ -20,7 +20,7 @@
  *
  */
 
-package org.mosad.teapod
+package org.mosad.teapod.activity.main
 
 import android.content.Intent
 import android.os.Bundle
@@ -34,16 +34,18 @@ import com.afollestad.materialdialogs.callbacks.onDismiss
 import com.google.android.material.bottomnavigation.BottomNavigationView
 import kotlinx.coroutines.joinAll
 import kotlinx.coroutines.runBlocking
+import org.mosad.teapod.R
 import org.mosad.teapod.databinding.ActivityMainBinding
 import org.mosad.teapod.parser.AoDParser
-import org.mosad.teapod.player.PlayerActivity
+import org.mosad.teapod.activity.player.PlayerActivity
 import org.mosad.teapod.preferences.EncryptedPreferences
 import org.mosad.teapod.preferences.Preferences
 import org.mosad.teapod.ui.components.LoginDialog
-import org.mosad.teapod.ui.fragments.AccountFragment
-import org.mosad.teapod.ui.fragments.HomeFragment
-import org.mosad.teapod.ui.fragments.LibraryFragment
-import org.mosad.teapod.ui.fragments.SearchFragment
+import org.mosad.teapod.activity.main.fragments.AccountFragment
+import org.mosad.teapod.activity.main.fragments.HomeFragment
+import org.mosad.teapod.activity.main.fragments.LibraryFragment
+import org.mosad.teapod.activity.main.fragments.SearchFragment
+import org.mosad.teapod.activity.onboarding.OnboardingActivity
 import org.mosad.teapod.util.DataTypes
 import org.mosad.teapod.util.StorageController
 import java.net.SocketTimeoutException
@@ -120,8 +122,8 @@ class MainActivity : AppCompatActivity(), BottomNavigationView.OnNavigationItemS
 
     private fun getThemeResource(): Int {
         return when (Preferences.theme) {
-            DataTypes.Theme.DARK -> R.style.AppTheme_Dark
-            else -> R.style.AppTheme_Light
+            DataTypes.Theme.LIGHT -> R.style.AppTheme_Light
+            else -> R.style.AppTheme_Dark
         }
     }
 
@@ -138,22 +140,23 @@ class MainActivity : AppCompatActivity(), BottomNavigationView.OnNavigationItemS
             EncryptedPreferences.readCredentials(this)
             StorageController.load(this)
 
-            try {
-                // make sure credentials are set, run's async
-                if (EncryptedPreferences.password.isEmpty()) {
-                    showLoginDialog(true)
-                } else {
-                    // try to login in, as most sites can only bee loaded once loged in
-                    if (!AoDParser.login()) showLoginDialog(false)
-                }
-            } catch (ex: SocketTimeoutException) {
-                Log.w(javaClass.name, "Timeout during login!")
+            // show onbaording
+            if (EncryptedPreferences.password.isEmpty()) {
+                showOnboarding()
+            } else {
+                try {
+                    if (!AoDParser.login()) {
+                        showLoginDialog()
+                    }
+                } catch (ex: SocketTimeoutException) {
+                    Log.w(javaClass.name, "Timeout during login!")
 
-                // show waring dialog before finishing
-                MaterialDialog(this).show {
-                    title(R.string.dialog_timeout_head)
-                    message(R.string.dialog_timeout_desc)
-                    onDismiss { exitAndRemoveTask() }
+                    // show waring dialog before finishing
+                    MaterialDialog(this).show {
+                        title(R.string.dialog_timeout_head)
+                        message(R.string.dialog_timeout_desc)
+                        onDismiss { exitAndRemoveTask() }
+                    }
                 }
             }
 
@@ -164,18 +167,26 @@ class MainActivity : AppCompatActivity(), BottomNavigationView.OnNavigationItemS
         wasInitialized = true
     }
 
-    private fun showLoginDialog(firstTry: Boolean) {
-        LoginDialog(this, firstTry).positiveButton {
+    private fun showLoginDialog() {
+        LoginDialog(this, false).positiveButton {
             EncryptedPreferences.saveCredentials(login, password, context)
 
             if (!AoDParser.login()) {
-                showLoginDialog(false)
+                showLoginDialog()
                 Log.w(javaClass.name, "Login failed, please try again.")
             }
         }.negativeButton {
             Log.i(javaClass.name, "Login canceled, exiting.")
             finish()
         }.show()
+    }
+
+    /**
+     * start the onboarding activity and finish the main activity
+     */
+    private fun showOnboarding() {
+        startActivity(Intent(this, OnboardingActivity::class.java))
+        finish()
     }
 
     /**

@@ -1,4 +1,4 @@
-package org.mosad.teapod.player
+package org.mosad.teapod.activity.player
 
 import android.app.Application
 import android.net.Uri
@@ -15,7 +15,6 @@ import kotlinx.coroutines.runBlocking
 import org.mosad.teapod.R
 import org.mosad.teapod.parser.AoDParser
 import org.mosad.teapod.preferences.Preferences
-import org.mosad.teapod.ui.fragments.MediaFragment
 import org.mosad.teapod.util.DataTypes
 import org.mosad.teapod.util.Episode
 import org.mosad.teapod.util.Media

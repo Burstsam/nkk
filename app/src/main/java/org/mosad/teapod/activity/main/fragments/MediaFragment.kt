@@ -1,4 +1,4 @@
-package org.mosad.teapod.ui.fragments
+package org.mosad.teapod.activity.main.fragments
 
 import android.graphics.Color
 import android.graphics.drawable.ColorDrawable
@@ -12,8 +12,8 @@ import com.bumptech.glide.Glide
 import com.bumptech.glide.request.RequestOptions
 import jp.wasabeef.glide.transformations.BlurTransformation
 import kotlinx.coroutines.*
-import org.mosad.teapod.MainActivity
 import org.mosad.teapod.R
+import org.mosad.teapod.activity.main.MainActivity
 import org.mosad.teapod.databinding.FragmentMediaBinding
 import org.mosad.teapod.parser.AoDParser
 import org.mosad.teapod.util.*

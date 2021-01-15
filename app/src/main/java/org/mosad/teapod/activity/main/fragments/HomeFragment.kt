@@ -1,4 +1,4 @@
-package org.mosad.teapod.ui.fragments
+package org.mosad.teapod.activity.main.fragments
 
 import android.graphics.drawable.Drawable
 import android.os.Bundle
@@ -14,7 +14,7 @@ import com.bumptech.glide.request.transition.Transition
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
-import org.mosad.teapod.MainActivity
+import org.mosad.teapod.activity.main.MainActivity
 import org.mosad.teapod.R
 import org.mosad.teapod.databinding.FragmentHomeBinding
 import org.mosad.teapod.parser.AoDParser

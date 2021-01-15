@@ -56,7 +56,7 @@ object AoDParser {
 
     fun login(): Boolean = runBlocking {
 
-        withContext(Dispatchers.Default) {
+        withContext(Dispatchers.IO) {
             // get the authenticity token
             val resAuth = Jsoup.connect(baseUrl + loginPath)
                 .header("User-Agent", userAgent)

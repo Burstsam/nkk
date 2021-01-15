@@ -1,4 +1,4 @@
-package org.mosad.teapod.ui.fragments
+package org.mosad.teapod.activity.main.fragments
 
 import android.os.Bundle
 import android.view.LayoutInflater

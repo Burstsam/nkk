@@ -6,7 +6,7 @@ import android.view.LayoutInflater
 import android.view.ViewGroup
 import android.widget.LinearLayout
 import org.mosad.teapod.databinding.PlayerEpisodesListBinding
-import org.mosad.teapod.player.PlayerViewModel
+import org.mosad.teapod.activity.player.PlayerViewModel
 import org.mosad.teapod.util.adapter.PlayerEpisodeItemAdapter
 
 class EpisodesListPlayer @JvmOverloads constructor(
