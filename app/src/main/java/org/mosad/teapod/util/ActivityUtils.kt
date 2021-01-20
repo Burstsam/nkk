@@ -8,6 +8,25 @@ import android.os.Build
 import android.view.View
 import android.view.WindowInsets
 import android.view.WindowInsetsController
+import androidx.appcompat.app.AppCompatActivity
+import androidx.core.app.ActivityCompat
+import androidx.fragment.app.Fragment
+import androidx.fragment.app.FragmentActivity
+import androidx.fragment.app.commit
+import org.mosad.teapod.R
+
+/**
+ * Show a fragment on top of the current fragment.
+ * The current fragment is replaced and the new one is added
+ * to the back stack.
+ */
+fun FragmentActivity.showFragment(fragment: Fragment) {
+    supportFragmentManager.commit {
+        replace(R.id.nav_host_fragment, fragment, fragment.javaClass.simpleName)
+        addToBackStack(fragment.javaClass.name)
+        show(fragment)
+    }
+}
 
 /**
  * hide the status and navigation bar

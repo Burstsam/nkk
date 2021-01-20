@@ -17,6 +17,7 @@ import org.mosad.teapod.preferences.EncryptedPreferences
 import org.mosad.teapod.preferences.Preferences
 import org.mosad.teapod.ui.components.LoginDialog
 import org.mosad.teapod.util.DataTypes.Theme
+import org.mosad.teapod.util.showFragment
 
 class AccountFragment : Fragment() {
 
@@ -53,7 +54,7 @@ class AccountFragment : Fragment() {
         }
 
         binding.linearInfo.setOnClickListener {
-            (activity as MainActivity).showFragment(AboutFragment())
+            activity?.showFragment(AboutFragment())
         }
 
         binding.switchSecondary.setOnClickListener {

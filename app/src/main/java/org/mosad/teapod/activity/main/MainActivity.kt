@@ -190,19 +190,6 @@ class MainActivity : AppCompatActivity(), BottomNavigationView.OnNavigationItemS
     }
 
     /**
-     * Show a fragment on top of the current fragment.
-     * The current fragment is replaced and the new one is added
-     * to the back stack.
-     */
-    fun showFragment(fragment: Fragment) {
-        supportFragmentManager.commit {
-            replace(R.id.nav_host_fragment, fragment, fragment.javaClass.simpleName)
-            addToBackStack(fragment.javaClass.name)
-            show(fragment)
-        }
-    }
-
-    /**
      * start the player as new activity
      */
     fun startPlayer(mediaId: Int, episodeId: Int) {

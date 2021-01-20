@@ -12,6 +12,7 @@ import org.mosad.teapod.databinding.FragmentSearchBinding
 import org.mosad.teapod.parser.AoDParser
 import org.mosad.teapod.util.decoration.MediaItemDecoration
 import org.mosad.teapod.util.adapter.MediaItemAdapter
+import org.mosad.teapod.util.showFragment
 
 class SearchFragment : Fragment() {
 
@@ -33,7 +34,7 @@ class SearchFragment : Fragment() {
                     adapter = MediaItemAdapter(AoDParser.itemMediaList)
                     adapter!!.onItemClick = { mediaId, _ ->
                         binding.searchText.clearFocus()
-                        (activity as MainActivity).showFragment(MediaFragment(mediaId))
+                        activity?.showFragment(MediaFragment(mediaId))
                     }
 
                     binding.recyclerMediaSearch.adapter = adapter

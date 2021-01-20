@@ -22,6 +22,7 @@ import org.mosad.teapod.util.ItemMedia
 import org.mosad.teapod.util.StorageController
 import org.mosad.teapod.util.adapter.MediaItemAdapter
 import org.mosad.teapod.util.decoration.MediaItemDecoration
+import org.mosad.teapod.util.showFragment
 
 class HomeFragment : Fragment() {
 
@@ -79,9 +80,6 @@ class HomeFragment : Fragment() {
             }
         }
         adapterMyList = MediaItemAdapter(myListMedia)
-        adapterMyList.onItemClick = { mediaId, _ ->
-            (activity as MainActivity).showFragment(MediaFragment(mediaId))
-        }
         binding.recyclerMyList.adapter = adapterMyList
 
         // new episodes
@@ -122,19 +120,23 @@ class HomeFragment : Fragment() {
         }
 
         binding.textHighlightInfo.setOnClickListener {
-            (activity as MainActivity).showFragment(MediaFragment(highlightMedia.id))
+            activity?.showFragment(MediaFragment(highlightMedia.id))
+        }
+
+        adapterMyList.onItemClick = { mediaId, _ ->
+            activity?.showFragment(MediaFragment(mediaId))
         }
 
         adapterNewEpisodes.onItemClick = { mediaId, _ ->
-            (activity as MainActivity).showFragment(MediaFragment(mediaId))
+            activity?.showFragment(MediaFragment(mediaId))
         }
 
         adapterNewSimulcasts.onItemClick = { mediaId, _ ->
-            (activity as MainActivity).showFragment(MediaFragment(mediaId))
+            activity?.showFragment(MediaFragment(mediaId))
         }
 
         adapterNewTitles.onItemClick = { mediaId, _ ->
-            (activity as MainActivity).showFragment(MediaFragment(mediaId))
+            activity?.showFragment(MediaFragment(mediaId))
         }
     }
 

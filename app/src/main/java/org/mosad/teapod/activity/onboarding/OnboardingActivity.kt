@@ -26,9 +26,7 @@ class OnboardingActivity : AppCompatActivity() {
 
         pagerAdapter = ScreenSlidePagerAdapter(this)
         binding.viewPager.adapter = pagerAdapter
-        TabLayoutMediator(binding.tabLayout, binding.viewPager) { tab, position ->
-
-        }.attach()
+        TabLayoutMediator(binding.tabLayout, binding.viewPager) { _, _ -> }.attach()
 
         // we don't use the skip button, instead we use the start button to skip the last fragment
         binding.buttonSkip.visibility = View.GONE
