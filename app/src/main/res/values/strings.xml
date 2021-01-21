@@ -11,6 +11,7 @@
     <string name="new_episodes">New episodes</string>
     <string name="new_simulcasts">New simulcasts</string>
     <string name="new_titles">New titles</string>
+    <string name="top_ten">Top 10</string>
 
     <!-- search fragment -->
     <string name="search_hint">Search for movies and series</string>
@@ -23,8 +24,16 @@
     <string name="text_overview_ex" translatable="false">Shouya Ishida starts bullying the new girl in class …</string>
     <string name="text_year_ex" translatable="false">2016</string>
     <string name="text_age_ex" translatable="false">6</string>
-    <string name="text_episodes_count">%1$d episodes</string>
+    <string name="text_episodes_count" translatable="false">1$d episodes</string>
+    <plurals name="text_episodes_count">
+        <item quantity="one">%d episode</item>
+        <item quantity="other">%d episodes</item>
+    </plurals>
     <string name="text_runtime">%1$d Minutes</string>
+    <plurals name="text_runtime">
+        <item quantity="one">%d Minute</item>
+        <item quantity="other">%d Minutes</item>
+    </plurals>
     <string name="component_episode_title">Ep. %1$d %2$s</string>
     <string name="component_episode_title_sub">Ep. %1$d %2$s (Sub)</string>
     <string name="component_poster_desc" translatable="false">episode poster</string>

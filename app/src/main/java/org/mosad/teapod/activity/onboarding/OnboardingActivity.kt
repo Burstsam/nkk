@@ -53,6 +53,10 @@ class OnboardingActivity : AppCompatActivity() {
         }
     }
 
+    fun btnNextClick(@Suppress("UNUSED_PARAMETER")v: View) {
+        //nextFragment() // currently not used in Teapod
+    }
+
     fun btnSkipClick(@Suppress("UNUSED_PARAMETER")v: View) {
         //launchMainActivity() // currently not used in Teapod
     }

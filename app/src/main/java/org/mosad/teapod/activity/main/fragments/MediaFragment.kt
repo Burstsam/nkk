@@ -56,7 +56,7 @@ class MediaFragment(private val mediaId: Int) : Fragment() {
         // only notify adapter, if initialized
         if (this::adapterRecEpisodes.isInitialized) {
             // TODO find a better solution for this
-            media.episodes.forEachIndexed() { index, episode ->
+            media.episodes.forEachIndexed { index, episode ->
                 adapterRecEpisodes.updateWatchedState(episode.watched, index)
             }
             adapterRecEpisodes.notifyDataSetChanged()
@@ -94,7 +94,12 @@ class MediaFragment(private val mediaId: Int) : Fragment() {
             adapterRecEpisodes = EpisodeItemAdapter(media.episodes)
             recyclerEpisodes.adapter = adapterRecEpisodes
 
-            binding.textEpisodesOrRuntime.text = getString(R.string.text_episodes_count, media.info.episodesCount)
+            // episodes count
+            binding.textEpisodesOrRuntime.text = resources.getQuantityString(
+                R.plurals.text_episodes_count,
+                media.info.episodesCount,
+                media.info.episodesCount
+            )
 
             // get next episode
             nextEpisode = if (media.episodes.firstOrNull{ !it.watched } != null) {
@@ -109,7 +114,11 @@ class MediaFragment(private val mediaId: Int) : Fragment() {
             recyclerEpisodes.visibility = View.GONE
 
             if (tmdb.runtime > 0) {
-                textEpisodesOrRuntime.text = getString(R.string.text_runtime, tmdb.runtime)
+                textEpisodesOrRuntime.text = resources.getQuantityString(
+                    R.plurals.text_runtime,
+                    tmdb.runtime,
+                    tmdb.runtime
+                )
             } else {
                 textEpisodesOrRuntime.visibility = View.GONE
             }

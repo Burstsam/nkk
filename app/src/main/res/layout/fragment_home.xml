@@ -219,6 +219,34 @@
                     tools:listitem="@layout/item_media" />
             </LinearLayout>
 
+            <LinearLayout
+                android:id="@+id/linear_top_ten"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:orientation="vertical"
+                android:paddingBottom="7dp">
+
+                <TextView
+                    android:id="@+id/text_top_ten"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:paddingStart="10dp"
+                    android:paddingTop="15dp"
+                    android:paddingEnd="5dp"
+                    android:paddingBottom="5dp"
+                    android:text="@string/top_ten"
+                    android:textSize="16sp"
+                    android:textStyle="bold" />
+
+                <androidx.recyclerview.widget.RecyclerView
+                    android:id="@+id/recycler_top_ten"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:orientation="horizontal"
+                    app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
+                    tools:listitem="@layout/item_media" />
+            </LinearLayout>
+
         </LinearLayout>
     </ScrollView>
 

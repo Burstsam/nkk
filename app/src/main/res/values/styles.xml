@@ -41,10 +41,6 @@
         <item name="colorControlHighlight">@color/controlHighlightDark</item>
     </style>
 
-    <style name="LicensesDialogTheme.Dark" parent="Theme.AppCompat.Dialog">
-        <item name="android:windowBackground">@color/themeSecondaryDark</item>
-    </style>
-
     <!-- player theme -->
     <style name="PlayerTheme" parent="Theme.MaterialComponents.Light.NoActionBar">
         <item name="android:windowNoTitle">true</item>

@@ -11,14 +11,22 @@
     <string name="new_episodes">Neue Episoden</string>
     <string name="new_simulcasts">Neue Simulcasts</string>
     <string name="new_titles">Neue Titel</string>
+    <string name="top_ten">Top 10</string>
 
     <!-- search fragment -->
     <string name="search_hint">Suche nach Filmen und Serien</string>
 
     <!-- media fragment -->
     <string name="button_play">Abspielen</string>
-    <string name="text_episodes_count">%1$d Episoden</string>
+    <plurals name="text_episodes_count">
+        <item quantity="one">%d Episode</item>
+        <item quantity="other">%d Episoden</item>
+    </plurals>
     <string name="text_runtime">%1$d Minuten</string>
+    <plurals name="text_runtime">
+        <item quantity="one">%d Minute</item>
+        <item quantity="other">%d Minuten</item>
+    </plurals>
     <string name="component_episode_title">Flg. %1$d %2$s</string>
     <string name="component_episode_title_sub">Flg. %1$d %2$s (OmU)</string>
 

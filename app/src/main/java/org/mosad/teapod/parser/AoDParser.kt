@@ -53,6 +53,7 @@ object AoDParser {
     val newEpisodesList = arrayListOf<ItemMedia>()
     val newSimulcastsList = arrayListOf<ItemMedia>()
     val newTitlesList = arrayListOf<ItemMedia>()
+    val topTenList = arrayListOf<ItemMedia>()
 
     fun login(): Boolean = runBlocking {
 
@@ -233,6 +234,19 @@ object AoDParser {
 
             if (mediaId != null) {
                 newTitlesList.add(ItemMedia(mediaId, mediaTitle, mediaImage))
+            }
+        }
+
+        // get top ten from AoD
+        topTenList.clear()
+        resHome.select("h2:contains(Anime Top 10)").next().select("li").forEach {
+            val mediaId = it.select("a.thumbs").attr("href")
+                .substringAfterLast("/").toIntOrNull()
+            val mediaImage = it.select("a.thumbs > img").attr("src")
+            val mediaTitle = it.select("a").text()
+
+            if (mediaId != null) {
+                topTenList.add(ItemMedia(mediaId, mediaTitle, mediaImage))
             }
         }
 
