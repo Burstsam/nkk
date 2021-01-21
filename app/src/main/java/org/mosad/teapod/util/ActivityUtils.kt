@@ -8,12 +8,11 @@ import android.os.Build
 import android.view.View
 import android.view.WindowInsets
 import android.view.WindowInsetsController
-import androidx.appcompat.app.AppCompatActivity
-import androidx.core.app.ActivityCompat
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentActivity
 import androidx.fragment.app.commit
 import org.mosad.teapod.R
+import kotlin.system.exitProcess
 
 /**
  * Show a fragment on top of the current fragment.
@@ -74,3 +73,10 @@ fun Activity.navToLauncherTask() {
     }
 }
 
+/**
+ * exit and remove the app from tasks
+ */
+fun Activity.exitAndRemoveTask() {
+    finishAndRemoveTask()
+    exitProcess(0)
+}

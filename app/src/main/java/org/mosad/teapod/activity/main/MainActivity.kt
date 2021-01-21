@@ -48,6 +48,7 @@ import org.mosad.teapod.activity.main.fragments.SearchFragment
 import org.mosad.teapod.activity.onboarding.OnboardingActivity
 import org.mosad.teapod.util.DataTypes
 import org.mosad.teapod.util.StorageController
+import org.mosad.teapod.util.exitAndRemoveTask
 import java.net.SocketTimeoutException
 import kotlin.system.exitProcess
 import kotlin.system.measureTimeMillis
@@ -208,14 +209,6 @@ class MainActivity : AppCompatActivity(), BottomNavigationView.OnNavigationItemS
         restartIntent.addFlags(Intent.FLAG_ACTIVITY_NO_ANIMATION)
         finish()
         startActivity(restartIntent)
-    }
-
-    /**
-     * exit and remove the app from tasks
-     */
-    fun exitAndRemoveTask() {
-        this.finishAndRemoveTask()
-        exitProcess(0)
     }
 
 }
