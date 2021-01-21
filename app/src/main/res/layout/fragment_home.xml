@@ -97,7 +97,7 @@
                         android:textColor="?textSecondary"
                         android:textSize="12sp"
                         app:drawableTint="?buttonBackground"
-                        app:drawableTopCompat="@drawable/ic_baseline_info_24" />
+                        app:drawableTopCompat="@drawable/ic_outline_info_24" />
 
                     <Space
                         android:layout_width="0dp"

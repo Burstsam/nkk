@@ -56,14 +56,16 @@
     <string name="theme_dark">Dark</string>
 
     <!-- about fragment -->
-    <string name="about_info">
-        Teapod is an unofficial app for anime on demand.
-        It is published under the terms and conditions of the GNU GPL 3 or later.
-        \n\n
-        © 2020-2021 seil0@mosad.xyz
-    </string>
-    <string name="tmdb_notice" translatable="false">This product uses the TMDb API but is not endorsed or certified by TMDb.</string>
+    <string name="version">Version</string>
+    <string name="version_desc" translatable="false">%1$s (%2$s)</string>
+    <string name="authors">Author</string>
+    <string name="author_desc" translatable="false">seil0@mosad.xyz</string>
+    <string name="source">Source code</string>
     <string name="teapod_repo" translatable="false">git.mosad.xyz/Seil0/teapod</string>
+    <string name="license">License</string>
+    <string name="license_desc" translatable="false">GNU General Public License 3</string>
+    <string name="about_info">An unofficial app for anime on demand.</string>
+    <string name="tmdb_notice" translatable="false">This product uses the TMDb API but is not endorsed or certified by TMDb.</string>
     <string name="third_party_heading">Third Party Licenses</string>
     <string name="third_party_component_desc">© %1$s %2$s under %3$s</string>
 

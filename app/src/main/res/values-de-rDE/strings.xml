@@ -45,12 +45,11 @@
     <string name="theme_dark">Dunkel</string>
 
     <!-- about fragment -->
-    <string name="about_info">
-        Teapod ist eine inoffizielle App für Anime on Demand.
-        Sie wird unter den Bedingungen der GNU GPL 3 oder höher zur Verfügung gestellt.
-        \n\n
-        © 2020-2021 seil0@mosad.xyz
-    </string>
+    <string name="version">Version</string>
+    <string name="authors">Autor</string>
+    <string name="source">Quellcode</string>
+    <string name="license">Lizenz</string>
+    <string name="about_info">Eine inoffizielle App für Anime on Demand.</string>
     <string name="third_party_heading">Lizenzen von Drittanbietern</string>
     <string name="third_party_component_desc">© %1$s %2$s unter %3$s</string>
 
