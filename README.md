@@ -1,7 +1,6 @@
-# teapod
+# Teapod
 
-A unofficial App for Anime-on-Demand.
-Teapod is a unofficial App for Anime-on-Demand (AoD). It allows you to watch all your favourite animes from AoD on your Android Device.
+Teapod is a unofficial App for Anime on Demand (AoD). It allows you to watch all your favourite animes from AoD on your android device.
 
 [<img src="https://fdroid.gitlab.io/artwork/badge/get-it-on.png" height="75">](https://f-droid.org/de/packages/org.mosad.teapod/)
 [<img src="https://gitlab.com/IzzyOnDroid/repo/-/raw/master/assets/IzzyOnDroid.png" height="75">](https://apt.izzysoft.de/fdroid/index/apk/org.mosad.teapod)
@@ -19,7 +18,7 @@ Teapod is a unofficial App for Anime-on-Demand (AoD). It allows you to watch all
 [<img src="https://www.mosad.xyz/images/Teapod/Teapod_Search.webp" width=180>](https://www.mosad.xyz/images/Teapod/Teapod_Search.webp)
 
 ### License
-This Project is not associated with Anime-on-Demand in any way. Using this app may violates the ToS of AoD. Teapod is licensed under the terms and conditions of GPL 3.
+Teapod is licensed under the terms and conditions of GPL 3. This Project is not associated with Anime on Demand in any way. But they allow open source apps for Anime on Demand.
 
 ### Known Issues
 If a tv show is selected, the first episode will be marked as watched. This is due to parsing the website.
