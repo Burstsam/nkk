@@ -19,6 +19,9 @@
         <item name="buttonBackground">@color/buttonBackgroundLight</item>
         <item name="md_background_color">@color/themeSecondaryLight</item>
         <item name="md_color_content">@color/textSecondaryLight</item>
+
+        <!-- without this, the unchecked single choice buttons while be white -->
+        <item name="md_color_widget_unchecked">@color/textSecondaryLight</item>
     </style>
 
     <style name="AppTheme.Dark" parent="AppTheme">
