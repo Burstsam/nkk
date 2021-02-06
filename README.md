@@ -3,7 +3,6 @@
 Teapod is a unofficial App for Anime on Demand (AoD). It allows you to watch all your favourite animes from AoD on your android device.
 
 [<img src="https://fdroid.gitlab.io/artwork/badge/get-it-on.png" height="75">](https://f-droid.org/de/packages/org.mosad.teapod/)
-[<img src="https://gitlab.com/IzzyOnDroid/repo/-/raw/master/assets/IzzyOnDroid.png" height="75">](https://apt.izzysoft.de/fdroid/index/apk/org.mosad.teapod)
 
 ## Features
 * Watch all animes from AoD on your Android device
