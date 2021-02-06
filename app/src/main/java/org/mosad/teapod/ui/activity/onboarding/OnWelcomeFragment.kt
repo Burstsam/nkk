@@ -1,4 +1,4 @@
-package org.mosad.teapod.activity.onboarding
+package org.mosad.teapod.ui.activity.onboarding
 
 import android.os.Bundle
 import android.view.LayoutInflater

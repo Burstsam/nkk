@@ -1,4 +1,4 @@
-package org.mosad.teapod.activity.main.fragments
+package org.mosad.teapod.ui.activity.main.fragments
 
 import android.content.Intent
 import android.net.Uri

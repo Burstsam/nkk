@@ -1,4 +1,4 @@
-package org.mosad.teapod.activity.onboarding
+package org.mosad.teapod.ui.activity.onboarding
 
 import android.content.Intent
 import android.os.Bundle
@@ -8,7 +8,7 @@ import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentActivity
 import androidx.viewpager2.adapter.FragmentStateAdapter
 import com.google.android.material.tabs.TabLayoutMediator
-import org.mosad.teapod.activity.main.MainActivity
+import org.mosad.teapod.ui.activity.main.MainActivity
 import org.mosad.teapod.databinding.ActivityOnboardingBinding
 
 class OnboardingActivity : AppCompatActivity() {
@@ -67,8 +67,7 @@ class OnboardingActivity : AppCompatActivity() {
     }
 
     /**
-     * A simple pager adapter that represents 5 ScreenSlidePageFragment objects, in
-     * sequence.
+     * A simple pager adapter
      */
     private inner class ScreenSlidePagerAdapter(fa: FragmentActivity) : FragmentStateAdapter(fa) {
         override fun getItemCount(): Int = fragments.size

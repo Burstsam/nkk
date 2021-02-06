@@ -7,25 +7,25 @@
 
     <fragment
         android:id="@+id/navigation_home"
-        android:name="org.mosad.teapod.activity.main.fragments.HomeFragment"
+        android:name="org.mosad.teapod.ui.activity.main.fragments.HomeFragment"
         android:label="@string/title_home"
         tools:layout="@layout/fragment_home" />
 
     <fragment
         android:id="@+id/navigation_library"
-        android:name="org.mosad.teapod.activity.main.fragments.LibraryFragment"
+        android:name="org.mosad.teapod.ui.activity.main.fragments.LibraryFragment"
         android:label="@string/title_library"
         tools:layout="@layout/fragment_library" />
 
     <fragment
         android:id="@+id/navigation_search"
-        android:name="org.mosad.teapod.activity.main.fragments.SearchFragment"
+        android:name="org.mosad.teapod.ui.activity.main.fragments.SearchFragment"
         android:label="@string/title_search"
         tools:layout="@layout/fragment_search" />
 
     <fragment
         android:id="@+id/navigation_account"
-        android:name="org.mosad.teapod.activity.main.fragments.AccountFragment"
+        android:name="org.mosad.teapod.ui.activity.main.fragments.AccountFragment"
         android:label="@string/title_account"
         tools:layout="@layout/fragment_account" />
 

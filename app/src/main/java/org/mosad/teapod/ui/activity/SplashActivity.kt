@@ -1,9 +1,9 @@
-package org.mosad.teapod.activity
+package org.mosad.teapod.ui.activity
 
 import android.content.Intent
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
-import org.mosad.teapod.activity.main.MainActivity
+import org.mosad.teapod.ui.activity.main.MainActivity
 
 
 class SplashActivity : AppCompatActivity() {

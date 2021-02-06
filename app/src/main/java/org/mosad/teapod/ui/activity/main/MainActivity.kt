@@ -20,7 +20,7 @@
  *
  */
 
-package org.mosad.teapod.activity.main
+package org.mosad.teapod.ui.activity.main
 
 import android.content.Intent
 import android.os.Bundle
@@ -37,20 +37,19 @@ import kotlinx.coroutines.runBlocking
 import org.mosad.teapod.R
 import org.mosad.teapod.databinding.ActivityMainBinding
 import org.mosad.teapod.parser.AoDParser
-import org.mosad.teapod.activity.player.PlayerActivity
+import org.mosad.teapod.ui.activity.player.PlayerActivity
 import org.mosad.teapod.preferences.EncryptedPreferences
 import org.mosad.teapod.preferences.Preferences
 import org.mosad.teapod.ui.components.LoginDialog
-import org.mosad.teapod.activity.main.fragments.AccountFragment
-import org.mosad.teapod.activity.main.fragments.HomeFragment
-import org.mosad.teapod.activity.main.fragments.LibraryFragment
-import org.mosad.teapod.activity.main.fragments.SearchFragment
-import org.mosad.teapod.activity.onboarding.OnboardingActivity
+import org.mosad.teapod.ui.activity.main.fragments.AccountFragment
+import org.mosad.teapod.ui.activity.main.fragments.HomeFragment
+import org.mosad.teapod.ui.activity.main.fragments.LibraryFragment
+import org.mosad.teapod.ui.activity.main.fragments.SearchFragment
+import org.mosad.teapod.ui.activity.onboarding.OnboardingActivity
 import org.mosad.teapod.util.DataTypes
 import org.mosad.teapod.util.StorageController
 import org.mosad.teapod.util.exitAndRemoveTask
 import java.net.SocketTimeoutException
-import kotlin.system.exitProcess
 import kotlin.system.measureTimeMillis
 
 class MainActivity : AppCompatActivity(), BottomNavigationView.OnNavigationItemSelectedListener {
@@ -60,6 +59,11 @@ class MainActivity : AppCompatActivity(), BottomNavigationView.OnNavigationItemS
 
     companion object {
         var wasInitialized = false
+        lateinit var instance: MainActivity
+    }
+
+    init {
+        instance = this
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {

@@ -5,7 +5,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="?themePrimary"
-    tools:context=".activity.main.fragments.SearchFragment">
+    tools:context=".ui.activity.main.fragments.SearchFragment">
 
     <SearchView
         android:id="@+id/search_text"

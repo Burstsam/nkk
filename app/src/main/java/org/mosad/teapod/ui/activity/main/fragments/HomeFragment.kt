@@ -1,4 +1,4 @@
-package org.mosad.teapod.activity.main.fragments
+package org.mosad.teapod.ui.activity.main.fragments
 
 import android.os.Bundle
 import android.util.Log
@@ -11,7 +11,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import org.mosad.teapod.R
-import org.mosad.teapod.activity.main.MainActivity
+import org.mosad.teapod.ui.activity.main.MainActivity
 import org.mosad.teapod.databinding.FragmentHomeBinding
 import org.mosad.teapod.parser.AoDParser
 import org.mosad.teapod.util.ItemMedia

@@ -1,4 +1,4 @@
-package org.mosad.teapod.activity.main.fragments
+package org.mosad.teapod.ui.activity.main.fragments
 
 import android.os.Bundle
 import android.view.LayoutInflater
@@ -7,7 +7,6 @@ import android.view.ViewGroup
 import android.widget.SearchView
 import androidx.fragment.app.Fragment
 import kotlinx.coroutines.*
-import org.mosad.teapod.activity.main.MainActivity
 import org.mosad.teapod.databinding.FragmentSearchBinding
 import org.mosad.teapod.parser.AoDParser
 import org.mosad.teapod.util.decoration.MediaItemDecoration

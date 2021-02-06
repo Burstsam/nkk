@@ -27,6 +27,7 @@
         <item quantity="one">%d Minute</item>
         <item quantity="other">%d Minuten</item>
     </plurals>
+    <string name="similar_titles">Ähnliche Titel</string>
     <string name="component_episode_title">Flg. %1$d %2$s</string>
     <string name="component_episode_title_sub">Flg. %1$d %2$s (OmU)</string>
 

@@ -5,7 +5,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="?themePrimary"
-    tools:context=".activity.main.fragments.MediaFragment">
+    tools:context=".ui.activity.main.fragments.MediaFragment">
 
     <androidx.core.widget.NestedScrollView
         android:layout_width="match_parent"
@@ -148,17 +148,24 @@
                 </LinearLayout>
             </LinearLayout>
 
-            <androidx.recyclerview.widget.RecyclerView
-                android:id="@+id/recycler_episodes"
+            <com.google.android.material.tabs.TabLayout
+                android:id="@+id/tab_episodes_similar"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                android:background="@android:color/transparent"
                 android:layout_marginStart="7dp"
-                android:layout_marginTop="17dp"
+                android:layout_marginTop="12dp"
                 android:layout_marginEnd="7dp"
-                android:nestedScrollingEnabled="false"
-                app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
-                tools:layout_editor_absoluteY="298dp"
-                tools:listitem="@layout/item_episode" />
+                app:tabMode="scrollable"
+                app:tabGravity="start"
+                app:tabSelectedTextColor="?textPrimary"
+                app:tabTextColor="?textSecondary" />
+
+            <androidx.viewpager2.widget.ViewPager2
+                android:id="@+id/pager_episodes_similar"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content" />
+
         </LinearLayout>
     </androidx.core.widget.NestedScrollView>
 

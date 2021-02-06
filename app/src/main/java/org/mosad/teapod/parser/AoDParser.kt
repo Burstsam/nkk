@@ -41,7 +41,7 @@ object AoDParser {
     private const val loginPath = "/users/sign_in"
     private const val libraryPath = "/animes"
 
-    private const val userAgent = "Mozilla/5.0 (X11; Linux x86_64; rv:80.0) Gecko/20100101 Firefox/80.0"
+    private const val userAgent = "Mozilla/5.0 (X11; Linux x86_64; rv:84.0) Gecko/20100101 Firefox/84.0"
 
     private var sessionCookies = mutableMapOf<String, String>()
     private var csrfToken: String = ""
@@ -323,7 +323,7 @@ object AoDParser {
         }
         Log.i(javaClass.name, "Loaded playlists successfully")
 
-        // parse additional info from the media page
+        // additional info from the media page
         res.select("table.vertical-table").select("tr").forEach { row ->
             when (row.select("th").text().toLowerCase(Locale.ROOT)) {
                 "produktionsjahr" -> media.info.year = row.select("td").text().toInt()
@@ -337,7 +337,21 @@ object AoDParser {
             }
         }
 
-        // parse additional information for tv shows the episode title (description) is loaded from the "api"
+        // similar titles from media page
+        media.info.similar = res.select("h2:contains(Ähnliche Animes)").next().select("li").mapNotNull {
+            val mediaId = it.select("a.thumbs").attr("href")
+                .substringAfterLast("/").toIntOrNull()
+            val mediaImage = it.select("a.thumbs > img").attr("src")
+            val mediaTitle = it.select("a").text()
+
+            if (mediaId != null) {
+                ItemMedia(mediaId, mediaTitle, mediaImage)
+            } else {
+                null
+            }
+        }
+
+        // additional information for tv shows the episode title (description) is loaded from the "api"
         if (media.type == MediaType.TVSHOW) {
             res.select("div.three-box-container > div.episodebox").forEach { episodebox ->
                 // make sure the episode has a streaming link

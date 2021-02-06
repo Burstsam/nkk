@@ -1,4 +1,4 @@
-package org.mosad.teapod.activity.player
+package org.mosad.teapod.ui.activity.player
 
 import android.app.Application
 import android.net.Uri

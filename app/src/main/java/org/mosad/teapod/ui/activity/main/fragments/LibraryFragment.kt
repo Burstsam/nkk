@@ -1,4 +1,4 @@
-package org.mosad.teapod.activity.main.fragments
+package org.mosad.teapod.ui.activity.main.fragments
 
 import android.os.Bundle
 import android.view.LayoutInflater
@@ -9,7 +9,6 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import org.mosad.teapod.activity.main.MainActivity
 import org.mosad.teapod.databinding.FragmentLibraryBinding
 import org.mosad.teapod.parser.AoDParser
 import org.mosad.teapod.util.adapter.MediaItemAdapter
