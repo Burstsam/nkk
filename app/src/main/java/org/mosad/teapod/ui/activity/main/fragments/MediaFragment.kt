@@ -17,9 +17,9 @@ import com.google.android.material.tabs.TabLayoutMediator
 import jp.wasabeef.glide.transformations.BlurTransformation
 import kotlinx.coroutines.*
 import org.mosad.teapod.R
+import org.mosad.teapod.databinding.FragmentMediaBinding
 import org.mosad.teapod.ui.activity.main.MainActivity
 import org.mosad.teapod.ui.activity.main.viewmodel.MediaFragmentViewModel
-import org.mosad.teapod.databinding.FragmentMediaBinding
 import org.mosad.teapod.util.*
 import org.mosad.teapod.util.DataTypes.MediaType
 
@@ -48,6 +48,8 @@ class MediaFragment(private val mediaId: Int) : Fragment() {
 
         // tab layout and pager TODO
         pagerAdapter = ScreenSlidePagerAdapter(requireActivity())
+        // fix material components issue #1878, if more tabs are added increase
+        binding.pagerEpisodesSimilar.offscreenPageLimit = 2
         binding.pagerEpisodesSimilar.adapter = pagerAdapter
         TabLayoutMediator(binding.tabEpisodesSimilar, binding.pagerEpisodesSimilar) { tab, position ->
             tab.text = if (model.media.type == MediaType.TVSHOW && position == 0) {
