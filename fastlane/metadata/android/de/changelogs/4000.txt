@@ -1,0 +1,6 @@
+* Der Player unterstützt nun den Picture in Picture Modus (#24)
+* Ähnliche Titel werden im Media Fragment angezeigt (#28)
+* Verbessertes Onboarding bei der ersten Nutzung der App (#14)
+* Top Ten Animes auf AoD zur Startseite hinzugefügt
+* Die App stürzt nicht mehr ab, wenn der Login zu lange dauert (#25)
+* Es werden nun alle Episoden angezeigt, auch einzelne (#26)
