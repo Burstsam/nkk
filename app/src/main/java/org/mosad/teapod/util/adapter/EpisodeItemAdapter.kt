@@ -55,7 +55,8 @@ class EpisodeItemAdapter(private val episodes: List<Episode>) : RecyclerView.Ada
     }
 
     fun updateWatchedState(watched: Boolean, position: Int) {
-        episodes[position].watched = watched
+        // use getOrNull as there could be a index out of bound when running this in onResume()
+        episodes.getOrNull(position)?.watched = watched
     }
 
     inner class EpisodeViewHolder(val binding: ItemEpisodeBinding) : RecyclerView.ViewHolder(binding.root) {
