@@ -13,6 +13,7 @@ import androidx.fragment.app.activityViewModels
 import androidx.viewpager2.adapter.FragmentStateAdapter
 import com.bumptech.glide.Glide
 import com.bumptech.glide.request.RequestOptions
+import com.google.android.material.appbar.AppBarLayout
 import com.google.android.material.tabs.TabLayoutMediator
 import jp.wasabeef.glide.transformations.BlurTransformation
 import kotlinx.coroutines.*
@@ -22,6 +23,7 @@ import org.mosad.teapod.ui.activity.main.MainActivity
 import org.mosad.teapod.ui.activity.main.viewmodel.MediaFragmentViewModel
 import org.mosad.teapod.util.*
 import org.mosad.teapod.util.DataTypes.MediaType
+
 
 /**
  * The media detail fragment.
@@ -145,6 +147,12 @@ class MediaFragment(private val mediaId: Int) : Fragment() {
         if (media.info.similar.isNotEmpty()) {
             fragments.add(MediaFragmentSimilar())
             pagerAdapter.notifyDataSetChanged()
+        }
+
+        // disable scrolling on appbar, if no tabs where added
+        if(fragments.isEmpty()) {
+            val params = binding.linearMedia.layoutParams as AppBarLayout.LayoutParams
+            params.scrollFlags = 0 // clear all scroll flags
         }
 
         binding.frameLoading.visibility = View.GONE // hide loading indicator
