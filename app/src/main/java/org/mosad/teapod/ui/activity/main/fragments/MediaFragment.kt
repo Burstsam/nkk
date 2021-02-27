@@ -74,8 +74,10 @@ class MediaFragment(private val mediaId: Int) : Fragment() {
     override fun onResume() {
         super.onResume()
 
-        // update the next ep text, since it may have changed
-        binding.textTitle.text = model.nextEpisode.title
+        // update the next ep text if there is one, since it may have changed
+        if (model.nextEpisode.title.isNotEmpty()) {
+            binding.textTitle.text = model.nextEpisode.title
+        }
     }
 
     /**
