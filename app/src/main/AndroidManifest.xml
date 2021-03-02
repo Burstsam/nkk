@@ -37,7 +37,7 @@
         <activity
             android:name="org.mosad.teapod.ui.activity.player.PlayerActivity"
             android:configChanges="orientation|screenSize|smallestScreenSize|screenLayout|layoutDirection"
-            android:excludeFromRecents="true"
+            android:autoRemoveFromRecents="true"
             android:label="@string/app_name"
             android:launchMode="singleTask"
             android:parentActivityName="org.mosad.teapod.ui.activity.main.MainActivity"
