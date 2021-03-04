@@ -127,6 +127,8 @@ class PlayerActivity : AppCompatActivity() {
 
         // if the player was in pip, it's on a different task
         if (wasInPiP) { navToLauncherTask() }
+        // if the player is in pip, remove the task, else we'll get a zombie
+        if (isInPiPMode()) { finishAndRemoveTask() }
     }
 
     override fun onSaveInstanceState(outState: Bundle) {
@@ -184,9 +186,7 @@ class PlayerActivity : AppCompatActivity() {
         super.onPictureInPictureModeChanged(isInPictureInPictureMode, newConfig)
 
         // Hide the full-screen UI (controls, etc.) while in picture-in-picture mode.
-        if (isInPictureInPictureMode) {
-            controller.hideImmediately()
-        }
+        video_view.useController = !isInPictureInPictureMode
     }
 
     private fun initPlayer() {
@@ -199,8 +199,8 @@ class PlayerActivity : AppCompatActivity() {
         initTimeUpdates()
 
         // if the player is ready or buffering we can simply play the file again, else do nothing
-        if ((model.player.playbackState == ExoPlayer.STATE_READY || model.player.playbackState == ExoPlayer.STATE_BUFFERING)
-        ) {
+        val playbackState = model.player.playbackState
+        if ((playbackState == ExoPlayer.STATE_READY || playbackState == ExoPlayer.STATE_BUFFERING)) {
             model.player.play()
         }
     }
