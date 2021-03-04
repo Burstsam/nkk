@@ -1,13 +1,21 @@
-package org.mosad.teapod.player
+package org.mosad.teapod.ui.activity.player
 
 import android.animation.Animator
 import android.animation.AnimatorListenerAdapter
 import android.annotation.SuppressLint
+import android.app.PictureInPictureParams
+import android.content.Intent
+import android.content.pm.PackageManager
+import android.content.res.Configuration
 import android.os.Build
 import android.os.Bundle
 import android.util.Log
-import android.view.*
+import android.util.Rational
+import android.view.GestureDetector
+import android.view.MotionEvent
+import android.view.View
 import androidx.activity.viewModels
+import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.GestureDetectorCompat
 import androidx.core.view.isVisible
@@ -26,6 +34,9 @@ import org.mosad.teapod.preferences.Preferences
 import org.mosad.teapod.ui.components.EpisodesListPlayer
 import org.mosad.teapod.ui.components.LanguageSettingsPlayer
 import org.mosad.teapod.util.DataTypes
+import org.mosad.teapod.util.hideBars
+import org.mosad.teapod.util.isInPiPMode
+import org.mosad.teapod.util.navToLauncherTask
 import java.util.*
 import java.util.concurrent.TimeUnit
 import kotlin.concurrent.scheduleAtFixedRate
@@ -38,6 +49,7 @@ class PlayerActivity : AppCompatActivity() {
     private lateinit var gestureDetector: GestureDetectorCompat
     private lateinit var timerUpdates: TimerTask
 
+    private var wasInPiP = false
     private var playWhenReady = true
     private var currentWindow = 0
     private var playbackPosition: Long = 0
@@ -73,6 +85,11 @@ class PlayerActivity : AppCompatActivity() {
         initActions()
     }
 
+    /**
+     * once minimum is android 7.0 this can be simplified
+     * only onStart and onStop should be needed then
+     * see: https://developer.android.com/guide/topics/ui/picture-in-picture#continuing_playback
+     */
     override fun onStart() {
         super.onStart()
         if (Util.SDK_INT > 23) {
@@ -83,6 +100,8 @@ class PlayerActivity : AppCompatActivity() {
 
     override fun onResume() {
         super.onResume()
+        if (isInPiPMode()) { return }
+
         if (Util.SDK_INT <= 23) {
             initPlayer()
             video_view?.onResume()
@@ -91,6 +110,8 @@ class PlayerActivity : AppCompatActivity() {
 
     override fun onPause() {
         super.onPause()
+        if (isInPiPMode()) { return }
+
         if (Util.SDK_INT <= 23) {
             video_view?.onPause()
             releasePlayer()
@@ -103,6 +124,11 @@ class PlayerActivity : AppCompatActivity() {
             video_view?.onPause()
             releasePlayer()
         }
+
+        // if the player was in pip, it's on a different task
+        if (wasInPiP) { navToLauncherTask() }
+        // if the player is in pip, remove the task, else we'll get a zombie
+        if (isInPiPMode()) { finishAndRemoveTask() }
     }
 
     override fun onSaveInstanceState(outState: Bundle) {
@@ -110,6 +136,57 @@ class PlayerActivity : AppCompatActivity() {
         outState.putLong(getString(R.string.state_resume_position), playbackPosition)
         outState.putBoolean(getString(R.string.state_is_playing), playWhenReady)
         super.onSaveInstanceState(outState)
+    }
+
+    /**
+     * used, when the player is in pip and the user selects a new media
+     */
+    override fun onNewIntent(intent: Intent?) {
+        super.onNewIntent(intent)
+
+        // when the intent changed, lead the new media and play it
+        intent?.let {
+            model.loadMedia(
+                it.getIntExtra(getString(R.string.intent_media_id), 0),
+                it.getIntExtra(getString(R.string.intent_episode_id), 0)
+            )
+            model.playEpisode(model.currentEpisode, replace = true)
+        }
+    }
+
+    /**
+     * previous to android n, don't override
+     */
+    @RequiresApi(Build.VERSION_CODES.N)
+    override fun onUserLeaveHint() {
+        super.onUserLeaveHint()
+
+        // start pip mode, if supported
+        if (packageManager.hasSystemFeature(PackageManager.FEATURE_PICTURE_IN_PICTURE)) {
+            if (Build.VERSION.SDK_INT < Build.VERSION_CODES.O) {
+                @Suppress("deprecation")
+                enterPictureInPictureMode()
+            } else {
+                val width = model.player.videoFormat?.width ?: 0
+                val height = model.player.videoFormat?.height ?: 0
+                val params = PictureInPictureParams.Builder()
+                    .setAspectRatio(Rational(width, height))
+                    .build()
+                enterPictureInPictureMode(params)
+            }
+
+            wasInPiP = isInPiPMode()
+        }
+    }
+
+    override fun onPictureInPictureModeChanged(
+        isInPictureInPictureMode: Boolean,
+        newConfig: Configuration?
+    ) {
+        super.onPictureInPictureModeChanged(isInPictureInPictureMode, newConfig)
+
+        // Hide the full-screen UI (controls, etc.) while in picture-in-picture mode.
+        video_view.useController = !isInPictureInPictureMode
     }
 
     private fun initPlayer() {
@@ -122,8 +199,8 @@ class PlayerActivity : AppCompatActivity() {
         initTimeUpdates()
 
         // if the player is ready or buffering we can simply play the file again, else do nothing
-        if ((model.player.playbackState == ExoPlayer.STATE_READY || model.player.playbackState == ExoPlayer.STATE_BUFFERING)
-        ) {
+        val playbackState = model.player.playbackState
+        if ((playbackState == ExoPlayer.STATE_READY || playbackState == ExoPlayer.STATE_BUFFERING)) {
             model.player.play()
         }
     }
@@ -178,7 +255,9 @@ class PlayerActivity : AppCompatActivity() {
     }
 
     private fun initActions() {
-        exo_close_player.setOnClickListener { this.finish() }
+        exo_close_player.setOnClickListener {
+            this.finish()
+        }
         rwd_10.setOnButtonClickListener { rewind() }
         ffwd_10.setOnButtonClickListener { fastForward() }
         button_next_ep.setOnClickListener { playNextEpisode() }
@@ -213,8 +292,8 @@ class PlayerActivity : AppCompatActivity() {
                 }
 
                 if (remainingTime in 1..20000) {
-                    // if the next ep button is not visible, make it visible
-                    if (!btnNextEpIsVisible && model.nextEpisode != null && Preferences.autoplay) {
+                    // if the next ep button is not visible, make it visible. Don't show in pip mode
+                    if (!btnNextEpIsVisible && model.nextEpisode != null && Preferences.autoplay && !isInPiPMode()) {
                         withContext(Dispatchers.Main) { showButtonNextEp() }
                     }
                 } else if (btnNextEpIsVisible) {
@@ -229,7 +308,7 @@ class PlayerActivity : AppCompatActivity() {
         }
     }
 
-    private fun releasePlayer(){
+    private fun releasePlayer() {
         playbackPosition = model.player.currentPosition
         currentWindow = model.player.currentWindowIndex
         playWhenReady = model.player.playWhenReady
@@ -260,7 +339,15 @@ class PlayerActivity : AppCompatActivity() {
     private fun onMediaChanged() {
         exo_text_title.text = model.getMediaTitle()
 
+        // hide the next ep button, if there is none
         button_next_ep_c.visibility = if (model.nextEpisode == null) {
+            View.GONE
+        } else {
+            View.VISIBLE
+        }
+
+        // hide the episodes button, if the media type changed
+        button_episodes.visibility = if (model.media.type == DataTypes.MediaType.MOVIE) {
             View.GONE
         } else {
             View.VISIBLE
@@ -310,27 +397,6 @@ class PlayerActivity : AppCompatActivity() {
     private fun playNextEpisode() {
         model.playNextEpisode()
         hideButtonNextEp()
-    }
-
-    /**
-     * hide the status and navigation bar
-     */
-    private fun hideBars() {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
-            window.setDecorFitsSystemWindows(false)
-            window.insetsController?.apply {
-                hide(WindowInsets.Type.statusBars() or WindowInsets.Type.navigationBars())
-                systemBarsBehavior = WindowInsetsController.BEHAVIOR_SHOW_BARS_BY_SWIPE
-            }
-        } else {
-            @Suppress("deprecation")
-            window.decorView.systemUiVisibility = (View.SYSTEM_UI_FLAG_IMMERSIVE
-                    or View.SYSTEM_UI_FLAG_LAYOUT_STABLE
-                    or View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
-                    or View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
-                    or View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
-                    or View.SYSTEM_UI_FLAG_FULLSCREEN)
-        }
     }
 
     /**
@@ -393,7 +459,10 @@ class PlayerActivity : AppCompatActivity() {
          * on single tap hide or show the controls
          */
         override fun onSingleTapConfirmed(e: MotionEvent?): Boolean {
-            if (controller.isVisible) controller.hide() else  controller.show()
+            if (!isInPiPMode()) {
+                if (controller.isVisible) controller.hide() else  controller.show()
+            }
+
             return true
         }
 

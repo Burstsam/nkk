@@ -1,4 +1,4 @@
-package org.mosad.teapod.ui.fragments
+package org.mosad.teapod.ui.activity.main.fragments
 
 import android.os.Bundle
 import android.view.LayoutInflater
@@ -9,11 +9,11 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import org.mosad.teapod.MainActivity
 import org.mosad.teapod.databinding.FragmentLibraryBinding
 import org.mosad.teapod.parser.AoDParser
 import org.mosad.teapod.util.adapter.MediaItemAdapter
 import org.mosad.teapod.util.decoration.MediaItemDecoration
+import org.mosad.teapod.util.showFragment
 
 class LibraryFragment : Fragment() {
 
@@ -35,7 +35,7 @@ class LibraryFragment : Fragment() {
                 context?.let {
                     adapter = MediaItemAdapter(AoDParser.itemMediaList)
                     adapter.onItemClick = { mediaId, _ ->
-                        (activity as MainActivity).showFragment(MediaFragment(mediaId))
+                        activity?.showFragment(MediaFragment(mediaId))
                     }
 
                     binding.recyclerMediaLibrary.adapter = adapter

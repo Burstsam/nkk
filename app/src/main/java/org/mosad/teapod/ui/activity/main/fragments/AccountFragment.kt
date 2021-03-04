@@ -1,4 +1,4 @@
-package org.mosad.teapod.ui.fragments
+package org.mosad.teapod.ui.activity.main.fragments
 
 import android.os.Bundle
 import android.util.Log
@@ -9,7 +9,7 @@ import androidx.fragment.app.Fragment
 import com.afollestad.materialdialogs.MaterialDialog
 import com.afollestad.materialdialogs.list.listItemsSingleChoice
 import org.mosad.teapod.BuildConfig
-import org.mosad.teapod.MainActivity
+import org.mosad.teapod.ui.activity.main.MainActivity
 import org.mosad.teapod.R
 import org.mosad.teapod.databinding.FragmentAccountBinding
 import org.mosad.teapod.parser.AoDParser
@@ -17,6 +17,7 @@ import org.mosad.teapod.preferences.EncryptedPreferences
 import org.mosad.teapod.preferences.Preferences
 import org.mosad.teapod.ui.components.LoginDialog
 import org.mosad.teapod.util.DataTypes.Theme
+import org.mosad.teapod.util.showFragment
 
 class AccountFragment : Fragment() {
 
@@ -53,7 +54,7 @@ class AccountFragment : Fragment() {
         }
 
         binding.linearInfo.setOnClickListener {
-            (activity as MainActivity).showFragment(AboutFragment())
+            activity?.showFragment(AboutFragment())
         }
 
         binding.switchSecondary.setOnClickListener {

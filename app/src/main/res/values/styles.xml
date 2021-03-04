@@ -19,6 +19,9 @@
         <item name="buttonBackground">@color/buttonBackgroundLight</item>
         <item name="md_background_color">@color/themeSecondaryLight</item>
         <item name="md_color_content">@color/textSecondaryLight</item>
+
+        <!-- without this, the unchecked single choice buttons while be white -->
+        <item name="md_color_widget_unchecked">@color/textSecondaryLight</item>
     </style>
 
     <style name="AppTheme.Dark" parent="AppTheme">
@@ -39,10 +42,6 @@
         <item name="md_color_widget_unchecked">@color/textSecondaryDark</item>
         <!-- change on click indicator color for manually set components -->
         <item name="colorControlHighlight">@color/controlHighlightDark</item>
-    </style>
-
-    <style name="LicensesDialogTheme.Dark" parent="Theme.AppCompat.Dialog">
-        <item name="android:windowBackground">@color/themeSecondaryDark</item>
     </style>
 
     <!-- player theme -->

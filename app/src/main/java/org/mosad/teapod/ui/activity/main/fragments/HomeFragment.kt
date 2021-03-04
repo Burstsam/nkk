@@ -1,27 +1,25 @@
-package org.mosad.teapod.ui.fragments
+package org.mosad.teapod.ui.activity.main.fragments
 
-import android.graphics.drawable.Drawable
 import android.os.Bundle
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.TextView
 import androidx.fragment.app.Fragment
 import com.bumptech.glide.Glide
-import com.bumptech.glide.request.target.CustomTarget
-import com.bumptech.glide.request.transition.Transition
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
-import org.mosad.teapod.MainActivity
 import org.mosad.teapod.R
+import org.mosad.teapod.ui.activity.main.MainActivity
 import org.mosad.teapod.databinding.FragmentHomeBinding
 import org.mosad.teapod.parser.AoDParser
 import org.mosad.teapod.util.ItemMedia
 import org.mosad.teapod.util.StorageController
 import org.mosad.teapod.util.adapter.MediaItemAdapter
 import org.mosad.teapod.util.decoration.MediaItemDecoration
+import org.mosad.teapod.util.setDrawableTop
+import org.mosad.teapod.util.showFragment
 
 class HomeFragment : Fragment() {
 
@@ -30,6 +28,7 @@ class HomeFragment : Fragment() {
     private lateinit var adapterNewEpisodes: MediaItemAdapter
     private lateinit var adapterNewSimulcasts: MediaItemAdapter
     private lateinit var adapterNewTitles: MediaItemAdapter
+    private lateinit var adapterTopTen: MediaItemAdapter
 
     private lateinit var highlightMedia: ItemMedia
 
@@ -59,9 +58,9 @@ class HomeFragment : Fragment() {
                 .into(binding.imageHighlight)
 
             if (StorageController.myList.contains(highlightMedia.id)) {
-                loadIntoCompoundDrawable(R.drawable.ic_baseline_check_24, binding.textHighlightMyList)
+                binding.textHighlightMyList.setDrawableTop(R.drawable.ic_baseline_check_24)
             } else {
-                loadIntoCompoundDrawable(R.drawable.ic_baseline_add_24, binding.textHighlightMyList)
+                binding.textHighlightMyList.setDrawableTop(R.drawable.ic_baseline_add_24)
             }
         }
     }
@@ -71,6 +70,7 @@ class HomeFragment : Fragment() {
         binding.recyclerNewEpisodes.addItemDecoration(MediaItemDecoration(9))
         binding.recyclerNewSimulcasts.addItemDecoration(MediaItemDecoration(9))
         binding.recyclerNewTitles.addItemDecoration(MediaItemDecoration(9))
+        binding.recyclerTopTen.addItemDecoration(MediaItemDecoration(9))
 
         // my list
         val myListMedia = StorageController.myList.map { elementId ->
@@ -79,9 +79,6 @@ class HomeFragment : Fragment() {
             }
         }
         adapterMyList = MediaItemAdapter(myListMedia)
-        adapterMyList.onItemClick = { mediaId, _ ->
-            (activity as MainActivity).showFragment(MediaFragment(mediaId))
-        }
         binding.recyclerMyList.adapter = adapterMyList
 
         // new episodes
@@ -95,6 +92,10 @@ class HomeFragment : Fragment() {
         // new titles
         adapterNewTitles = MediaItemAdapter(AoDParser.newTitlesList)
         binding.recyclerNewTitles.adapter = adapterNewTitles
+
+        // top ten
+        adapterTopTen = MediaItemAdapter(AoDParser.topTenList)
+        binding.recyclerTopTen.adapter = adapterTopTen
     }
 
     private fun initActions() {
@@ -111,10 +112,10 @@ class HomeFragment : Fragment() {
         binding.textHighlightMyList.setOnClickListener {
             if (StorageController.myList.contains(highlightMedia.id)) {
                 StorageController.myList.remove(highlightMedia.id)
-                loadIntoCompoundDrawable(R.drawable.ic_baseline_add_24, binding.textHighlightMyList)
+                binding.textHighlightMyList.setDrawableTop(R.drawable.ic_baseline_add_24)
             } else {
                 StorageController.myList.add(highlightMedia.id)
-                loadIntoCompoundDrawable(R.drawable.ic_baseline_check_24, binding.textHighlightMyList)
+                binding.textHighlightMyList.setDrawableTop(R.drawable.ic_baseline_check_24)
             }
             StorageController.saveMyList(requireContext())
 
@@ -122,19 +123,27 @@ class HomeFragment : Fragment() {
         }
 
         binding.textHighlightInfo.setOnClickListener {
-            (activity as MainActivity).showFragment(MediaFragment(highlightMedia.id))
+            activity?.showFragment(MediaFragment(highlightMedia.id))
+        }
+
+        adapterMyList.onItemClick = { mediaId, _ ->
+            activity?.showFragment(MediaFragment(mediaId))
         }
 
         adapterNewEpisodes.onItemClick = { mediaId, _ ->
-            (activity as MainActivity).showFragment(MediaFragment(mediaId))
+            activity?.showFragment(MediaFragment(mediaId))
         }
 
         adapterNewSimulcasts.onItemClick = { mediaId, _ ->
-            (activity as MainActivity).showFragment(MediaFragment(mediaId))
+            activity?.showFragment(MediaFragment(mediaId))
         }
 
         adapterNewTitles.onItemClick = { mediaId, _ ->
-            (activity as MainActivity).showFragment(MediaFragment(mediaId))
+            activity?.showFragment(MediaFragment(mediaId))
+        }
+
+        adapterTopTen.onItemClick = { mediaId, _ ->
+            activity?.showFragment(MediaFragment(mediaId))
         }
     }
 
@@ -155,18 +164,4 @@ class HomeFragment : Fragment() {
         adapterMyList.notifyDataSetChanged()
     }
 
-    private fun loadIntoCompoundDrawable(drawable: Int, textView: TextView) {
-        Glide.with(requireContext())
-            .load(drawable)
-            .into(object : CustomTarget<Drawable>(48, 48) {
-                override fun onLoadCleared(drawable: Drawable?) {
-                    textView.setCompoundDrawablesWithIntrinsicBounds(null, drawable, null, null)
-                }
-
-                override fun onResourceReady(res: Drawable, transition: Transition<in Drawable>?) {
-                    textView.setCompoundDrawablesWithIntrinsicBounds(null, res, null, null)
-                }
-
-            })
-    }
 }

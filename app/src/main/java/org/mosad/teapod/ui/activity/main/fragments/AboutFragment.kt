@@ -1,5 +1,7 @@
-package org.mosad.teapod.ui.fragments
+package org.mosad.teapod.ui.activity.main.fragments
 
+import android.content.Intent
+import android.net.Uri
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -17,6 +19,7 @@ import java.lang.StringBuilder
 
 class AboutFragment : Fragment() {
 
+    private val teapodRepoUrl = "https://git.mosad.xyz/Seil0/teapod"
     private lateinit var binding: FragmentAboutBinding
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
@@ -27,7 +30,7 @@ class AboutFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        binding.textVersion.text = getString(R.string.info_about_desc, BuildConfig.VERSION_NAME, getString(R.string.build_time))
+        binding.textVersionDesc.text = getString(R.string.version_desc, BuildConfig.VERSION_NAME, getString(R.string.build_time))
 
         getThirdPartyComponents().forEach { thirdParty ->
             val componentBinding = ItemComponentBinding.inflate(layoutInflater) //(R.layout.item_component, container, false)
@@ -44,10 +47,25 @@ class AboutFragment : Fragment() {
 
             binding.linearThirdParty.addView(componentBinding.root)
         }
+
+        initActions()
+    }
+
+    private fun initActions() {
+        binding.linearSource.setOnClickListener {
+            startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(teapodRepoUrl)))
+        }
+
+        binding.linearLicense.setOnClickListener {
+            MaterialDialog(requireContext())
+                .title(text = License.GPL3.long)
+                .message(text = parseLicense(R.raw.gpl_3_full))
+                .show()
+        }
     }
 
     private fun getThirdPartyComponents(): List<ThirdPartyComponent> {
-        return listOf<ThirdPartyComponent>(
+        return listOf(
             ThirdPartyComponent("AndroidX", "", "The Android Open Source Project",
                 "https://developer.android.com/jetpack/androidx", License.APACHE2),
             ThirdPartyComponent("Material Components for Android", "2020", "The Android Open Source Project",
@@ -79,13 +97,10 @@ class AboutFragment : Fragment() {
             License.MIT -> parseLicense(R.raw.mit_full)
         }
 
-        println("showing: ${license.long}")
-
         MaterialDialog(requireContext())
             .title(text = license.long)
             .message(text = licenseText)
             .show()
-
     }
 
     private fun parseLicense(@RawRes id: Int): String {

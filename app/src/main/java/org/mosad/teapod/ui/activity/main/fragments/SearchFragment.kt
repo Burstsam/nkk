@@ -1,4 +1,4 @@
-package org.mosad.teapod.ui.fragments
+package org.mosad.teapod.ui.activity.main.fragments
 
 import android.os.Bundle
 import android.view.LayoutInflater
@@ -7,11 +7,11 @@ import android.view.ViewGroup
 import android.widget.SearchView
 import androidx.fragment.app.Fragment
 import kotlinx.coroutines.*
-import org.mosad.teapod.MainActivity
 import org.mosad.teapod.databinding.FragmentSearchBinding
 import org.mosad.teapod.parser.AoDParser
 import org.mosad.teapod.util.decoration.MediaItemDecoration
 import org.mosad.teapod.util.adapter.MediaItemAdapter
+import org.mosad.teapod.util.showFragment
 
 class SearchFragment : Fragment() {
 
@@ -33,7 +33,7 @@ class SearchFragment : Fragment() {
                     adapter = MediaItemAdapter(AoDParser.itemMediaList)
                     adapter!!.onItemClick = { mediaId, _ ->
                         binding.searchText.clearFocus()
-                        (activity as MainActivity).showFragment(MediaFragment(mediaId))
+                        activity?.showFragment(MediaFragment(mediaId))
                     }
 
                     binding.recyclerMediaSearch.adapter = adapter

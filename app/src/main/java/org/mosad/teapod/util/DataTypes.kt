@@ -55,6 +55,7 @@ data class Media(
     fun getEpisodeById(id: Int) = episodes.first { it.id == id }
 }
 
+// TODO all val?
 data class Info(
     var title: String = "",
     var posterUrl: String = "",
@@ -62,7 +63,8 @@ data class Info(
     var description: String = "",
     var year: Int = 0,
     var age: Int = 0,
-    var episodesCount: Int = 0
+    var episodesCount: Int = 0,
+    var similar: List<ItemMedia> = listOf()
 )
 
 /**
@@ -96,6 +98,7 @@ data class Stream(
 
 /**
  * this class is used for tmdb responses
+ * TODO why is runtime var?
  */
 data class TMDBResponse(
     val id: Int = 0,

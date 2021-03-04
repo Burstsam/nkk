@@ -1,0 +1,6 @@
+* support for Picture in Picture mode was added to the player (#24)
+* show similar titles in the media fragment (#28)
+* improve the onboarding process for new users (#14)
+* add top ten animes on AoD to the home screen
+* the app doesn't crash anymore if the login times out (#25)
+* fix episodes not showing, if show has only one episode (#26)

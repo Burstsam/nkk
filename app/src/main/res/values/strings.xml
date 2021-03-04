@@ -11,10 +11,12 @@
     <string name="new_episodes">New episodes</string>
     <string name="new_simulcasts">New simulcasts</string>
     <string name="new_titles">New titles</string>
+    <string name="top_ten">Top 10</string>
 
     <!-- search fragment -->
     <string name="search_hint">Search for movies and series</string>
     <string name="media_poster_desc" translatable="false">poster</string>
+    <string name="media_poster_backdrop_desc" translatable="false">poster backdrop</string>
 
     <!-- media fragment -->
     <string name="button_play">Play</string>
@@ -22,8 +24,17 @@
     <string name="text_overview_ex" translatable="false">Shouya Ishida starts bullying the new girl in class …</string>
     <string name="text_year_ex" translatable="false">2016</string>
     <string name="text_age_ex" translatable="false">6</string>
-    <string name="text_episodes_count">%1$d episodes</string>
+    <string name="text_episodes_count" translatable="false">1$d episodes</string>
+    <plurals name="text_episodes_count">
+        <item quantity="one">%d episode</item>
+        <item quantity="other">%d episodes</item>
+    </plurals>
     <string name="text_runtime">%1$d Minutes</string>
+    <plurals name="text_runtime">
+        <item quantity="one">%d Minute</item>
+        <item quantity="other">%d Minutes</item>
+    </plurals>
+    <string name="similar_titles">Similar titles</string>
     <string name="component_episode_title">Ep. %1$d %2$s</string>
     <string name="component_episode_title_sub">Ep. %1$d %2$s (Sub)</string>
     <string name="component_poster_desc" translatable="false">episode poster</string>
@@ -46,14 +57,16 @@
     <string name="theme_dark">Dark</string>
 
     <!-- about fragment -->
-    <string name="about_info">
-        Teapod is an unofficial app for anime on demand.
-        It is published under the terms and conditions of the GNU GPL 3 or later.
-        \n\n
-        © 2020-2021 seil0@mosad.xyz
-    </string>
-    <string name="tmdb_notice" translatable="false">This product uses the TMDb API but is not endorsed or certified by TMDb.</string>
+    <string name="version">Version</string>
+    <string name="version_desc" translatable="false">%1$s (%2$s)</string>
+    <string name="authors">Author</string>
+    <string name="author_desc" translatable="false">seil0@mosad.xyz</string>
+    <string name="source">Source code</string>
     <string name="teapod_repo" translatable="false">git.mosad.xyz/Seil0/teapod</string>
+    <string name="license">License</string>
+    <string name="license_desc" translatable="false">GNU General Public License 3</string>
+    <string name="about_info">An unofficial app for anime on demand.</string>
+    <string name="tmdb_notice" translatable="false">This product uses the TMDb API but is not endorsed or certified by TMDb.</string>
     <string name="third_party_heading">Third Party Licenses</string>
     <string name="third_party_component_desc">© %1$s %2$s under %3$s</string>
 
@@ -71,14 +84,26 @@
     <string name="episodes">Episodes</string>
     <string name="episode">Episode</string>
 
+    <!-- Onboarding -->
+    <string name="skip">Skip</string>
+    <string name="next">Next</string>
+    <string name="start">Start</string>
+    <string name="on_welcome">Welcome!\nTeapod is an unofficial App for AoD.</string>
+    <string name="on_get_started">Get started</string>
+    <string name="on_login_heading">Login</string>
+    <string name="on_login_desc">To use Teapod you need to log in with your AoD account. Your Login-Data will be stored encrypted on your device.</string>
+    <string name="on_login_failed">Could not login! Make sure Username and Password are correct and try again.</string>
+
     <!-- dialogs -->
     <string name="save">save</string>
     <string name="cancel">@android:string/cancel</string>
+    <string name="dialog_timeout_head">Login failed</string>
+    <string name="dialog_timeout_desc">Looks like the server is taking to long to respond. Please try again later.</string>
 
     <!-- etc -->
     <string name="login">Login</string>
     <string name="login_desc">You need to login before you can use Teapod. The Login-Data will be stored encrypted on your device.</string>
-    <string name="login_failed_desc">Could not login. Please try again.</string>
+    <string name="login_failed_desc"> Please try again.</string>
     <string name="password">Password</string>
 
     <!-- save keys -->

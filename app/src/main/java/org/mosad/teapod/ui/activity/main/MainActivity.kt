@@ -20,7 +20,7 @@
  *
  */
 
-package org.mosad.teapod
+package org.mosad.teapod.ui.activity.main
 
 import android.content.Intent
 import android.os.Bundle
@@ -29,16 +29,27 @@ import android.view.MenuItem
 import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.commit
+import com.afollestad.materialdialogs.MaterialDialog
+import com.afollestad.materialdialogs.callbacks.onDismiss
 import com.google.android.material.bottomnavigation.BottomNavigationView
+import kotlinx.coroutines.joinAll
+import kotlinx.coroutines.runBlocking
+import org.mosad.teapod.R
 import org.mosad.teapod.databinding.ActivityMainBinding
 import org.mosad.teapod.parser.AoDParser
-import org.mosad.teapod.player.PlayerActivity
+import org.mosad.teapod.ui.activity.player.PlayerActivity
 import org.mosad.teapod.preferences.EncryptedPreferences
 import org.mosad.teapod.preferences.Preferences
 import org.mosad.teapod.ui.components.LoginDialog
-import org.mosad.teapod.ui.fragments.*
+import org.mosad.teapod.ui.activity.main.fragments.AccountFragment
+import org.mosad.teapod.ui.activity.main.fragments.HomeFragment
+import org.mosad.teapod.ui.activity.main.fragments.LibraryFragment
+import org.mosad.teapod.ui.activity.main.fragments.SearchFragment
+import org.mosad.teapod.ui.activity.onboarding.OnboardingActivity
 import org.mosad.teapod.util.DataTypes
 import org.mosad.teapod.util.StorageController
+import org.mosad.teapod.util.exitAndRemoveTask
+import java.net.SocketTimeoutException
 import kotlin.system.measureTimeMillis
 
 class MainActivity : AppCompatActivity(), BottomNavigationView.OnNavigationItemSelectedListener {
@@ -48,6 +59,11 @@ class MainActivity : AppCompatActivity(), BottomNavigationView.OnNavigationItemS
 
     companion object {
         var wasInitialized = false
+        lateinit var instance: MainActivity
+    }
+
+    init {
+        instance = this
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -111,39 +127,57 @@ class MainActivity : AppCompatActivity(), BottomNavigationView.OnNavigationItemS
 
     private fun getThemeResource(): Int {
         return when (Preferences.theme) {
-            DataTypes.Theme.DARK -> R.style.AppTheme_Dark
-            else -> R.style.AppTheme_Light
+            DataTypes.Theme.LIGHT -> R.style.AppTheme_Light
+            else -> R.style.AppTheme_Dark
         }
     }
 
+    /**
+     * initial loading and login are run in parallel, as initial loading doesn't require
+     * any login cookies
+     */
     private fun load() {
-        // running login and list in parallel does not bring any speed improvements
         val time = measureTimeMillis {
-            Preferences.load(this)
+            val loadingJob = AoDParser.initialLoading() // start the initial loading
 
-            // make sure credentials are set, run's async
+            // load all saved stuff here
+            Preferences.load(this)
             EncryptedPreferences.readCredentials(this)
+            StorageController.load(this)
+
+            // show onbaording
             if (EncryptedPreferences.password.isEmpty()) {
-                showLoginDialog(true)
+                showOnboarding()
             } else {
-                // try to login in, as most sites can only bee loaded once loged in
-                if (!AoDParser.login()) showLoginDialog(false)
+                try {
+                    if (!AoDParser.login()) {
+                        showLoginDialog()
+                    }
+                } catch (ex: SocketTimeoutException) {
+                    Log.w(javaClass.name, "Timeout during login!")
+
+                    // show waring dialog before finishing
+                    MaterialDialog(this).show {
+                        title(R.string.dialog_timeout_head)
+                        message(R.string.dialog_timeout_desc)
+                        onDismiss { exitAndRemoveTask() }
+                    }
+                }
             }
 
-            StorageController.load(this)
-            AoDParser.initialLoading()
-
-            wasInitialized = true
+            runBlocking { loadingJob.joinAll() } // wait for initial loading to finish
         }
-        Log.i(javaClass.name, "login and list in $time ms")
+        Log.i(javaClass.name, "loading and login in $time ms")
+
+        wasInitialized = true
     }
 
-    private fun showLoginDialog(firstTry: Boolean) {
-        LoginDialog(this, firstTry).positiveButton {
+    private fun showLoginDialog() {
+        LoginDialog(this, false).positiveButton {
             EncryptedPreferences.saveCredentials(login, password, context)
 
             if (!AoDParser.login()) {
-                showLoginDialog(false)
+                showLoginDialog()
                 Log.w(javaClass.name, "Login failed, please try again.")
             }
         }.negativeButton {
@@ -153,18 +187,16 @@ class MainActivity : AppCompatActivity(), BottomNavigationView.OnNavigationItemS
     }
 
     /**
-     * Show a fragment on top of the current fragment.
-     * The current fragment is replaced and the new one is added
-     * to the back stack.
+     * start the onboarding activity and finish the main activity
      */
-    fun showFragment(fragment: Fragment) {
-        supportFragmentManager.commit {
-            replace(R.id.nav_host_fragment, fragment, fragment.javaClass.simpleName)
-            addToBackStack(fragment.javaClass.name)
-            show(fragment)
-        }
+    private fun showOnboarding() {
+        startActivity(Intent(this, OnboardingActivity::class.java))
+        finish()
     }
 
+    /**
+     * start the player as new activity
+     */
     fun startPlayer(mediaId: Int, episodeId: Int) {
         val intent = Intent(this, PlayerActivity::class.java).apply {
             putExtra(getString(R.string.intent_media_id), mediaId)
@@ -182,6 +214,5 @@ class MainActivity : AppCompatActivity(), BottomNavigationView.OnNavigationItemS
         finish()
         startActivity(restartIntent)
     }
-
 
 }

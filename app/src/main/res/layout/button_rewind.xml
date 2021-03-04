@@ -10,7 +10,7 @@
         android:layout_height="48dp"
         android:layout_alignParentEnd="true"
         android:background="@drawable/ic_baseline_rewind_10_24"
-        android:contentDescription="@string/forward_10" />
+        android:contentDescription="@string/rewind_10" />
 
     <TextView
         android:id="@+id/textView"

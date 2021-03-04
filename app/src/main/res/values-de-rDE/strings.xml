@@ -11,14 +11,23 @@
     <string name="new_episodes">Neue Episoden</string>
     <string name="new_simulcasts">Neue Simulcasts</string>
     <string name="new_titles">Neue Titel</string>
+    <string name="top_ten">Top 10</string>
 
     <!-- search fragment -->
     <string name="search_hint">Suche nach Filmen und Serien</string>
 
     <!-- media fragment -->
     <string name="button_play">Abspielen</string>
-    <string name="text_episodes_count">%1$d Episoden</string>
+    <plurals name="text_episodes_count">
+        <item quantity="one">%d Episode</item>
+        <item quantity="other">%d Episoden</item>
+    </plurals>
     <string name="text_runtime">%1$d Minuten</string>
+    <plurals name="text_runtime">
+        <item quantity="one">%d Minute</item>
+        <item quantity="other">%d Minuten</item>
+    </plurals>
+    <string name="similar_titles">Ähnliche Titel</string>
     <string name="component_episode_title">Flg. %1$d %2$s</string>
     <string name="component_episode_title_sub">Flg. %1$d %2$s (OmU)</string>
 
@@ -37,12 +46,11 @@
     <string name="theme_dark">Dunkel</string>
 
     <!-- about fragment -->
-    <string name="about_info">
-        Teapod ist eine inoffizielle App für Anime on Demand.
-        Sie wird unter den Bedingungen der GNU GPL 3 oder höher zur Verfügung gestellt.
-        \n\n
-        © 2020-2021 seil0@mosad.xyz
-    </string>
+    <string name="version">Version</string>
+    <string name="authors">Autor</string>
+    <string name="source">Quellcode</string>
+    <string name="license">Lizenz</string>
+    <string name="about_info">Eine inoffizielle App für Anime on Demand.</string>
     <string name="third_party_heading">Lizenzen von Drittanbietern</string>
     <string name="third_party_component_desc">© %1$s %2$s unter %3$s</string>
 
@@ -56,9 +64,21 @@
     <string name="episodes">Folgen</string>
     <string name="episode">Folge</string>
 
+    <!-- Onboarding -->
+    <string name="skip">Überspringen</string>
+    <string name="next">Weiter</string>
+    <string name="start">Fertig</string>
+    <string name="on_welcome">Willkommen!\nTeapod ist eine inoffizielle App für AoD.</string>
+    <string name="on_get_started">Los geht\'s</string>
+    <string name="on_login_heading">Login</string>
+    <string name="on_login_desc">Um Teapod verwenden zu können musst du dich mit deinem AoD Account anmelden. Deine Login-Daten werden verschlüsselt auf deinem Gerät gespeichert.</string>
+    <string name="on_login_failed">Login nicht erfolgreich! Stelle sicher das deine Login-Daten korrekt sind und versuche es erneut.</string>
+
     <!-- dialogs -->
     <string name="save">speichern</string>
     <string name="cancel">@android:string/cancel</string>
+    <string name="dialog_timeout_head">Anmelden fehlgeschlagen</string>
+    <string name="dialog_timeout_desc">Der Server scheint langsam zu antworten. Bitte versuche es später noch einmal.</string>
 
     <!-- etc -->
     <string name="login">Login</string>
