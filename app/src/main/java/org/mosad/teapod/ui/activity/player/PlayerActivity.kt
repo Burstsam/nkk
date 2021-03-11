@@ -50,9 +50,6 @@ class PlayerActivity : AppCompatActivity() {
     private lateinit var timerUpdates: TimerTask
 
     private var wasInPiP = false
-    private var playWhenReady = true
-    private var currentWindow = 0
-    private var playbackPosition: Long = 0
     private var remainingTime: Long = 0
 
     private val rwdTime: Long = 10000.unaryMinus()
@@ -63,12 +60,6 @@ class PlayerActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_player)
         hideBars() // Initial hide the bars
-
-        savedInstanceState?.let {
-            currentWindow = it.getInt(getString(R.string.state_resume_window))
-            playbackPosition = it.getLong(getString(R.string.state_resume_position))
-            playWhenReady = it.getBoolean(getString(R.string.state_is_playing))
-        }
 
         model.loadMedia(
             intent.getIntExtra(getString(R.string.intent_media_id), 0),
@@ -110,32 +101,19 @@ class PlayerActivity : AppCompatActivity() {
 
     override fun onPause() {
         super.onPause()
-        if (isInPiPMode()) { return }
 
-        if (Util.SDK_INT <= 23) {
-            video_view?.onPause()
-            releasePlayer()
-        }
+        if (isInPiPMode()) { return }
+        if (Util.SDK_INT <= 23) { onPauseOnStop() }
     }
 
     override fun onStop() {
         super.onStop()
-        if (Util.SDK_INT > 23) {
-            video_view?.onPause()
-            releasePlayer()
-        }
 
+        if (Util.SDK_INT > 23) { onPauseOnStop() }
         // if the player was in pip, it's on a different task
         if (wasInPiP) { navToLauncherTask() }
         // if the player is in pip, remove the task, else we'll get a zombie
         if (isInPiPMode()) { finishAndRemoveTask() }
-    }
-
-    override fun onSaveInstanceState(outState: Bundle) {
-        outState.putInt(getString(R.string.state_resume_window), currentWindow)
-        outState.putLong(getString(R.string.state_resume_position), playbackPosition)
-        outState.putBoolean(getString(R.string.state_is_playing), playWhenReady)
-        super.onSaveInstanceState(outState)
     }
 
     /**
@@ -209,7 +187,6 @@ class PlayerActivity : AppCompatActivity() {
      * set play when ready and listeners
      */
     private fun initExoPlayer() {
-        model.player.playWhenReady = playWhenReady
         model.player.addListener(object : Player.EventListener {
             override fun onPlaybackStateChanged(state: Int) {
                 super.onPlaybackStateChanged(state)
@@ -233,7 +210,7 @@ class PlayerActivity : AppCompatActivity() {
         })
 
         // start playing the current episode, after all needed player components have been initialized
-        model.playEpisode(model.currentEpisode, true, playbackPosition)
+        model.playEpisode(model.currentEpisode, true)
     }
 
     @SuppressLint("ClickableViewAccessibility")
@@ -308,10 +285,8 @@ class PlayerActivity : AppCompatActivity() {
         }
     }
 
-    private fun releasePlayer() {
-        playbackPosition = model.player.currentPosition
-        currentWindow = model.player.currentWindowIndex
-        playWhenReady = model.player.playWhenReady
+    private fun onPauseOnStop() {
+        video_view?.onPause()
         model.player.pause()
         timerUpdates.cancel()
     }

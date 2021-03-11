@@ -48,7 +48,7 @@ class MediaFragment(private val mediaId: Int) : Fragment() {
         super.onViewCreated(view, savedInstanceState)
         binding.frameLoading.visibility = View.VISIBLE
 
-        // tab layout and pager TODO
+        // tab layout and pager
         pagerAdapter = ScreenSlidePagerAdapter(requireActivity())
         // fix material components issue #1878, if more tabs are added increase
         binding.pagerEpisodesSimilar.offscreenPageLimit = 2
