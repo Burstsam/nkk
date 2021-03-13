@@ -1,0 +1,1 @@
+* Ein Fehler beim laden einiger Serien wurde behoben (#36)
