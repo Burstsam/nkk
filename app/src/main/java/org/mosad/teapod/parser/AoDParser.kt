@@ -395,6 +395,7 @@ object AoDParser {
                 .ignoreContentType(true)
                 .cookies(sessionCookies)
                 .headers(headers)
+                .timeout(120000) // loading the playlist can take some time
                 .execute()
 
             //Gson().fromJson(res.body(), AoDObject::class.java)
