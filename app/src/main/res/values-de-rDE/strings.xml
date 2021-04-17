@@ -34,6 +34,8 @@
     <!-- settings fragment -->
     <string name="account">Account</string>
     <string name="account_login_desc">Zum bearbeiten tippen</string>
+    <string name="account_subscription">Abo %1$s</string>
+    <string name="account_subscription_desc">Zum verlängern tippen</string>
     <string name="info">Info</string>
     <string name="info_about_desc">Version %1$s (%2$s)</string>
     <string name="settings">Einstellungen</string>
@@ -77,6 +79,7 @@
     <!-- dialogs -->
     <string name="save">speichern</string>
     <string name="cancel">@android:string/cancel</string>
+    <string name="loading">lädt…</string>
     <string name="dialog_timeout_head">Anmelden fehlgeschlagen</string>
     <string name="dialog_timeout_desc">Der Server scheint langsam zu antworten. Bitte versuche es später noch einmal.</string>
 

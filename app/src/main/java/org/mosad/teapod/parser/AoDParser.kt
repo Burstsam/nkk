@@ -40,6 +40,7 @@ object AoDParser {
     private const val baseUrl = "https://www.anime-on-demand.de"
     private const val loginPath = "/users/sign_in"
     private const val libraryPath = "/animes"
+    private const val subscriptionPath = "/mypools"
 
     private const val userAgent = "Mozilla/5.0 (X11; Linux x86_64; rv:84.0) Gecko/20100101 Firefox/84.0"
 
@@ -115,6 +116,25 @@ object AoDParser {
         }
 
         return media
+    }
+
+    /**
+     * get subscription info from aod website, remove "Anime-Abo" Prefix and trim
+     */
+    fun getSubscriptionInfoAsync(): Deferred<String> {
+        return GlobalScope.async(Dispatchers.IO) {
+            // get the subscription page
+            val res = Jsoup.connect(baseUrl + subscriptionPath)
+                .cookies(sessionCookies)
+                .get()
+
+            return@async res.select("a:contains(Anime-Abo)").text()
+                .removePrefix("Anime-Abo").trim()
+        }
+    }
+
+    fun getSubscriptionUrl(): String {
+        return baseUrl + subscriptionPath
     }
 
     fun markAsWatched(mediaId: Int, episodeId: Int) = GlobalScope.launch {
@@ -261,6 +281,8 @@ object AoDParser {
     }
 
     /**
+     * TODO rework the media loading process, don't modify media object
+     * TODO catch SocketTimeoutException from loading to show a waring dialog
      * load streams for the media path, movies have one episode
      * @param media is used as call ba reference
      */

@@ -79,8 +79,52 @@
                             android:text="@string/account_login_desc"
                             android:textColor="?textSecondary" />
                     </LinearLayout>
-
                 </LinearLayout>
+
+                <LinearLayout
+                    android:id="@+id/linear_account_subscription"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:foreground="?android:selectableItemBackground"
+                    android:gravity="center"
+                    android:orientation="horizontal"
+                    android:padding="7dp">
+
+                    <ImageView
+                        android:id="@+id/imageView6"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:contentDescription="@string/account"
+                        android:minWidth="48dp"
+                        android:minHeight="48dp"
+                        android:padding="9dp"
+                        android:scaleType="fitXY"
+                        android:src="@drawable/ic_baseline_access_time_24"
+                        app:tint="?iconColor" />
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:orientation="vertical">
+
+                        <TextView
+                            android:id="@+id/text_account_subscription"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:text="@string/account_subscription"
+                            android:textSize="16sp" />
+
+                        <TextView
+                            android:id="@+id/text_account_subscription_desc"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:text="@string/account_subscription_desc"
+                            android:textColor="?textSecondary" />
+                    </LinearLayout>
+                </LinearLayout>
+
             </LinearLayout>
 
             <LinearLayout

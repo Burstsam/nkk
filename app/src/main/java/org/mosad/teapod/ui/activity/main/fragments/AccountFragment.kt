@@ -1,5 +1,7 @@
 package org.mosad.teapod.ui.activity.main.fragments
 
+import android.content.Intent
+import android.net.Uri
 import android.os.Bundle
 import android.util.Log
 import android.view.LayoutInflater
@@ -8,6 +10,8 @@ import android.view.ViewGroup
 import androidx.fragment.app.Fragment
 import com.afollestad.materialdialogs.MaterialDialog
 import com.afollestad.materialdialogs.list.listItemsSingleChoice
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.launch
 import org.mosad.teapod.BuildConfig
 import org.mosad.teapod.ui.activity.main.MainActivity
 import org.mosad.teapod.R
@@ -31,6 +35,15 @@ class AccountFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
+        // load subscription (async) info before anything else
+        binding.textAccountSubscription.text = getString(R.string.account_subscription, getString(R.string.loading))
+        GlobalScope.launch {
+            binding.textAccountSubscription.text = getString(
+                R.string.account_subscription,
+                AoDParser.getSubscriptionInfoAsync().await()
+            )
+        }
+
         binding.textAccountLogin.text = EncryptedPreferences.login
         binding.textInfoAboutDesc.text = getString(R.string.info_about_desc, BuildConfig.VERSION_NAME, getString(R.string.build_time))
         binding.textThemeSelected.text = when (Preferences.theme) {
@@ -47,6 +60,10 @@ class AccountFragment : Fragment() {
     private fun initActions() {
         binding.linearAccountLogin.setOnClickListener {
             showLoginDialog(true)
+        }
+
+        binding.linearAccountSubscription.setOnClickListener {
+            startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(AoDParser.getSubscriptionUrl())))
         }
 
         binding.linearTheme.setOnClickListener {

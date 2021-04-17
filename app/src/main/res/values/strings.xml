@@ -44,6 +44,8 @@
     <string name="account">Account</string>
     <string name="account_login_ex" translatable="false">user@example.com</string>
     <string name="account_login_desc">Tap to edit</string>
+    <string name="account_subscription">Subscription %1$s</string>
+    <string name="account_subscription_desc">Tap to extend</string>
     <string name="info">Info</string>
     <string name="info_about" translatable="false">Teapod by @Seil0</string>
     <string name="info_about_desc">Version %1$s (%2$s)</string>
@@ -97,6 +99,7 @@
     <!-- dialogs -->
     <string name="save">save</string>
     <string name="cancel">@android:string/cancel</string>
+    <string name="loading">loading…</string>
     <string name="dialog_timeout_head">Login failed</string>
     <string name="dialog_timeout_desc">Looks like the server is taking to long to respond. Please try again later.</string>
 
