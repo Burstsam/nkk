@@ -177,7 +177,7 @@ object AoDParser {
         itemMediaList.clear()
         mediaList.clear()
         resAnimes.select("div.animebox").forEach {
-            val type = if (it.select("p.animebox-link").select("a").text().toLowerCase(Locale.ROOT) == "zur serie") {
+            val type = if (it.select("p.animebox-link").select("a").text().lowercase(Locale.ROOT) == "zur serie") {
                 MediaType.TVSHOW
             } else {
                 MediaType.MOVIE
@@ -347,7 +347,7 @@ object AoDParser {
 
         // additional info from the media page
         res.select("table.vertical-table").select("tr").forEach { row ->
-            when (row.select("th").text().toLowerCase(Locale.ROOT)) {
+            when (row.select("th").text().lowercase(Locale.ROOT)) {
                 "produktionsjahr" -> media.info.year = row.select("td").text().toInt()
                 "fsk" -> media.info.age = row.select("td").text().toInt()
                 "episodenanzahl" -> {

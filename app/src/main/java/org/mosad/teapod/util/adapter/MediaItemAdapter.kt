@@ -49,14 +49,14 @@ class MediaItemAdapter(private val initMedia: List<ItemMedia>) : RecyclerView.Ad
 
     inner class MediaFilter : Filter() {
         override fun performFiltering(constraint: CharSequence?): FilterResults {
-            val filterTerm = constraint.toString().toLowerCase(Locale.ROOT)
+            val filterTerm = constraint.toString().lowercase(Locale.ROOT)
             val results = FilterResults()
 
             val filteredList = if (filterTerm.isEmpty()) {
                 initMedia
             } else {
                 initMedia.filter {
-                    it.title.toLowerCase(Locale.ROOT).contains(filterTerm)
+                    it.title.lowercase(Locale.ROOT).contains(filterTerm)
                 }
             }
 
