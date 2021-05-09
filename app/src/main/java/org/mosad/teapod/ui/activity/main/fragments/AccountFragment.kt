@@ -7,6 +7,7 @@ import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import com.afollestad.materialdialogs.MaterialDialog
 import com.afollestad.materialdialogs.list.listItemsSingleChoice
@@ -54,6 +55,8 @@ class AccountFragment : Fragment() {
         binding.switchSecondary.isChecked = Preferences.preferSecondary
         binding.switchAutoplay.isChecked = Preferences.autoplay
 
+        binding.linearDevSettings.isVisible = Preferences.devSettings
+
         initActions()
     }
 
@@ -80,6 +83,14 @@ class AccountFragment : Fragment() {
 
         binding.switchAutoplay.setOnClickListener {
             Preferences.saveAutoplay(requireContext(), binding.switchAutoplay.isChecked)
+        }
+
+        binding.linearExportData.setOnClickListener {
+            println("TODO")
+        }
+
+        binding.linearImportData.setOnClickListener {
+            println("TODO")
         }
     }
 

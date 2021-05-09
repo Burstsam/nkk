@@ -57,6 +57,12 @@
     <string name="theme">Theme</string>
     <string name="theme_light">Light</string>
     <string name="theme_dark">Dark</string>
+    <string name="dev_settings">Developer Settings</string>
+    <string name="export_data">export data</string>
+    <string name="export_data_desc">export my list to a file</string>
+    <string name="import_data">import data</string>
+    <string name="import_data_desc">import my list from a file</string>
+
 
     <!-- about fragment -->
     <string name="version">Version</string>
@@ -71,6 +77,8 @@
     <string name="tmdb_notice" translatable="false">This product uses the TMDb API but is not endorsed or certified by TMDb.</string>
     <string name="third_party_heading">Third Party Licenses</string>
     <string name="third_party_component_desc">© %1$s %2$s under %3$s</string>
+    <string name="dev_settings_enabled">You are now a developer</string>
+    <string name="dev_settings_already">You are already a developer</string>
 
     <!-- player -->
     <string name="close_player">close player</string>
@@ -116,6 +124,7 @@
     <string name="save_key_user_password" translatable="false">org.mosad.teapod.user_password</string>
     <string name="save_key_prefer_secondary" translatable="false">org.mosad.teapod.prefer_secondary</string>
     <string name="save_key_autoplay" translatable="false">org.mosad.teapod.autoplay</string>
+    <string name="save_key_dev_settings" translatable="false">org.mosad.teapod.dev.settings</string>
     <string name="save_key_theme" translatable="false">org.mosad.teapod.theme</string>
 
     <!-- intents & states -->

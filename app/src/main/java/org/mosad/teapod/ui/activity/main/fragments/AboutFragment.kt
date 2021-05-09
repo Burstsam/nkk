@@ -6,6 +6,7 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.Toast
 import androidx.annotation.RawRes
 import androidx.fragment.app.Fragment
 import com.afollestad.materialdialogs.MaterialDialog
@@ -13,14 +14,20 @@ import org.mosad.teapod.BuildConfig
 import org.mosad.teapod.R
 import org.mosad.teapod.databinding.FragmentAboutBinding
 import org.mosad.teapod.databinding.ItemComponentBinding
+import org.mosad.teapod.preferences.Preferences
 import org.mosad.teapod.util.DataTypes.License
 import org.mosad.teapod.util.ThirdPartyComponent
 import java.lang.StringBuilder
+import java.util.Timer
+import kotlin.concurrent.schedule
 
 class AboutFragment : Fragment() {
 
-    private val teapodRepoUrl = "https://git.mosad.xyz/Seil0/teapod"
     private lateinit var binding: FragmentAboutBinding
+
+    private val teapodRepoUrl = "https://git.mosad.xyz/Seil0/teapod"
+    private val devClickMax = 5
+    private var devClickCount = 0
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
         binding = FragmentAboutBinding.inflate(inflater, container, false)
@@ -52,6 +59,10 @@ class AboutFragment : Fragment() {
     }
 
     private fun initActions() {
+        binding.imageAppIcon.setOnClickListener {
+            checkDevSettings()
+        }
+
         binding.linearSource.setOnClickListener {
             startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(teapodRepoUrl)))
         }
@@ -61,6 +72,30 @@ class AboutFragment : Fragment() {
                 .title(text = License.GPL3.long)
                 .message(text = parseLicense(R.raw.gpl_3_full))
                 .show()
+        }
+    }
+
+    /**
+     * check if dev settings shall be enabled
+     */
+    private fun checkDevSettings() {
+        // if the dev settings are already enabled show a toast
+        if (Preferences.devSettings) {
+            Toast.makeText(context, getString(R.string.dev_settings_already), Toast.LENGTH_SHORT).show()
+            return
+        }
+
+        // reset dev settings count after 5 seconds
+        if (devClickCount == 0) {
+            Timer("", false).schedule(5000) {
+                devClickCount = 0
+            }
+        }
+        devClickCount++
+
+        if (devClickCount == devClickMax) {
+            Preferences.saveDevSettings(requireContext(), true)
+            Toast.makeText(context, getString(R.string.dev_settings_enabled), Toast.LENGTH_SHORT).show()
         }
     }
 

@@ -46,6 +46,11 @@
     <string name="theme">Design</string>
     <string name="theme_light">Hell</string>
     <string name="theme_dark">Dunkel</string>
+    <string name="dev_settings">Entwickler Einstellungen</string>
+    <string name="export_data">Daten exportieren</string>
+    <string name="export_data_desc">Speichere "meine Liste" in eine Datei</string>
+    <string name="import_data">Daten importieren</string>
+    <string name="import_data_desc">Lade "meine Liste" aus einer Datei</string>
 
     <!-- about fragment -->
     <string name="version">Version</string>
@@ -55,6 +60,8 @@
     <string name="about_info">Eine inoffizielle App für Anime on Demand.</string>
     <string name="third_party_heading">Lizenzen von Drittanbietern</string>
     <string name="third_party_component_desc">© %1$s %2$s unter %3$s</string>
+    <string name="dev_settings_enabled">Du bist jetzt ein Entwickler</string>
+    <string name="dev_settings_already">Du bist schon ein Entwickler</string>
 
     <!-- player -->
     <string name="close_player">Player schließen</string>

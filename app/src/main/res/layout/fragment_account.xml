@@ -220,7 +220,7 @@
                     android:padding="7dp">
 
                     <ImageView
-                        android:id="@+id/imageView4"
+                        android:id="@+id/image_autoplay"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:contentDescription="@string/settings_autoplay"
@@ -281,7 +281,7 @@
                     android:padding="7dp">
 
                     <ImageView
-                        android:id="@+id/imageViewTheme"
+                        android:id="@+id/image_theme"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:contentDescription="@string/account"
@@ -311,6 +311,118 @@
                             android:layout_height="wrap_content"
                             android:layout_weight="1"
                             android:text="@string/theme_light"
+                            android:textColor="?textSecondary" />
+                    </LinearLayout>
+
+                </LinearLayout>
+
+            </LinearLayout>
+
+            <LinearLayout
+                android:id="@+id/linear_dev_settings"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="12dp"
+                android:background="?themeSecondary"
+                android:clipToPadding="false"
+                android:elevation="5dp"
+                android:orientation="vertical">
+
+                <TextView
+                    android:id="@+id/text_dev_settings"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:paddingStart="7dp"
+                    android:paddingEnd="7dp"
+                    android:text="@string/dev_settings"
+                    android:textSize="16sp"
+                    android:textStyle="bold" />
+
+                <LinearLayout
+                    android:id="@+id/linear_export_data"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:foreground="?android:selectableItemBackground"
+                    android:gravity="center"
+                    android:orientation="horizontal"
+                    android:padding="7dp">
+
+                    <ImageView
+                        android:id="@+id/image_export_data"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:contentDescription="@string/info"
+                        android:minWidth="48dp"
+                        android:minHeight="48dp"
+                        android:padding="9dp"
+                        android:scaleType="fitXY"
+                        app:srcCompat="@drawable/ic_outline_upload_24"
+                        app:tint="?iconColor" />
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:orientation="vertical">
+
+                        <TextView
+                            android:id="@+id/text_export_data"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:text="@string/export_data"
+                            android:textSize="16sp" />
+
+                        <TextView
+                            android:id="@+id/text_export_data_desc"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:text="@string/export_data_desc"
+                            android:textColor="?textSecondary" />
+                    </LinearLayout>
+
+                </LinearLayout>
+
+                <LinearLayout
+                    android:id="@+id/linear_import_data"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:foreground="?android:selectableItemBackground"
+                    android:gravity="center"
+                    android:orientation="horizontal"
+                    android:padding="7dp">
+
+                    <ImageView
+                        android:id="@+id/image_import_data"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:contentDescription="@string/info"
+                        android:minWidth="48dp"
+                        android:minHeight="48dp"
+                        android:padding="9dp"
+                        android:scaleType="fitXY"
+                        app:srcCompat="@drawable/ic_outline_download_24"
+                        app:tint="?iconColor" />
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:orientation="vertical">
+
+                        <TextView
+                            android:id="@+id/text_import_data"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:text="@string/import_data"
+                            android:textSize="16sp" />
+
+                        <TextView
+                            android:id="@+id/text_import_data_desc"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:text="@string/import_data_desc"
                             android:textColor="?textSecondary" />
                     </LinearLayout>
 
