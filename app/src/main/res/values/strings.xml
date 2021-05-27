@@ -59,10 +59,10 @@
     <string name="theme_dark">Dark</string>
     <string name="dev_settings">Developer Settings</string>
     <string name="export_data">export data</string>
-    <string name="export_data_desc">export "my list" to a file</string>
+    <string name="export_data_desc">export "My list" to a file</string>
     <string name="import_data">import data</string>
-    <string name="import_data_desc">import "my list" from a file</string>
-    <string name="import_data_success">imported "my list" successfully</string>
+    <string name="import_data_desc">import "My list" from a file</string>
+    <string name="import_data_success">imported "My list" successfully</string>
 
 
     <!-- about fragment -->

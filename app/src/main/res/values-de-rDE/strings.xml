@@ -48,10 +48,10 @@
     <string name="theme_dark">Dunkel</string>
     <string name="dev_settings">Entwickler Einstellungen</string>
     <string name="export_data">Daten exportieren</string>
-    <string name="export_data_desc">Speichere "meine Liste" in eine Datei</string>
+    <string name="export_data_desc">Speichere "Meine Liste" in eine Datei</string>
     <string name="import_data">Daten importieren</string>
-    <string name="import_data_desc">Lade "meine Liste" aus einer Datei</string>
-    <string name="import_data_success">"meine Liste" erfolgreich importiert</string>
+    <string name="import_data_desc">Lade "Meine Liste" aus einer Datei</string>
+    <string name="import_data_success">"Meine Liste" erfolgreich importiert</string>
 
     <!-- about fragment -->
     <string name="version">Version</string>

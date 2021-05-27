@@ -9,6 +9,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import com.afollestad.materialdialogs.MaterialDialog
@@ -31,8 +32,27 @@ class AccountFragment : Fragment() {
 
     private lateinit var binding: FragmentAccountBinding
 
-    private val exportFileCode = 1111
-    private val importFileCode = 1122
+    private val getUriExport = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
+        if (result.resultCode == Activity.RESULT_OK) {
+            result.data?.data?.also { uri ->
+                StorageController.exportMyList(requireContext(), uri)
+            }
+        }
+    }
+
+    private val getUriImport = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
+        if (result.resultCode == Activity.RESULT_OK) {
+            result.data?.data?.also { uri ->
+                val success = StorageController.importMyList(requireContext(), uri)
+                if (success == 0) {
+                    Toast.makeText(
+                        context, getString(R.string.import_data_success),
+                        Toast.LENGTH_SHORT
+                    ).show()
+                }
+            }
+        }
+    }
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
         binding = FragmentAccountBinding.inflate(inflater, container, false)
@@ -66,30 +86,6 @@ class AccountFragment : Fragment() {
         initActions()
     }
 
-    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
-        // return if the result was not ok
-        if (resultCode != Activity.RESULT_OK) {
-            Log.e(javaClass.name, "Error while computing result. Result code is: $resultCode")
-            return
-        }
-
-        when(requestCode) {
-            exportFileCode -> data?.data?.also { uri ->
-                StorageController.exportMyList(requireContext(), uri)
-            }
-
-            importFileCode -> data?.data?.also { uri ->
-                val success = StorageController.importMyList(requireContext(), uri)
-                if (success == 0) {
-                    Toast.makeText(
-                        context, getString(R.string.import_data_success),
-                        Toast.LENGTH_SHORT
-                    ).show()
-                }
-            }
-        }
-    }
-
     private fun initActions() {
         binding.linearAccountLogin.setOnClickListener {
             showLoginDialog(true)
@@ -121,7 +117,7 @@ class AccountFragment : Fragment() {
                 type = "text/json"
                 putExtra(Intent.EXTRA_TITLE, "my-list.json")
             }
-            startActivityForResult(i, exportFileCode)
+            getUriExport.launch(i)
         }
 
         binding.linearImportData.setOnClickListener {
@@ -129,7 +125,7 @@ class AccountFragment : Fragment() {
                 addCategory(Intent.CATEGORY_OPENABLE)
                 type = "*/*"
             }
-            startActivityForResult(i, importFileCode)
+            getUriImport.launch(i)
         }
     }
 
@@ -166,4 +162,5 @@ class AccountFragment : Fragment() {
             }
         }
     }
+
 }
