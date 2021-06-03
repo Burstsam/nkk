@@ -106,9 +106,10 @@
     <string name="on_login_failed">Could not login! Make sure Username and Password are correct and try again.</string>
 
     <!-- dialogs -->
-    <string name="save">save</string>
+    <string name="save">Save</string>
     <string name="cancel">@android:string/cancel</string>
-    <string name="loading">loading…</string>
+    <string name="apply">Apply</string>
+    <string name="loading">Loading…</string>
     <string name="dialog_timeout_head">Login failed</string>
     <string name="dialog_timeout_desc">Looks like the server is taking to long to respond. Please try again later.</string>
 

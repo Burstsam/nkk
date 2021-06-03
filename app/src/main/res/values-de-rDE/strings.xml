@@ -85,9 +85,10 @@
     <string name="on_login_failed">Login nicht erfolgreich! Stelle sicher das deine Login-Daten korrekt sind und versuche es erneut.</string>
 
     <!-- dialogs -->
-    <string name="save">speichern</string>
+    <string name="save">Speichern</string>
+    <string name="apply">Übernehmen</string>
     <string name="cancel">@android:string/cancel</string>
-    <string name="loading">lädt…</string>
+    <string name="loading">Lädt…</string>
     <string name="dialog_timeout_head">Anmelden fehlgeschlagen</string>
     <string name="dialog_timeout_desc">Der Server scheint langsam zu antworten. Bitte versuche es später noch einmal.</string>
 
