@@ -29,7 +29,6 @@
         <item quantity="one">%d episode</item>
         <item quantity="other">%d episodes</item>
     </plurals>
-    <string name="text_runtime">%1$d Minutes</string>
     <plurals name="text_runtime">
         <item quantity="one">%d Minute</item>
         <item quantity="other">%d Minutes</item>
@@ -132,7 +131,4 @@
     <!-- intents & states -->
     <string name="intent_media_id" translatable="false">intent_media_id</string>
     <string name="intent_episode_id" translatable="false">intent_episode_id</string>
-    <string name="state_resume_window" translatable="false">state_resume_window</string>
-    <string name="state_resume_position" translatable="false">state_resume_position</string>
-    <string name="state_is_playing" translatable="false">state_is_playing</string>
 </resources>

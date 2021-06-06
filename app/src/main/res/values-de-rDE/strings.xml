@@ -22,7 +22,6 @@
         <item quantity="one">%d Episode</item>
         <item quantity="other">%d Episoden</item>
     </plurals>
-    <string name="text_runtime">%1$d Minuten</string>
     <plurals name="text_runtime">
         <item quantity="one">%d Minute</item>
         <item quantity="other">%d Minuten</item>
