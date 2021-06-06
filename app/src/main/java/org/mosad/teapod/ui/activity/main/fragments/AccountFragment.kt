@@ -12,9 +12,9 @@ import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
+import androidx.lifecycle.lifecycleScope
 import com.afollestad.materialdialogs.MaterialDialog
 import com.afollestad.materialdialogs.list.listItemsSingleChoice
-import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import org.mosad.teapod.BuildConfig
 import org.mosad.teapod.R
@@ -64,7 +64,7 @@ class AccountFragment : Fragment() {
 
         // load subscription (async) info before anything else
         binding.textAccountSubscription.text = getString(R.string.account_subscription, getString(R.string.loading))
-        GlobalScope.launch {
+        lifecycleScope.launch {
             binding.textAccountSubscription.text = getString(
                 R.string.account_subscription,
                 AoDParser.getSubscriptionInfoAsync().await()

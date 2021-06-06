@@ -4,6 +4,7 @@ import android.app.Application
 import android.net.Uri
 import android.util.Log
 import androidx.lifecycle.AndroidViewModel
+import androidx.lifecycle.viewModelScope
 import com.google.android.exoplayer2.C
 import com.google.android.exoplayer2.MediaItem
 import com.google.android.exoplayer2.SimpleExoPlayer
@@ -11,6 +12,7 @@ import com.google.android.exoplayer2.source.MediaSource
 import com.google.android.exoplayer2.source.hls.HlsMediaSource
 import com.google.android.exoplayer2.upstream.DefaultDataSourceFactory
 import com.google.android.exoplayer2.util.Util
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import org.mosad.teapod.R
 import org.mosad.teapod.parser.AoDParser
@@ -107,7 +109,9 @@ class PlayerViewModel(application: Application) : AndroidViewModel(application) 
 
         // if episodes has not been watched, mark as watched
         if (!episode.watched) {
-            AoDParser.markAsWatched(media.id, episode.id)
+            viewModelScope.launch {
+                AoDParser.markAsWatched(media.id, episode.id)
+            }
         }
     }
 

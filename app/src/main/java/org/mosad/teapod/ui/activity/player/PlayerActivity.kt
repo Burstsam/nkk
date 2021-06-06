@@ -19,6 +19,7 @@ import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.GestureDetectorCompat
 import androidx.core.view.isVisible
+import androidx.lifecycle.lifecycleScope
 import com.google.android.exoplayer2.ExoPlayer
 import com.google.android.exoplayer2.Player
 import com.google.android.exoplayer2.ui.StyledPlayerControlView
@@ -26,7 +27,6 @@ import com.google.android.exoplayer2.util.Util
 import kotlinx.android.synthetic.main.activity_player.*
 import kotlinx.android.synthetic.main.player_controls.*
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import org.mosad.teapod.R
@@ -255,7 +255,7 @@ class PlayerActivity : AppCompatActivity() {
         }
 
         timerUpdates = Timer().scheduleAtFixedRate(0, 500) {
-            GlobalScope.launch {
+            lifecycleScope.launch {
                 var btnNextEpIsVisible: Boolean
                 var controlsVisible: Boolean
 

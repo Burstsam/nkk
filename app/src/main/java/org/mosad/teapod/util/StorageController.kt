@@ -3,16 +3,12 @@ package org.mosad.teapod.util
 import android.content.Context
 import android.net.Uri
 import android.util.Log
-import android.widget.Toast
 import com.google.gson.Gson
 import com.google.gson.JsonParser
 import kotlinx.coroutines.*
-import org.mosad.teapod.R
 import java.io.File
 import java.io.FileReader
 import java.io.FileWriter
-import java.lang.Exception
-import java.net.URI
 
 /**
  * This controller contains the logic for permanently saved data.
@@ -45,7 +41,7 @@ object StorageController {
     fun saveMyList(context: Context): Job {
         val file = File(context.filesDir, fileNameMyList)
 
-        return GlobalScope.launch(Dispatchers.IO) {
+        return CoroutineScope(Dispatchers.IO).launch {
             file.writeText(Gson().toJson(myList.distinct()))
         }
     }

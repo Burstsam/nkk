@@ -10,20 +10,21 @@ import android.view.ViewGroup
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentActivity
 import androidx.fragment.app.activityViewModels
+import androidx.lifecycle.lifecycleScope
 import androidx.viewpager2.adapter.FragmentStateAdapter
 import com.bumptech.glide.Glide
 import com.bumptech.glide.request.RequestOptions
 import com.google.android.material.appbar.AppBarLayout
 import com.google.android.material.tabs.TabLayoutMediator
 import jp.wasabeef.glide.transformations.BlurTransformation
-import kotlinx.coroutines.*
+import kotlinx.coroutines.launch
 import org.mosad.teapod.R
 import org.mosad.teapod.databinding.FragmentMediaBinding
 import org.mosad.teapod.ui.activity.main.MainActivity
 import org.mosad.teapod.ui.activity.main.viewmodel.MediaFragmentViewModel
-import org.mosad.teapod.util.*
 import org.mosad.teapod.util.DataTypes.MediaType
-
+import org.mosad.teapod.util.Episode
+import org.mosad.teapod.util.StorageController
 
 /**
  * The media detail fragment.
@@ -61,13 +62,12 @@ class MediaFragment(private val mediaId: Int) : Fragment() {
             }
         }.attach()
 
-        GlobalScope.launch(Dispatchers.Main) {
+
+        lifecycleScope.launch {
             model.load(mediaId) // load the streams and tmdb for the selected media
 
-            if (this@MediaFragment.isAdded) {
-                updateGUI()
-                initActions()
-            }
+            updateGUI()
+            initActions()
         }
     }
 

@@ -6,14 +6,13 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
+import androidx.lifecycle.lifecycleScope
 import com.bumptech.glide.Glide
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import org.mosad.teapod.R
-import org.mosad.teapod.ui.activity.main.MainActivity
 import org.mosad.teapod.databinding.FragmentHomeBinding
 import org.mosad.teapod.parser.AoDParser
+import org.mosad.teapod.ui.activity.main.MainActivity
 import org.mosad.teapod.util.ItemMedia
 import org.mosad.teapod.util.StorageController
 import org.mosad.teapod.util.adapter.MediaItemAdapter
@@ -40,7 +39,7 @@ class HomeFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        GlobalScope.launch(Dispatchers.Main) {
+        lifecycleScope.launch {
             context?.let {
                 initHighlight()
                 initRecyclerViews()
@@ -101,7 +100,7 @@ class HomeFragment : Fragment() {
     private fun initActions() {
         binding.buttonPlayHighlight.setOnClickListener {
             // TODO get next episode
-            GlobalScope.launch {
+            lifecycleScope.launch {
                 val media = AoDParser.getMediaById(highlightMedia.id)
 
                 Log.d(javaClass.name, "Starting Player with  mediaId: ${media.id}")
