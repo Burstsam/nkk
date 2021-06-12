@@ -3,7 +3,6 @@ package org.mosad.teapod.ui.activity.player
 import android.app.Application
 import android.net.Uri
 import android.support.v4.media.session.MediaSessionCompat
-import android.support.v4.media.session.PlaybackStateCompat
 import android.util.Log
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
@@ -25,7 +24,6 @@ import org.mosad.teapod.util.Episode
 import org.mosad.teapod.util.Media
 import java.util.*
 import kotlin.collections.ArrayList
-
 
 /**
  * PlayerViewModel handles all stuff related to media/episodes.
