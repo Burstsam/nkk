@@ -38,8 +38,6 @@ class PlayerViewModel(application: Application) : AndroidViewModel(application) 
     private val dataSourceFactory = DefaultDataSourceFactory(application, Util.getUserAgent(application, "Teapod"))
     private val mediaSession = MediaSessionCompat(application, "TEAPOD_PLAYER_SESSION")
 
-    lateinit var mStateBuilder: PlaybackStateCompat
-
     val currentEpisodeChangedListener = ArrayList<() -> Unit>()
     private val preferredLanguage = if (Preferences.preferSecondary) Locale.JAPANESE else Locale.GERMAN
 
