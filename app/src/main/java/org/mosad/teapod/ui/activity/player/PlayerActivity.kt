@@ -7,6 +7,7 @@ import android.app.PictureInPictureParams
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.content.res.Configuration
+import android.graphics.Rect
 import android.os.Build
 import android.os.Bundle
 import android.util.Log
@@ -145,8 +146,15 @@ class PlayerActivity : AppCompatActivity() {
             } else {
                 val width = model.player.videoFormat?.width ?: 0
                 val height = model.player.videoFormat?.height ?: 0
+                val contentFrame: View = video_view.findViewById(R.id.exo_content_frame)
+                val contentRect = with(contentFrame) {
+                    val (x, y) = intArrayOf(0, 0).also(::getLocationInWindow)
+                    Rect(x, y, x + width, y + height)
+                }
+
                 val params = PictureInPictureParams.Builder()
                     .setAspectRatio(Rational(width, height))
+                    .setSourceRectHint(contentRect)
                     .build()
                 enterPictureInPictureMode(params)
             }
