@@ -38,10 +38,48 @@ class TMDBApiController {
     private suspend fun searchTVShow(title: String): TMDBResponse = withContext(Dispatchers.IO) {
         val url = URL("$searchTVUrl$preparedParameters&query=${URLEncoder.encode(title, "UTF-8")}")
         val response = JsonParser.parseString(url.readText()).asJsonObject
-        //println(response)
+        println(url)
+        println(response)
 
         return@withContext if (response.get("total_results").asInt > 0) {
-            response.get("results").asJsonArray.first().asJsonObject.let {
+            val results = response.get("results").asJsonArray
+            var result = results.asJsonArray.first()
+            var bestMatch = Int.MAX_VALUE
+
+            results.forEach { it ->
+                val name = getStringNotNull(it.asJsonObject, "name")
+                val rating = name.compareTo(title)
+
+                println("name: $name, title: $title")
+
+                when {
+                    rating < 0 -> {
+                        println("rating < ($rating): $it")
+
+                        if ((rating * -1) < bestMatch) {
+                            bestMatch = (rating * -1)
+                            result = it
+                            println("best < ($bestMatch): $it")
+                        }
+                    }
+                    rating == 0 -> {
+                        println("rating == ($rating): $it")
+                        bestMatch = 0
+                        result = it
+                        println("best == ($bestMatch): $it")
+                    }
+                    else -> {
+                        println("rating > ($rating): $it")
+                        if (rating < bestMatch) {
+                            bestMatch = rating
+                            result = it
+                            println("best > ($bestMatch): $it")
+                        }
+                    }
+                }
+            }
+
+            result.asJsonObject.let {
                 val id = getStringNotNull(it, "id").toInt()
                 val overview = getStringNotNull(it, "overview")
                 val posterPath = getStringNotNullPrefix(it, "poster_path", imageUrl)
