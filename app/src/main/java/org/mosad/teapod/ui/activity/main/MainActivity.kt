@@ -31,7 +31,7 @@ import androidx.fragment.app.Fragment
 import androidx.fragment.app.commit
 import com.afollestad.materialdialogs.MaterialDialog
 import com.afollestad.materialdialogs.callbacks.onDismiss
-import com.google.android.material.bottomnavigation.BottomNavigationView
+import com.google.android.material.navigation.NavigationBarView
 import kotlinx.coroutines.*
 import org.mosad.teapod.R
 import org.mosad.teapod.databinding.ActivityMainBinding
@@ -51,7 +51,7 @@ import org.mosad.teapod.util.exitAndRemoveTask
 import java.net.SocketTimeoutException
 import kotlin.system.measureTimeMillis
 
-class MainActivity : AppCompatActivity(), BottomNavigationView.OnNavigationItemSelectedListener {
+class MainActivity : AppCompatActivity(), NavigationBarView.OnItemSelectedListener {
 
     private lateinit var binding: ActivityMainBinding
     private var activeBaseFragment: Fragment = HomeFragment() // the currently active fragment, home at the start
@@ -72,7 +72,7 @@ class MainActivity : AppCompatActivity(), BottomNavigationView.OnNavigationItemS
         theme.applyStyle(getThemeResource(), true)
 
         binding = ActivityMainBinding.inflate(layoutInflater)
-        binding.navView.setOnNavigationItemSelectedListener(this)
+        binding.navView.setOnItemSelectedListener(this)
         setContentView(binding.root)
 
         supportFragmentManager.commit {
