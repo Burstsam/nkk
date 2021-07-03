@@ -72,12 +72,7 @@ class HomeFragment : Fragment() {
         binding.recyclerTopTen.addItemDecoration(MediaItemDecoration(9))
 
         // my list
-        val myListMedia = StorageController.myList.map { elementId ->
-            AoDParser.itemMediaList.first {
-                elementId == it.id
-            }
-        }
-        adapterMyList = MediaItemAdapter(myListMedia)
+        adapterMyList = MediaItemAdapter(mapMyListToItemMedia())
         binding.recyclerMyList.adapter = adapterMyList
 
         // new episodes
@@ -153,14 +148,19 @@ class HomeFragment : Fragment() {
      *  * only update actual change and not all data (performance)
      */
     fun updateMyListMedia() {
-        val myListMedia = StorageController.myList.map { elementId ->
-            AoDParser.itemMediaList.first {
-                elementId == it.id
+        adapterMyList.updateMediaList(mapMyListToItemMedia())
+        adapterMyList.notifyDataSetChanged()
+    }
+
+    private fun mapMyListToItemMedia(): List<ItemMedia> {
+        return StorageController.myList.mapNotNull { elementId ->
+            AoDParser.itemMediaList.firstOrNull { it.id == elementId }.also {
+                // it the my list entry wasn't found in itemMediaList Log it
+                if (it == null) {
+                    Log.w(javaClass.name, "The element with the id $elementId was not found.")
+                }
             }
         }
-
-        adapterMyList.updateMediaList(myListMedia)
-        adapterMyList.notifyDataSetChanged()
     }
 
 }
