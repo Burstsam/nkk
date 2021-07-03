@@ -4,9 +4,9 @@ import android.util.Log
 import com.google.gson.JsonObject
 import com.google.gson.JsonParser
 import kotlinx.coroutines.*
+import org.mosad.teapod.util.DataTypes.MediaType
 import java.net.URL
 import java.net.URLEncoder
-import org.mosad.teapod.util.DataTypes.MediaType
 
 class TMDBApiController {
 
@@ -21,7 +21,11 @@ class TMDBApiController {
     private val imageUrl = "https://image.tmdb.org/t/p/w500"
 
     suspend fun search(title: String, type: MediaType): TMDBResponse {
-        val searchTerm = title.replace("(Sub)", "").trim()
+        // remove unneeded text from the media title before searching
+        val searchTerm = title.replace("(Sub)", "")
+            .replace(Regex("-?\\s?[0-9]+.\\s?(Staffel|Season)"), "")
+            .replace(Regex("(Staffel|Season)\\s?[0-9]+"), "")
+            .trim()
 
         return when (type) {
             MediaType.MOVIE -> searchMovie(searchTerm)
@@ -38,10 +42,14 @@ class TMDBApiController {
     private suspend fun searchTVShow(title: String): TMDBResponse = withContext(Dispatchers.IO) {
         val url = URL("$searchTVUrl$preparedParameters&query=${URLEncoder.encode(title, "UTF-8")}")
         val response = JsonParser.parseString(url.readText()).asJsonObject
-        //println(response)
+//        println(response)
 
-        return@withContext if (response.get("total_results").asInt > 0) {
-            response.get("results").asJsonArray.first().asJsonObject.let {
+        val sortedResults = response.get("results").asJsonArray.toList().sortedBy {
+            getStringNotNull(it.asJsonObject, "name")
+        }
+
+        return@withContext if (sortedResults.isNotEmpty()) {
+            sortedResults.first().asJsonObject.let {
                 val id = getStringNotNull(it, "id").toInt()
                 val overview = getStringNotNull(it, "overview")
                 val posterPath = getStringNotNullPrefix(it, "poster_path", imageUrl)
@@ -58,10 +66,14 @@ class TMDBApiController {
     private suspend fun searchMovie(title: String): TMDBResponse = withContext(Dispatchers.IO) {
         val url = URL("$searchMovieUrl$preparedParameters&query=${URLEncoder.encode(title, "UTF-8")}")
         val response = JsonParser.parseString(url.readText()).asJsonObject
-        //println(response)
+//        println(response)
 
-        return@withContext if (response.get("total_results").asInt > 0) {
-            response.get("results").asJsonArray.first().asJsonObject.let {
+        val sortedResults = response.get("results").asJsonArray.toList().sortedBy {
+            getStringNotNull(it.asJsonObject, "name")
+        }
+
+        return@withContext if (sortedResults.isNotEmpty()) {
+            sortedResults.first().asJsonObject.let {
                 val id = getStringNotNull(it,"id").toInt()
                 val overview = getStringNotNull(it,"overview")
                 val posterPath = getStringNotNullPrefix(it, "poster_path", imageUrl)
