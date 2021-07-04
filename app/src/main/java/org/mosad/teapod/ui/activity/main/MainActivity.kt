@@ -145,7 +145,7 @@ class MainActivity : AppCompatActivity(), NavigationBarView.OnItemSelectedListen
             EncryptedPreferences.readCredentials(this)
             StorageController.load(this)
 
-            // show onbaording
+            // show onboarding
             if (EncryptedPreferences.password.isEmpty()) {
                 showOnboarding()
             } else {

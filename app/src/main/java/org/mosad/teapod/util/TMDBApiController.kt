@@ -69,7 +69,7 @@ class TMDBApiController {
 //        println(response)
 
         val sortedResults = response.get("results").asJsonArray.toList().sortedBy {
-            getStringNotNull(it.asJsonObject, "name")
+            getStringNotNull(it.asJsonObject, "title")
         }
 
         return@withContext if (sortedResults.isNotEmpty()) {
