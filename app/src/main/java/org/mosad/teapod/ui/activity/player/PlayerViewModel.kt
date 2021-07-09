@@ -2,15 +2,19 @@ package org.mosad.teapod.ui.activity.player
 
 import android.app.Application
 import android.net.Uri
+import android.support.v4.media.session.MediaSessionCompat
 import android.util.Log
 import androidx.lifecycle.AndroidViewModel
+import androidx.lifecycle.viewModelScope
 import com.google.android.exoplayer2.C
 import com.google.android.exoplayer2.MediaItem
 import com.google.android.exoplayer2.SimpleExoPlayer
+import com.google.android.exoplayer2.ext.mediasession.MediaSessionConnector
 import com.google.android.exoplayer2.source.MediaSource
 import com.google.android.exoplayer2.source.hls.HlsMediaSource
 import com.google.android.exoplayer2.upstream.DefaultDataSourceFactory
 import com.google.android.exoplayer2.util.Util
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import org.mosad.teapod.R
 import org.mosad.teapod.parser.AoDParser
@@ -29,10 +33,11 @@ import kotlin.collections.ArrayList
 class PlayerViewModel(application: Application) : AndroidViewModel(application) {
 
     val player = SimpleExoPlayer.Builder(application).build()
-    val dataSourceFactory = DefaultDataSourceFactory(application, Util.getUserAgent(application, "Teapod"))
+    private val dataSourceFactory = DefaultDataSourceFactory(application, Util.getUserAgent(application, "Teapod"))
+    private val mediaSession = MediaSessionCompat(application, "TEAPOD_PLAYER_SESSION")
 
     val currentEpisodeChangedListener = ArrayList<() -> Unit>()
-    val preferredLanguage = if (Preferences.preferSecondary) Locale.JAPANESE else Locale.GERMAN
+    private val preferredLanguage = if (Preferences.preferSecondary) Locale.JAPANESE else Locale.GERMAN
 
     var media: Media = Media(-1, "", DataTypes.MediaType.OTHER)
         internal set
@@ -43,11 +48,28 @@ class PlayerViewModel(application: Application) : AndroidViewModel(application) 
     var currentLanguage: Locale = Locale.ROOT
         internal set
 
+    init {
+        initMediaSession()
+    }
+
     override fun onCleared() {
         super.onCleared()
+
+        mediaSession.release()
         player.release()
 
         Log.d(javaClass.name, "Released player")
+    }
+
+    /**
+     * set the media session to active
+     * create a media session connector to set title and description
+     */
+    private fun initMediaSession() {
+        val mediaSessionConnector = MediaSessionConnector(mediaSession)
+        mediaSessionConnector.setPlayer(player)
+
+        mediaSession.isActive = true
     }
 
     fun loadMedia(mediaId: Int, episodeId: Int) {
@@ -107,10 +129,15 @@ class PlayerViewModel(application: Application) : AndroidViewModel(application) 
 
         // if episodes has not been watched, mark as watched
         if (!episode.watched) {
-            AoDParser.markAsWatched(media.id, episode.id)
+            viewModelScope.launch {
+                AoDParser.markAsWatched(media.id, episode.id)
+            }
         }
     }
 
+    /**
+     * change the players media source and start playback
+     */
     fun playMedia(source: MediaSource, replace: Boolean = false, seekPosition: Long = 0) {
         if (replace || player.contentDuration == C.TIME_UNSET) {
             player.setMediaSource(source)

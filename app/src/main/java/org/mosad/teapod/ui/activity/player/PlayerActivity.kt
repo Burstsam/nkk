@@ -7,6 +7,7 @@ import android.app.PictureInPictureParams
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.content.res.Configuration
+import android.graphics.Rect
 import android.os.Build
 import android.os.Bundle
 import android.util.Log
@@ -19,16 +20,14 @@ import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.GestureDetectorCompat
 import androidx.core.view.isVisible
+import androidx.lifecycle.lifecycleScope
 import com.google.android.exoplayer2.ExoPlayer
 import com.google.android.exoplayer2.Player
 import com.google.android.exoplayer2.ui.StyledPlayerControlView
 import com.google.android.exoplayer2.util.Util
 import kotlinx.android.synthetic.main.activity_player.*
 import kotlinx.android.synthetic.main.player_controls.*
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 import org.mosad.teapod.R
 import org.mosad.teapod.preferences.Preferences
 import org.mosad.teapod.ui.components.EpisodesListPlayer
@@ -147,8 +146,15 @@ class PlayerActivity : AppCompatActivity() {
             } else {
                 val width = model.player.videoFormat?.width ?: 0
                 val height = model.player.videoFormat?.height ?: 0
+                val contentFrame: View = video_view.findViewById(R.id.exo_content_frame)
+                val contentRect = with(contentFrame) {
+                    val (x, y) = intArrayOf(0, 0).also(::getLocationInWindow)
+                    Rect(x, y, x + width, y + height)
+                }
+
                 val params = PictureInPictureParams.Builder()
                     .setAspectRatio(Rational(width, height))
+                    .setSourceRectHint(contentRect)
                     .build()
                 enterPictureInPictureMode(params)
             }
@@ -187,7 +193,7 @@ class PlayerActivity : AppCompatActivity() {
      * set play when ready and listeners
      */
     private fun initExoPlayer() {
-        model.player.addListener(object : Player.EventListener {
+        model.player.addListener(object : Player.Listener {
             override fun onPlaybackStateChanged(state: Int) {
                 super.onPlaybackStateChanged(state)
 
@@ -208,7 +214,7 @@ class PlayerActivity : AppCompatActivity() {
                 }
             }
         })
-
+        
         // start playing the current episode, after all needed player components have been initialized
         model.playEpisode(model.currentEpisode, true)
     }
@@ -255,31 +261,27 @@ class PlayerActivity : AppCompatActivity() {
         }
 
         timerUpdates = Timer().scheduleAtFixedRate(0, 500) {
-            GlobalScope.launch {
-                var btnNextEpIsVisible: Boolean
-                var controlsVisible: Boolean
+            lifecycleScope.launch {
+                val btnNextEpIsVisible = button_next_ep.isVisible
+                val controlsVisible = controller.isVisible
 
-                withContext(Dispatchers.Main) {
-                    if (model.player.duration > 0) {
-                        remainingTime = model.player.duration - model.player.currentPosition
-                        remainingTime = if (remainingTime < 0) 0 else remainingTime
-                    }
-                    btnNextEpIsVisible = button_next_ep.isVisible
-                    controlsVisible = controller.isVisible
+                if (model.player.duration > 0) {
+                    remainingTime = model.player.duration - model.player.currentPosition
+                    remainingTime = if (remainingTime < 0) 0 else remainingTime
                 }
 
                 if (remainingTime in 1..20000) {
                     // if the next ep button is not visible, make it visible. Don't show in pip mode
                     if (!btnNextEpIsVisible && model.nextEpisode != null && Preferences.autoplay && !isInPiPMode()) {
-                        withContext(Dispatchers.Main) { showButtonNextEp() }
+                        showButtonNextEp()
                     }
                 } else if (btnNextEpIsVisible) {
-                    withContext(Dispatchers.Main) { hideButtonNextEp() }
+                    hideButtonNextEp()
                 }
 
                 // if controls are visible, update them
                 if (controlsVisible) {
-                    withContext(Dispatchers.Main) { updateControls() }
+                    updateControls()
                 }
             }
         }

@@ -4,9 +4,9 @@ import android.util.Log
 import com.google.gson.JsonObject
 import com.google.gson.JsonParser
 import kotlinx.coroutines.*
+import org.mosad.teapod.util.DataTypes.MediaType
 import java.net.URL
 import java.net.URLEncoder
-import org.mosad.teapod.util.DataTypes.MediaType
 
 class TMDBApiController {
 
@@ -21,11 +21,15 @@ class TMDBApiController {
     private val imageUrl = "https://image.tmdb.org/t/p/w500"
 
     suspend fun search(title: String, type: MediaType): TMDBResponse {
-        val searchTerm = title.replace("(Sub)", "").trim()
+        // remove unneeded text from the media title before searching
+        val searchTerm = title.replace("(Sub)", "")
+            .replace(Regex("-?\\s?[0-9]+.\\s?(Staffel|Season)"), "")
+            .replace(Regex("(Staffel|Season)\\s?[0-9]+"), "")
+            .trim()
 
         return when (type) {
-            MediaType.MOVIE -> searchMovie(searchTerm).await()
-            MediaType.TVSHOW -> searchTVShow(searchTerm).await()
+            MediaType.MOVIE -> searchMovie(searchTerm)
+            MediaType.TVSHOW -> searchTVShow(searchTerm)
             else -> {
                 Log.e(javaClass.name, "Wrong Type: $type")
                 TMDBResponse()
@@ -34,62 +38,64 @@ class TMDBApiController {
 
     }
 
-    fun searchTVShow(title: String): Deferred<TMDBResponse> {
+    @Suppress("BlockingMethodInNonBlockingContext")
+    private suspend fun searchTVShow(title: String): TMDBResponse = withContext(Dispatchers.IO) {
         val url = URL("$searchTVUrl$preparedParameters&query=${URLEncoder.encode(title, "UTF-8")}")
+        val response = JsonParser.parseString(url.readText()).asJsonObject
+//        println(response)
 
-        return GlobalScope.async {
-            val response = JsonParser.parseString(url.readText()).asJsonObject
-            //println(response)
+        val sortedResults = response.get("results").asJsonArray.toList().sortedBy {
+            getStringNotNull(it.asJsonObject, "name")
+        }
 
-            if (response.get("total_results").asInt > 0) {
-                response.get("results").asJsonArray.first().asJsonObject.let {
-                    val id = getStringNotNull(it, "id").toInt()
-                    val overview = getStringNotNull(it, "overview")
-                    val posterPath = getStringNotNullPrefix(it, "poster_path", imageUrl)
-                    val backdropPath = getStringNotNullPrefix(it, "backdrop_path", imageUrl)
+        return@withContext if (sortedResults.isNotEmpty()) {
+            sortedResults.first().asJsonObject.let {
+                val id = getStringNotNull(it, "id").toInt()
+                val overview = getStringNotNull(it, "overview")
+                val posterPath = getStringNotNullPrefix(it, "poster_path", imageUrl)
+                val backdropPath = getStringNotNullPrefix(it, "backdrop_path", imageUrl)
 
-                    TMDBResponse(id, "", overview, posterPath, backdropPath)
-                }
-            } else {
-                TMDBResponse()
+                TMDBResponse(id, "", overview, posterPath, backdropPath)
             }
+        } else {
+            TMDBResponse()
         }
     }
 
-    fun searchMovie(title: String): Deferred<TMDBResponse> {
+    @Suppress("BlockingMethodInNonBlockingContext")
+    private suspend fun searchMovie(title: String): TMDBResponse = withContext(Dispatchers.IO) {
         val url = URL("$searchMovieUrl$preparedParameters&query=${URLEncoder.encode(title, "UTF-8")}")
+        val response = JsonParser.parseString(url.readText()).asJsonObject
+//        println(response)
 
-        return GlobalScope.async {
-            val response = JsonParser.parseString(url.readText()).asJsonObject
-            //println(response)
+        val sortedResults = response.get("results").asJsonArray.toList().sortedBy {
+            getStringNotNull(it.asJsonObject, "title")
+        }
 
-            if (response.get("total_results").asInt > 0) {
-                response.get("results").asJsonArray.first().asJsonObject.let {
-                    val id = getStringNotNull(it,"id").toInt()
-                    val overview = getStringNotNull(it,"overview")
-                    val posterPath = getStringNotNullPrefix(it, "poster_path", imageUrl)
-                    val backdropPath = getStringNotNullPrefix(it, "backdrop_path", imageUrl)
-                    val runtime = getMovieRuntime(id)
+        return@withContext if (sortedResults.isNotEmpty()) {
+            sortedResults.first().asJsonObject.let {
+                val id = getStringNotNull(it,"id").toInt()
+                val overview = getStringNotNull(it,"overview")
+                val posterPath = getStringNotNullPrefix(it, "poster_path", imageUrl)
+                val backdropPath = getStringNotNullPrefix(it, "backdrop_path", imageUrl)
+                val runtime = getMovieRuntime(id)
 
-                    TMDBResponse(id, "", overview, posterPath, backdropPath, runtime)
-                }
-            } else {
-                TMDBResponse()
+                TMDBResponse(id, "", overview, posterPath, backdropPath, runtime)
             }
+        } else {
+            TMDBResponse()
         }
     }
 
     /**
      * currently only used for runtime, need a rework
      */
-    fun getMovieRuntime(id: Int): Int = runBlocking {
+    @Suppress("BlockingMethodInNonBlockingContext")
+    suspend fun getMovieRuntime(id: Int): Int = withContext(Dispatchers.IO) {
         val url = URL("$getMovieUrl/$id?api_key=$apiKey&language=$language")
 
-        GlobalScope.async {
-            val response = JsonParser.parseString(url.readText()).asJsonObject
-
-            return@async getStringNotNull(response,"runtime").toInt()
-        }.await()
+        val response = JsonParser.parseString(url.readText()).asJsonObject
+        return@withContext getStringNotNull(response,"runtime").toInt()
     }
 
     /**

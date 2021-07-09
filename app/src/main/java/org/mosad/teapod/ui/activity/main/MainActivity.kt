@@ -31,28 +31,27 @@ import androidx.fragment.app.Fragment
 import androidx.fragment.app.commit
 import com.afollestad.materialdialogs.MaterialDialog
 import com.afollestad.materialdialogs.callbacks.onDismiss
-import com.google.android.material.bottomnavigation.BottomNavigationView
-import kotlinx.coroutines.joinAll
-import kotlinx.coroutines.runBlocking
+import com.google.android.material.navigation.NavigationBarView
+import kotlinx.coroutines.*
 import org.mosad.teapod.R
 import org.mosad.teapod.databinding.ActivityMainBinding
 import org.mosad.teapod.parser.AoDParser
-import org.mosad.teapod.ui.activity.player.PlayerActivity
 import org.mosad.teapod.preferences.EncryptedPreferences
 import org.mosad.teapod.preferences.Preferences
-import org.mosad.teapod.ui.components.LoginDialog
 import org.mosad.teapod.ui.activity.main.fragments.AccountFragment
 import org.mosad.teapod.ui.activity.main.fragments.HomeFragment
 import org.mosad.teapod.ui.activity.main.fragments.LibraryFragment
 import org.mosad.teapod.ui.activity.main.fragments.SearchFragment
 import org.mosad.teapod.ui.activity.onboarding.OnboardingActivity
+import org.mosad.teapod.ui.activity.player.PlayerActivity
+import org.mosad.teapod.ui.components.LoginDialog
 import org.mosad.teapod.util.DataTypes
 import org.mosad.teapod.util.StorageController
 import org.mosad.teapod.util.exitAndRemoveTask
 import java.net.SocketTimeoutException
 import kotlin.system.measureTimeMillis
 
-class MainActivity : AppCompatActivity(), BottomNavigationView.OnNavigationItemSelectedListener {
+class MainActivity : AppCompatActivity(), NavigationBarView.OnItemSelectedListener {
 
     private lateinit var binding: ActivityMainBinding
     private var activeBaseFragment: Fragment = HomeFragment() // the currently active fragment, home at the start
@@ -73,7 +72,7 @@ class MainActivity : AppCompatActivity(), BottomNavigationView.OnNavigationItemS
         theme.applyStyle(getThemeResource(), true)
 
         binding = ActivityMainBinding.inflate(layoutInflater)
-        binding.navView.setOnNavigationItemSelectedListener(this)
+        binding.navView.setOnItemSelectedListener(this)
         setContentView(binding.root)
 
         supportFragmentManager.commit {
@@ -138,14 +137,15 @@ class MainActivity : AppCompatActivity(), BottomNavigationView.OnNavigationItemS
      */
     private fun load() {
         val time = measureTimeMillis {
-            val loadingJob = AoDParser.initialLoading() // start the initial loading
+            val loadingJob = CoroutineScope(Dispatchers.IO + CoroutineName("InitialLoadingScope"))
+                .async { AoDParser.initialLoading() } // start the initial loading
 
             // load all saved stuff here
             Preferences.load(this)
             EncryptedPreferences.readCredentials(this)
             StorageController.load(this)
 
-            // show onbaording
+            // show onboarding
             if (EncryptedPreferences.password.isEmpty()) {
                 showOnboarding()
             } else {
@@ -165,7 +165,7 @@ class MainActivity : AppCompatActivity(), BottomNavigationView.OnNavigationItemS
                 }
             }
 
-            runBlocking { loadingJob.joinAll() } // wait for initial loading to finish
+            runBlocking { loadingJob.await() } // wait for initial loading to finish
         }
         Log.i(javaClass.name, "loading and login in $time ms")
 

@@ -6,7 +6,8 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.SearchView
 import androidx.fragment.app.Fragment
-import kotlinx.coroutines.*
+import androidx.lifecycle.lifecycleScope
+import kotlinx.coroutines.launch
 import org.mosad.teapod.databinding.FragmentSearchBinding
 import org.mosad.teapod.parser.AoDParser
 import org.mosad.teapod.util.decoration.MediaItemDecoration
@@ -26,9 +27,8 @@ class SearchFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        GlobalScope.launch {
+        lifecycleScope.launch {
             // create and set the adapter, needs context
-            withContext(Dispatchers.Main) {
                 context?.let {
                     adapter = MediaItemAdapter(AoDParser.itemMediaList)
                     adapter!!.onItemClick = { mediaId, _ ->
@@ -39,7 +39,6 @@ class SearchFragment : Fragment() {
                     binding.recyclerMediaSearch.adapter = adapter
                     binding.recyclerMediaSearch.addItemDecoration(MediaItemDecoration(9))
                 }
-            }
         }
 
         initActions()

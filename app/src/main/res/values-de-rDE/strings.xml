@@ -22,7 +22,6 @@
         <item quantity="one">%d Episode</item>
         <item quantity="other">%d Episoden</item>
     </plurals>
-    <string name="text_runtime">%1$d Minuten</string>
     <plurals name="text_runtime">
         <item quantity="one">%d Minute</item>
         <item quantity="other">%d Minuten</item>
@@ -34,6 +33,8 @@
     <!-- settings fragment -->
     <string name="account">Account</string>
     <string name="account_login_desc">Zum bearbeiten tippen</string>
+    <string name="account_subscription">Abo %1$s</string>
+    <string name="account_subscription_desc">Zum verlängern tippen</string>
     <string name="info">Info</string>
     <string name="info_about_desc">Version %1$s (%2$s)</string>
     <string name="settings">Einstellungen</string>
@@ -44,6 +45,12 @@
     <string name="theme">Design</string>
     <string name="theme_light">Hell</string>
     <string name="theme_dark">Dunkel</string>
+    <string name="dev_settings">Entwickler Einstellungen</string>
+    <string name="export_data">Daten exportieren</string>
+    <string name="export_data_desc">Speichere "Meine Liste" in eine Datei</string>
+    <string name="import_data">Daten importieren</string>
+    <string name="import_data_desc">Lade "Meine Liste" aus einer Datei</string>
+    <string name="import_data_success">"Meine Liste" erfolgreich importiert</string>
 
     <!-- about fragment -->
     <string name="version">Version</string>
@@ -53,6 +60,8 @@
     <string name="about_info">Eine inoffizielle App für Anime on Demand.</string>
     <string name="third_party_heading">Lizenzen von Drittanbietern</string>
     <string name="third_party_component_desc">© %1$s %2$s unter %3$s</string>
+    <string name="dev_settings_enabled">Du bist jetzt ein Entwickler</string>
+    <string name="dev_settings_already">Du bist schon ein Entwickler</string>
 
     <!-- player -->
     <string name="close_player">Player schließen</string>
@@ -75,8 +84,10 @@
     <string name="on_login_failed">Login nicht erfolgreich! Stelle sicher das deine Login-Daten korrekt sind und versuche es erneut.</string>
 
     <!-- dialogs -->
-    <string name="save">speichern</string>
+    <string name="save">Speichern</string>
+    <string name="apply">Übernehmen</string>
     <string name="cancel">@android:string/cancel</string>
+    <string name="loading">Lädt…</string>
     <string name="dialog_timeout_head">Anmelden fehlgeschlagen</string>
     <string name="dialog_timeout_desc">Der Server scheint langsam zu antworten. Bitte versuche es später noch einmal.</string>
 

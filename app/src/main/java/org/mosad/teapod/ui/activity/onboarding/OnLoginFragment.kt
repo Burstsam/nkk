@@ -5,6 +5,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
+import androidx.lifecycle.lifecycleScope
 import kotlinx.coroutines.*
 import org.mosad.teapod.R
 import org.mosad.teapod.databinding.FragmentOnLoginBinding
@@ -35,7 +36,7 @@ class OnLoginFragment: Fragment() {
             EncryptedPreferences.saveCredentials(email, password, requireContext()) // save the credentials
 
             binding.buttonLogin.isClickable = false
-            loginJob = GlobalScope.launch {
+            loginJob = lifecycleScope.launch {
                 if (AoDParser.login()) {
                     // if login was successful, switch to main
                     if (activity is OnboardingActivity) {

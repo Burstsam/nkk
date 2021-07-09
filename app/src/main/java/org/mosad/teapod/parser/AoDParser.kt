@@ -40,6 +40,7 @@ object AoDParser {
     private const val baseUrl = "https://www.anime-on-demand.de"
     private const val loginPath = "/users/sign_in"
     private const val libraryPath = "/animes"
+    private const val subscriptionPath = "/mypools"
 
     private const val userAgent = "Mozilla/5.0 (X11; Linux x86_64; rv:84.0) Gecko/20100101 Firefox/84.0"
 
@@ -98,10 +99,12 @@ object AoDParser {
     /**
      * initially load all media and home screen data
      */
-    fun initialLoading() = listOf(
-            loadHome(),
-            listAnimes()
-    )
+    suspend fun initialLoading() {
+        coroutineScope {
+            launch { loadHome() }
+            launch { listAnimes() }
+        }
+    }
 
     /**
      * get a media by it's ID (int)
@@ -117,7 +120,27 @@ object AoDParser {
         return media
     }
 
-    fun markAsWatched(mediaId: Int, episodeId: Int) = GlobalScope.launch {
+    /**
+     * get subscription info from aod website, remove "Anime-Abo" Prefix and trim
+     */
+    suspend fun getSubscriptionInfoAsync(): Deferred<String> {
+        return coroutineScope {
+            async(Dispatchers.IO) {
+                val res = Jsoup.connect(baseUrl + subscriptionPath)
+                    .cookies(sessionCookies)
+                    .get()
+
+                return@async res.select("a:contains(Anime-Abo)").text()
+                    .removePrefix("Anime-Abo").trim()
+            }
+        }
+    }
+
+    fun getSubscriptionUrl(): String {
+        return baseUrl + subscriptionPath
+    }
+
+    suspend fun markAsWatched(mediaId: Int, episodeId: Int) {
         val episode = getMediaById(mediaId).getEpisodeById(episodeId)
         episode.watched = true
         sendCallback(episode.watchedCallback)
@@ -126,250 +149,262 @@ object AoDParser {
     }
 
     // TODO don't use jsoup here
-    private fun sendCallback(callbackPath: String) = GlobalScope.launch(Dispatchers.IO) {
-        val headers = mutableMapOf(
-            Pair("Accept", "application/json, text/javascript, */*; q=0.01"),
-            Pair("Accept-Language", "de,en-US;q=0.7,en;q=0.3"),
-            Pair("Accept-Encoding", "gzip, deflate, br"),
-            Pair("X-CSRF-Token", csrfToken),
-            Pair("X-Requested-With", "XMLHttpRequest"),
-        )
+    private suspend fun sendCallback(callbackPath: String) = coroutineScope {
+        launch(Dispatchers.IO) {
+            val headers = mutableMapOf(
+                Pair("Accept", "application/json, text/javascript, */*; q=0.01"),
+                Pair("Accept-Language", "de,en-US;q=0.7,en;q=0.3"),
+                Pair("Accept-Encoding", "gzip, deflate, br"),
+                Pair("X-CSRF-Token", csrfToken),
+                Pair("X-Requested-With", "XMLHttpRequest"),
+            )
 
-        try {
-            Jsoup.connect(baseUrl + callbackPath)
-                .ignoreContentType(true)
-                .cookies(sessionCookies)
-                .headers(headers)
-                .execute()
-        } catch (ex: IOException) {
-            Log.e(javaClass.name, "Callback for $callbackPath failed.", ex)
+            try {
+                Jsoup.connect(baseUrl + callbackPath)
+                    .ignoreContentType(true)
+                    .cookies(sessionCookies)
+                    .headers(headers)
+                    .execute()
+            } catch (ex: IOException) {
+                Log.e(javaClass.name, "Callback for $callbackPath failed.", ex)
+            }
         }
-
     }
 
     /**
      * load all media from aod into itemMediaList and mediaList
+     * TODO private suspend fun listAnimes() = withContext(Dispatchers.IO) should also work, maybe a bug in android studio?
      */
-    private fun listAnimes() = GlobalScope.launch(Dispatchers.IO) {
-        val resAnimes = Jsoup.connect(baseUrl + libraryPath).get()
-        //println(resAnimes)
+    private suspend fun listAnimes() = withContext(Dispatchers.IO) {
+        launch(Dispatchers.IO) {
+            val resAnimes = Jsoup.connect(baseUrl + libraryPath).get()
+            //println(resAnimes)
 
-        itemMediaList.clear()
-        mediaList.clear()
-        resAnimes.select("div.animebox").forEach {
-            val type = if (it.select("p.animebox-link").select("a").text().toLowerCase(Locale.ROOT) == "zur serie") {
-                MediaType.TVSHOW
-            } else {
-                MediaType.MOVIE
+            itemMediaList.clear()
+            mediaList.clear()
+            resAnimes.select("div.animebox").forEach {
+                val type = if (it.select("p.animebox-link").select("a").text().lowercase(Locale.ROOT) == "zur serie") {
+                    MediaType.TVSHOW
+                } else {
+                    MediaType.MOVIE
+                }
+                val mediaTitle = it.select("h3.animebox-title").text()
+                val mediaLink = it.select("p.animebox-link").select("a").attr("href")
+                val mediaImage = it.select("p.animebox-image").select("img").attr("src")
+                val mediaShortText = it.select("p.animebox-shorttext").text()
+                val mediaId = mediaLink.substringAfterLast("/").toInt()
+
+                itemMediaList.add(ItemMedia(mediaId, mediaTitle, mediaImage))
+                mediaList.add(Media(mediaId, mediaLink, type).apply {
+                    info.title = mediaTitle
+                    info.posterUrl = mediaImage
+                    info.shortDesc = mediaShortText
+                })
             }
-            val mediaTitle = it.select("h3.animebox-title").text()
-            val mediaLink = it.select("p.animebox-link").select("a").attr("href")
-            val mediaImage = it.select("p.animebox-image").select("img").attr("src")
-            val mediaShortText = it.select("p.animebox-shorttext").text()
-            val mediaId = mediaLink.substringAfterLast("/").toInt()
 
-            itemMediaList.add(ItemMedia(mediaId, mediaTitle, mediaImage))
-            mediaList.add(Media(mediaId, mediaLink, type).apply {
-                info.title = mediaTitle
-                info.posterUrl = mediaImage
-                info.shortDesc = mediaShortText
-            })
+            Log.i(javaClass.name, "Total library size is: ${mediaList.size}")
         }
-
-        Log.i(javaClass.name, "Total library size is: ${mediaList.size}")
     }
 
     /**
      * load new episodes, titles and highlights
      */
-    private fun loadHome() = GlobalScope.launch(Dispatchers.IO) {
-         val resHome = Jsoup.connect(baseUrl).get()
+    private suspend fun loadHome() = withContext(Dispatchers.IO) {
+        launch(Dispatchers.IO) {
+            val resHome = Jsoup.connect(baseUrl).get()
 
-        // get highlights from AoD
-        highlightsList.clear()
-        resHome.select("#aod-highlights").select("div.news-item").forEach {
-            val mediaId = it.select("div.news-item-text").select("a.serienlink")
-                .attr("href").substringAfterLast("/").toIntOrNull()
-            val mediaTitle = it.select("div.news-title").select("h2").text()
-            val mediaImage = it.select("img").attr("src")
+            // get highlights from AoD
+            highlightsList.clear()
+            resHome.select("#aod-highlights").select("div.news-item").forEach {
+                val mediaId = it.select("div.news-item-text").select("a.serienlink")
+                    .attr("href").substringAfterLast("/").toIntOrNull()
+                val mediaTitle = it.select("div.news-title").select("h2").text()
+                val mediaImage = it.select("img").attr("src")
 
-            if (mediaId != null) {
-                highlightsList.add(ItemMedia(mediaId, mediaTitle, mediaImage))
+                if (mediaId != null) {
+                    highlightsList.add(ItemMedia(mediaId, mediaTitle, mediaImage))
+                }
             }
-        }
 
-        // get all new episodes from AoD
-        newEpisodesList.clear()
-        resHome.select("h2:contains(Neue Episoden)").next().select("li").forEach {
-            val mediaId = it.select("a.thumbs").attr("href")
-                .substringAfterLast("/").toIntOrNull()
-            val mediaImage = it.select("a.thumbs > img").attr("src")
-            val mediaTitle = "${it.select("a").text()} - ${it.select("span.neweps").text()}"
+            // get all new episodes from AoD
+            newEpisodesList.clear()
+            resHome.select("h2:contains(Neue Episoden)").next().select("li").forEach {
+                val mediaId = it.select("a.thumbs").attr("href")
+                    .substringAfterLast("/").toIntOrNull()
+                val mediaImage = it.select("a.thumbs > img").attr("src")
+                val mediaTitle = "${it.select("a").text()} - ${it.select("span.neweps").text()}"
 
-            if (mediaId != null) {
-                newEpisodesList.add(ItemMedia(mediaId, mediaTitle, mediaImage))
+                if (mediaId != null) {
+                    newEpisodesList.add(ItemMedia(mediaId, mediaTitle, mediaImage))
+                }
             }
-        }
 
-        // get new simulcasts from AoD
-        newSimulcastsList.clear()
-        resHome.select("h2:contains(Neue Simulcasts)").next().select("li").forEach {
-            val mediaId = it.select("a.thumbs").attr("href")
-                .substringAfterLast("/").toIntOrNull()
-            val mediaImage = it.select("a.thumbs > img").attr("src")
-            val mediaTitle = it.select("a").text()
+            // get new simulcasts from AoD
+            newSimulcastsList.clear()
+            resHome.select("h2:contains(Neue Simulcasts)").next().select("li").forEach {
+                val mediaId = it.select("a.thumbs").attr("href")
+                    .substringAfterLast("/").toIntOrNull()
+                val mediaImage = it.select("a.thumbs > img").attr("src")
+                val mediaTitle = it.select("a").text()
 
-            if (mediaId != null) {
-                newSimulcastsList.add(ItemMedia(mediaId, mediaTitle, mediaImage))
+                if (mediaId != null) {
+                    newSimulcastsList.add(ItemMedia(mediaId, mediaTitle, mediaImage))
+                }
             }
-        }
 
-        // get new titles from AoD
-        newTitlesList.clear()
-        resHome.select("h2:contains(Neue Anime-Titel)").next().select("li").forEach {
-            val mediaId = it.select("a.thumbs").attr("href")
-                .substringAfterLast("/").toIntOrNull()
-            val mediaImage = it.select("a.thumbs > img").attr("src")
-            val mediaTitle = it.select("a").text()
+            // get new titles from AoD
+            newTitlesList.clear()
+            resHome.select("h2:contains(Neue Anime-Titel)").next().select("li").forEach {
+                val mediaId = it.select("a.thumbs").attr("href")
+                    .substringAfterLast("/").toIntOrNull()
+                val mediaImage = it.select("a.thumbs > img").attr("src")
+                val mediaTitle = it.select("a").text()
 
-            if (mediaId != null) {
-                newTitlesList.add(ItemMedia(mediaId, mediaTitle, mediaImage))
+                if (mediaId != null) {
+                    newTitlesList.add(ItemMedia(mediaId, mediaTitle, mediaImage))
+                }
             }
-        }
 
-        // get top ten from AoD
-        topTenList.clear()
-        resHome.select("h2:contains(Anime Top 10)").next().select("li").forEach {
-            val mediaId = it.select("a.thumbs").attr("href")
-                .substringAfterLast("/").toIntOrNull()
-            val mediaImage = it.select("a.thumbs > img").attr("src")
-            val mediaTitle = it.select("a").text()
+            // get top ten from AoD
+            topTenList.clear()
+            resHome.select("h2:contains(Anime Top 10)").next().select("li").forEach {
+                val mediaId = it.select("a.thumbs").attr("href")
+                    .substringAfterLast("/").toIntOrNull()
+                val mediaImage = it.select("a.thumbs > img").attr("src")
+                val mediaTitle = it.select("a").text()
 
-            if (mediaId != null) {
-                topTenList.add(ItemMedia(mediaId, mediaTitle, mediaImage))
+                if (mediaId != null) {
+                    topTenList.add(ItemMedia(mediaId, mediaTitle, mediaImage))
+                }
             }
-        }
 
-        // if highlights is empty, add a random new title
-        if (highlightsList.isEmpty()) {
-            if (newTitlesList.isNotEmpty()) {
-                highlightsList.add(newTitlesList[Random.nextInt(0, newTitlesList.size)])
-            } else {
-                highlightsList.add(ItemMedia(0,"", ""))
+            // if highlights is empty, add a random new title
+            if (highlightsList.isEmpty()) {
+                if (newTitlesList.isNotEmpty()) {
+                    highlightsList.add(newTitlesList[Random.nextInt(0, newTitlesList.size)])
+                } else {
+                    highlightsList.add(ItemMedia(0,"", ""))
+                }
             }
+
+            Log.i(javaClass.name, "loaded home")
         }
     }
 
     /**
+     * TODO rework the media loading process, don't modify media object
+     * TODO catch SocketTimeoutException from loading to show a waring dialog
      * load streams for the media path, movies have one episode
      * @param media is used as call ba reference
      */
-    private fun loadStreams(media: Media) = GlobalScope.launch(Dispatchers.IO) {
-        if (sessionCookies.isEmpty()) login()
+    private suspend fun loadStreams(media: Media) = coroutineScope {
+        launch(Dispatchers.IO) {
+            if (sessionCookies.isEmpty()) login()
 
-        if (!loginSuccess) {
-            Log.w(javaClass.name, "Login, was not successful.")
-            return@launch
-        }
-
-        // get the media page
-        val res = Jsoup.connect(baseUrl + media.link)
-            .cookies(sessionCookies)
-            .get()
-
-        //println(res)
-
-        if (csrfToken.isEmpty()) {
-            csrfToken = res.select("meta[name=csrf-token]").attr("content")
-            //Log.i(javaClass.name, "New csrf token is $csrfToken")
-        }
-
-        val besides = res.select("div.besides").first()
-        val playlists = besides.select("input.streamstarter_html5").map { streamstarter ->
-            parsePlaylistAsync(
-                streamstarter.attr("data-playlist"),
-                streamstarter.attr("data-lang")
-            )
-        }.awaitAll()
-
-        playlists.forEach { aod ->
-            // TODO improve language handling
-            val locale = when (aod.extLanguage) {
-                "ger" -> Locale.GERMAN
-                "jap" -> Locale.JAPANESE
-                else -> Locale.ROOT
+            if (!loginSuccess) {
+                Log.w(javaClass.name, "Login, was not successful.")
+                return@launch
             }
 
-            aod.playlist.forEach { ep ->
-                try {
-                    if (media.hasEpisode(ep.mediaid)) {
-                        media.getEpisodeById(ep.mediaid).streams.add(
-                            Stream(ep.sources.first().file, locale)
-                        )
-                    } else {
-                        media.episodes.add(Episode(
-                            id = ep.mediaid,
-                            streams = mutableListOf(Stream(ep.sources.first().file, locale)),
-                            posterUrl = ep.image,
-                            title = ep.title,
-                            description = ep.description,
-                            number = getNumberFromTitle(ep.title, media.type)
-                        ))
-                    }
-                } catch (ex: Exception) {
-                    Log.w(javaClass.name, "Could not parse episode information.", ex)
+            // get the media page
+            val res = Jsoup.connect(baseUrl + media.link)
+                .cookies(sessionCookies)
+                .get()
+
+            //println(res)
+
+            if (csrfToken.isEmpty()) {
+                csrfToken = res.select("meta[name=csrf-token]").attr("content")
+                //Log.i(javaClass.name, "New csrf token is $csrfToken")
+            }
+
+            val besides = res.select("div.besides").first()
+            val playlists = besides.select("input.streamstarter_html5").map { streamstarter ->
+                parsePlaylistAsync(
+                    streamstarter.attr("data-playlist"),
+                    streamstarter.attr("data-lang")
+                )
+            }.awaitAll()
+
+            playlists.forEach { aod ->
+                // TODO improve language handling
+                val locale = when (aod.extLanguage) {
+                    "ger" -> Locale.GERMAN
+                    "jap" -> Locale.JAPANESE
+                    else -> Locale.ROOT
                 }
-            }
-        }
-        Log.i(javaClass.name, "Loaded playlists successfully")
 
-        // additional info from the media page
-        res.select("table.vertical-table").select("tr").forEach { row ->
-            when (row.select("th").text().toLowerCase(Locale.ROOT)) {
-                "produktionsjahr" -> media.info.year = row.select("td").text().toInt()
-                "fsk" -> media.info.age = row.select("td").text().toInt()
-                "episodenanzahl" -> {
-                    media.info.episodesCount = row.select("td").text()
-                        .substringBefore("/")
-                        .filter { it.isDigit() }
-                        .toInt()
-                }
-            }
-        }
-
-        // similar titles from media page
-        media.info.similar = res.select("h2:contains(Ähnliche Animes)").next().select("li").mapNotNull {
-            val mediaId = it.select("a.thumbs").attr("href")
-                .substringAfterLast("/").toIntOrNull()
-            val mediaImage = it.select("a.thumbs > img").attr("src")
-            val mediaTitle = it.select("a").text()
-
-            if (mediaId != null) {
-                ItemMedia(mediaId, mediaTitle, mediaImage)
-            } else {
-                null
-            }
-        }
-
-        // additional information for tv shows the episode title (description) is loaded from the "api"
-        if (media.type == MediaType.TVSHOW) {
-            res.select("div.three-box-container > div.episodebox").forEach { episodebox ->
-                // make sure the episode has a streaming link
-                if (episodebox.select("input.streamstarter_html5").isNotEmpty()) {
-                    val episodeId = episodebox.select("div.flip-front").attr("id").substringAfter("-").toInt()
-                    val episodeShortDesc = episodebox.select("p.episodebox-shorttext").text()
-                    val episodeWatched = episodebox.select("div.episodebox-icons > div").hasClass("status-icon-orange")
-                    val episodeWatchedCallback = episodebox.select("input.streamstarter_html5").eachAttr("data-playlist").first()
-
-                    media.episodes.firstOrNull { it.id == episodeId }?.apply {
-                        shortDesc = episodeShortDesc
-                        watched = episodeWatched
-                        watchedCallback = episodeWatchedCallback
+                aod.playlist.forEach { ep ->
+                    try {
+                        if (media.hasEpisode(ep.mediaid)) {
+                            media.getEpisodeById(ep.mediaid).streams.add(
+                                Stream(ep.sources.first().file, locale)
+                            )
+                        } else {
+                            media.episodes.add(Episode(
+                                id = ep.mediaid,
+                                streams = mutableListOf(Stream(ep.sources.first().file, locale)),
+                                posterUrl = ep.image,
+                                title = ep.title,
+                                description = ep.description,
+                                number = getNumberFromTitle(ep.title, media.type)
+                            ))
+                        }
+                    } catch (ex: Exception) {
+                        Log.w(javaClass.name, "Could not parse episode information.", ex)
                     }
                 }
             }
+            Log.i(javaClass.name, "Loaded playlists successfully")
+
+            // additional info from the media page
+            res.select("table.vertical-table").select("tr").forEach { row ->
+                when (row.select("th").text().lowercase(Locale.ROOT)) {
+                    "produktionsjahr" -> media.info.year = row.select("td").text().toInt()
+                    "fsk" -> media.info.age = row.select("td").text().toInt()
+                    "episodenanzahl" -> {
+                        media.info.episodesCount = row.select("td").text()
+                            .substringBefore("/")
+                            .filter { it.isDigit() }
+                            .toInt()
+                    }
+                }
+            }
+
+            // similar titles from media page
+            media.info.similar = res.select("h2:contains(Ähnliche Animes)").next().select("li").mapNotNull {
+                val mediaId = it.select("a.thumbs").attr("href")
+                    .substringAfterLast("/").toIntOrNull()
+                val mediaImage = it.select("a.thumbs > img").attr("src")
+                val mediaTitle = it.select("a").text()
+
+                if (mediaId != null) {
+                    ItemMedia(mediaId, mediaTitle, mediaImage)
+                } else {
+                    null
+                }
+            }
+
+            // additional information for tv shows the episode title (description) is loaded from the "api"
+            if (media.type == MediaType.TVSHOW) {
+                res.select("div.three-box-container > div.episodebox").forEach { episodebox ->
+                    // make sure the episode has a streaming link
+                    if (episodebox.select("input.streamstarter_html5").isNotEmpty()) {
+                        val episodeId = episodebox.select("div.flip-front").attr("id").substringAfter("-").toInt()
+                        val episodeShortDesc = episodebox.select("p.episodebox-shorttext").text()
+                        val episodeWatched = episodebox.select("div.episodebox-icons > div").hasClass("status-icon-orange")
+                        val episodeWatchedCallback = episodebox.select("input.streamstarter_html5").eachAttr("data-playlist").first()
+
+                        media.episodes.firstOrNull { it.id == episodeId }?.apply {
+                            shortDesc = episodeShortDesc
+                            watched = episodeWatched
+                            watchedCallback = episodeWatchedCallback
+                        }
+                    }
+                }
+            }
+            Log.i(javaClass.name, "media loaded successfully")
         }
-        Log.i(javaClass.name, "media loaded successfully")
     }
 
     /**
@@ -380,7 +415,7 @@ object AoDParser {
             return CompletableDeferred(AoDObject(listOf(), language))
         }
 
-        return GlobalScope.async(Dispatchers.IO) {
+        return CoroutineScope(Dispatchers.IO).async(Dispatchers.IO) {
             val headers = mutableMapOf(
                 Pair("Accept", "application/json, text/javascript, */*; q=0.01"),
                 Pair("Accept-Language", "de,en-US;q=0.7,en;q=0.3"),

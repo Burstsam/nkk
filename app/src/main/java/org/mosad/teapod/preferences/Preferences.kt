@@ -11,6 +11,8 @@ object Preferences {
         internal set
     var autoplay = true
         internal set
+    var devSettings = false
+        internal set
     var theme = DataTypes.Theme.DARK
         internal set
 
@@ -39,6 +41,15 @@ object Preferences {
         this.autoplay = autoplay
     }
 
+    fun saveDevSettings(context: Context, devSettings: Boolean) {
+        with(getSharedPref(context).edit()) {
+            putBoolean(context.getString(R.string.save_key_dev_settings), devSettings)
+            apply()
+        }
+
+        this.devSettings = devSettings
+    }
+
     fun saveTheme(context: Context, theme: DataTypes.Theme) {
         with(getSharedPref(context).edit()) {
             putString(context.getString(R.string.save_key_theme), theme.toString())
@@ -59,6 +70,9 @@ object Preferences {
         )
         autoplay = sharedPref.getBoolean(
             context.getString(R.string.save_key_autoplay), true
+        )
+        devSettings = sharedPref.getBoolean(
+            context.getString(R.string.save_key_dev_settings), false
         )
         theme = DataTypes.Theme.valueOf(
             sharedPref.getString(

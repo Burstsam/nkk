@@ -1,0 +1,5 @@
+* Entwickleroptionen
+  * Export/Import für "Meine Liste"
+* Der Picture in Picture Modus hat nun Controlls (#35)
+* Teapod stürtzt nicht mehr ab, wenn ein Element aus "Meine List" nicht geladen werden konnte (#42)
+* Staffel-Informationen im Title werden bei der Suche in tmdb ignoriert (#43)
