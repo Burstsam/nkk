@@ -1,0 +1,5 @@
+* Developer options
+  * Export/Import for "My List"
+* The Picture in Picture Modus now has Controlls (#35)
+* Teapod deosn't crash, if a element from "My List" could not be loaded (#42)
+* Season-Information in titles will be ignored, when searching in tmdb (#43)
