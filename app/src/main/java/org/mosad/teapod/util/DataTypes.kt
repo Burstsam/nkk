@@ -99,18 +99,6 @@ data class Stream(
 )
 
 /**
- * this class is used for tmdb responses
- */
-data class TMDBResponse(
-    val id: Int = 0,
-    val title: String = "",
-    val overview: String = "",
-    val posterUrl: String = "",
-    val backdropUrl: String = "",
-    val runtime: Int = 0
-)
-
-/**
  * this class is used to represent the aod json API?
  */
 data class AoDObject(

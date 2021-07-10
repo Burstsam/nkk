@@ -25,6 +25,8 @@ import org.mosad.teapod.ui.activity.main.viewmodel.MediaFragmentViewModel
 import org.mosad.teapod.util.DataTypes.MediaType
 import org.mosad.teapod.util.Episode
 import org.mosad.teapod.util.StorageController
+import org.mosad.teapod.util.tmdb.Movie
+import org.mosad.teapod.util.tmdb.TMDBApiController
 
 /**
  * The media detail fragment.
@@ -85,21 +87,25 @@ class MediaFragment(private val mediaId: Int) : Fragment() {
      */
     private fun updateGUI() = with(model) {
         // generic gui
-        val backdropUrl = if (tmdb.backdropUrl.isNotEmpty()) tmdb.backdropUrl else media.info.posterUrl
-        val posterUrl = if (tmdb.posterUrl.isNotEmpty()) tmdb.posterUrl else media.info.posterUrl
+        val backdropUrl = tmdbResult.backdropPath?.let { TMDBApiController.imageUrl + it }
+            ?: media.info.posterUrl
+        val posterUrl = tmdbResult.posterPath?.let { TMDBApiController.imageUrl + it }
+            ?: media.info.posterUrl
 
+        // load poster and backdrop
+        Glide.with(requireContext()).load(posterUrl)
+            .into(binding.imagePoster)
         Glide.with(requireContext()).load(backdropUrl)
             .apply(RequestOptions.placeholderOf(ColorDrawable(Color.DKGRAY)))
             .apply(RequestOptions.bitmapTransform(BlurTransformation(20, 3)))
             .into(binding.imageBackdrop)
 
-        Glide.with(requireContext()).load(posterUrl)
-            .into(binding.imagePoster)
-
         binding.textTitle.text = media.info.title
         binding.textYear.text = media.info.year.toString()
         binding.textAge.text = media.info.age.toString()
         binding.textOverview.text = media.info.shortDesc
+
+        // set "my list" indicator
         if (StorageController.myList.contains(media.id)) {
             Glide.with(requireContext()).load(R.drawable.ic_baseline_check_24).into(binding.imageMyListAction)
         } else {
@@ -133,12 +139,13 @@ class MediaFragment(private val mediaId: Int) : Fragment() {
             fragments.add(MediaFragmentEpisodes())
             pagerAdapter.notifyDataSetChanged()
         } else if (media.type == MediaType.MOVIE) {
+            val tmdbMovie = (tmdbResult as Movie)
 
-            if (tmdb.runtime > 0) {
+            if (tmdbMovie.runtime != null) {
                 binding.textEpisodesOrRuntime.text = resources.getQuantityString(
                     R.plurals.text_runtime,
-                    tmdb.runtime,
-                    tmdb.runtime
+                    tmdbMovie.runtime,
+                    tmdbMovie.runtime
                 )
             } else {
                 binding.textEpisodesOrRuntime.visibility = View.GONE
