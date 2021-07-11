@@ -46,6 +46,7 @@ import org.mosad.teapod.ui.activity.onboarding.OnboardingActivity
 import org.mosad.teapod.ui.activity.player.PlayerActivity
 import org.mosad.teapod.ui.components.LoginDialog
 import org.mosad.teapod.util.DataTypes
+import org.mosad.teapod.util.MetaDBController
 import org.mosad.teapod.util.StorageController
 import org.mosad.teapod.util.exitAndRemoveTask
 import java.net.SocketTimeoutException
@@ -137,8 +138,12 @@ class MainActivity : AppCompatActivity(), NavigationBarView.OnItemSelectedListen
      */
     private fun load() {
         val time = measureTimeMillis {
+            // start the initial loading
             val loadingJob = CoroutineScope(Dispatchers.IO + CoroutineName("InitialLoadingScope"))
-                .async { AoDParser.initialLoading() } // start the initial loading
+                .async {
+                    launch { AoDParser.initialLoading() }
+                    launch { MetaDBController.list() }
+                }
 
             // load all saved stuff here
             Preferences.load(this)

@@ -12,8 +12,9 @@ import jp.wasabeef.glide.transformations.RoundedCornersTransformation
 import org.mosad.teapod.R
 import org.mosad.teapod.databinding.ItemEpisodeBinding
 import org.mosad.teapod.util.Episode
+import org.mosad.teapod.util.tmdb.TVEpisode
 
-class EpisodeItemAdapter(private val episodes: List<Episode>) : RecyclerView.Adapter<EpisodeItemAdapter.EpisodeViewHolder>() {
+class EpisodeItemAdapter(private val episodes: List<Episode>, private val tmdbEpisodes: List<TVEpisode>?) : RecyclerView.Adapter<EpisodeItemAdapter.EpisodeViewHolder>() {
 
     var onImageClick: ((String, Int) -> Unit)? = null
 
@@ -32,7 +33,13 @@ class EpisodeItemAdapter(private val episodes: List<Episode>) : RecyclerView.Ada
         }
 
         holder.binding.textEpisodeTitle.text = titleText
-        holder.binding.textEpisodeDesc.text = ep.shortDesc
+        holder.binding.textEpisodeDesc.text = if (ep.shortDesc.isNotEmpty()) {
+            ep.shortDesc
+        } else if (tmdbEpisodes != null && position < tmdbEpisodes.size){
+            tmdbEpisodes[position].overview
+        } else {
+            ""
+        }
 
         if (episodes[position].posterUrl.isNotEmpty()) {
             Glide.with(context).load(ep.posterUrl)

@@ -19,9 +19,7 @@ import kotlinx.coroutines.runBlocking
 import org.mosad.teapod.R
 import org.mosad.teapod.parser.AoDParser
 import org.mosad.teapod.preferences.Preferences
-import org.mosad.teapod.util.DataTypes
-import org.mosad.teapod.util.Episode
-import org.mosad.teapod.util.Media
+import org.mosad.teapod.util.*
 import java.util.*
 import kotlin.collections.ArrayList
 
@@ -44,6 +42,8 @@ class PlayerViewModel(application: Application) : AndroidViewModel(application) 
     var currentEpisode = Episode()
         internal set
     var nextEpisode: Episode? = null
+        internal set
+    var mediaMeta: Meta? = null
         internal set
     var currentLanguage: Locale = Locale.ROOT
         internal set
@@ -75,6 +75,7 @@ class PlayerViewModel(application: Application) : AndroidViewModel(application) 
     fun loadMedia(mediaId: Int, episodeId: Int) {
         runBlocking {
             media = AoDParser.getMediaById(mediaId)
+            mediaMeta = loadMediaMeta(media.id)
         }
 
         currentEpisode = media.getEpisodeById(episodeId)
@@ -156,6 +157,14 @@ class PlayerViewModel(application: Application) : AndroidViewModel(application) 
             )
         } else {
             currentEpisode.title
+        }
+    }
+
+    private suspend fun loadMediaMeta(aodId: Int): Meta? {
+        return if (media.type == DataTypes.MediaType.TVSHOW) {
+            MetaDBController().getTVShowMetadata(aodId)
+        } else {
+            null
         }
     }
 

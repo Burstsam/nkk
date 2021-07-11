@@ -99,14 +99,14 @@ class TMDBApiController {
     }
 
     @Suppress("BlockingMethodInNonBlockingContext")
-    suspend fun getTVSeasonDetails(tvId: Int, seasonNumber: Int): TVSeason = withContext(Dispatchers.IO) {
+    suspend fun getTVSeasonDetails(tvId: Int, seasonNumber: Int): TVSeason? = withContext(Dispatchers.IO) {
         val url = URL("$detailsTVUrl/$tvId/season/$seasonNumber?api_key=$apiKey&language=$language")
 
         val response = try {
             JsonParser.parseString(url.readText()).asJsonObject
         } catch (ex: FileNotFoundException) {
             Log.w(javaClass.name, "The resource you requested could not be found")
-            return@withContext TVSeason(-1)
+            return@withContext null
         }
         // println(response)
 
@@ -114,25 +114,25 @@ class TMDBApiController {
             val episodes = response.get("episodes").asJsonArray.map {
                 TVEpisode(
                     id = it.asJsonObject.get("id").asInt,
-                    name = it.asJsonObject.get("name")?.asString,
-                    overview = it.asJsonObject.get("overview")?.asString,
-                    airDate = it.asJsonObject.get("air_date")?.asString,
-                    episodeNumber = it.asJsonObject.get("episode_number")?.asInt
+                    name = it.asJsonObject.get("name")?.asString ?: "",
+                    overview = it.asJsonObject.get("overview")?.asString ?: "",
+                    airDate = it.asJsonObject.get("air_date")?.asString ?: "",
+                    episodeNumber = it.asJsonObject.get("episode_number")?.asInt ?: -1
                 )
             }
 
             TVSeason(
                 id = response.get("id").asInt,
-                name = response.asJsonObject.get("name")?.asString,
-                overview = response.asJsonObject.get("overview")?.asString,
-                posterPath = response.asJsonObject.get("poster_path")?.asString,
-                airDate = response.asJsonObject.get("air_date")?.asString,
+                name = response.asJsonObject.get("name")?.asString ?: "",
+                overview = response.asJsonObject.get("overview")?.asString ?: "",
+                posterPath = response.asJsonObject.get("poster_path")?.asString ?: "",
+                airDate = response.asJsonObject.get("air_date")?.asString ?: "",
                 episodes = episodes,
-                seasonNumber = response.get("season_number")?.asInt
+                seasonNumber = response.get("season_number")?.asInt ?: -1
             )
         } catch (ex: Exception) {
             Log.w(javaClass.name, "Error", ex)
-            TVSeason(-1)
+            null
         }
     }
 

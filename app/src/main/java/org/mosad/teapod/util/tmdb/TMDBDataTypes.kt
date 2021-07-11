@@ -32,19 +32,19 @@ data class TVShow(
 
 data class TVSeason(
     val id: Int,
-    val name: String? = null,
-    val overview: String? = null,
-    val posterPath: String? = null,
-    val airDate: String? = null,
-    val episodes: List<TVEpisode>? = null,
-    val seasonNumber: Int? = null
+    val name: String,
+    val overview: String,
+    val posterPath: String,
+    val airDate: String,
+    val episodes: List<TVEpisode>,
+    val seasonNumber: Int
 )
 
 // TODO decide whether to use nullable or not
 data class TVEpisode(
     val id: Int,
-    val name: String? = null,
-    val overview: String? = null,
-    val airDate: String? = null,
-    val episodeNumber: Int? = null
+    val name: String,
+    val overview: String,
+    val airDate: String,
+    val episodeNumber: Int
 )

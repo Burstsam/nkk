@@ -64,7 +64,6 @@ class MediaFragment(private val mediaId: Int) : Fragment() {
             }
         }.attach()
 
-
         lifecycleScope.launch {
             model.load(mediaId) // load the streams and tmdb for the selected media
 

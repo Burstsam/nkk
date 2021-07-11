@@ -9,9 +9,11 @@ import org.mosad.teapod.util.DataTypes.MediaType
 import org.mosad.teapod.util.tmdb.Movie
 import org.mosad.teapod.util.tmdb.TMDBApiController
 import org.mosad.teapod.util.tmdb.TMDBResult
+import org.mosad.teapod.util.tmdb.TVSeason
 
 /**
  * handle media, next ep and tmdb
+ * TODO this lives in activity, is this correct?
  */
 class MediaFragmentViewModel(application: Application) : AndroidViewModel(application) {
 
@@ -21,16 +23,35 @@ class MediaFragmentViewModel(application: Application) : AndroidViewModel(applic
         internal set
     lateinit var tmdbResult: TMDBResult // TODO rename
         internal set
+    var tmdbTVSeason: TVSeason? =null
+        internal set
+    var mediaMeta: Meta? = null
+        internal set
 
     /**
      * set media, tmdb and nextEpisode
+     * TODO run aod and tmdb load parallel
      */
     suspend fun load(mediaId: Int) {
+        val tmdbApiController = TMDBApiController()
         media = AoDParser.getMediaById(mediaId)
 
-        val tmdbApiController = TMDBApiController()
-        val searchTitle = stripTitleInfo(media.info.title)
-        val tmdbId = tmdbApiController.search(searchTitle, media.type)
+        // check if metaDB knows the title
+        val tmdbId: Int = if (MetaDBController.mediaList.media.contains(media.id)) {
+            // load media info from metaDB
+            val metaDB = MetaDBController()
+            mediaMeta = when (media.type) {
+                MediaType.MOVIE -> metaDB.getMovieMetadata(media.id)
+                MediaType.TVSHOW -> metaDB.getTVShowMetadata(media.id)
+                else -> null
+            }
+
+            mediaMeta?.tmdbId ?: -1
+        } else {
+            // use tmdb search to get media info
+            mediaMeta = null // set mediaMeta to null, if metaDB doesn't know the media
+            tmdbApiController.search(stripTitleInfo(media.info.title), media.type)
+        }
 
         tmdbResult = when (media.type) {
             MediaType.MOVIE -> tmdbApiController.getMovieDetails(tmdbId)
@@ -39,15 +60,29 @@ class MediaFragmentViewModel(application: Application) : AndroidViewModel(applic
         }
         println(tmdbResult) // TODO
 
-        // TESTING
-        if (media.type == MediaType.TVSHOW) {
-            val seasonNumber = guessSeasonFromTitle(media.info.title)
-            Log.d("test", "season number: $seasonNumber")
-
-            // TODO Important: only use tmdb info if media title and episode number match exactly
-            val tmdbTVSeason = tmdbApiController.getTVSeasonDetails(tmdbId, seasonNumber)
-            Log.d("test", "Season Info: $tmdbTVSeason.")
+        // get season info, if metaDB knows the tv show
+        tmdbTVSeason = if (media.type == MediaType.TVSHOW && mediaMeta != null) {
+            val tvShowMeta = mediaMeta as TVShowMeta
+            tmdbApiController.getTVSeasonDetails(tvShowMeta.tmdbId, tvShowMeta.tmdbSeasonNumber)
+        } else {
+            null
         }
+
+        // TESTING
+//        if (media.type == MediaType.TVSHOW) {
+//            if (mediaMeta != null) {
+//                val tvShowMeta = mediaMeta as TVShowMeta
+//                val tmdbTVSeason = tmdbApiController.getTVSeasonDetails(tvShowMeta.tmdbId, tvShowMeta.tmdbSeasonNumber)
+//            } else {
+//                // for tv shows not in metaDB, try to guess/search
+//
+//                val seasonNumber = guessSeasonFromTitle(media.info.title)
+//                Log.d("test", "season number: $seasonNumber")
+//
+//                val tmdbTVSeason = tmdbApiController.getTVSeasonDetails(tmdbId, seasonNumber)
+//                Log.d("test", "Season Info: $tmdbTVSeason.")
+//            }
+//        }
 
         // TESTING END
 
