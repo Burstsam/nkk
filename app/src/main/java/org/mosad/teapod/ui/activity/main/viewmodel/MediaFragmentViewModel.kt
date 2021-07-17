@@ -6,7 +6,6 @@ import androidx.lifecycle.AndroidViewModel
 import org.mosad.teapod.parser.AoDParser
 import org.mosad.teapod.util.*
 import org.mosad.teapod.util.DataTypes.MediaType
-import org.mosad.teapod.util.tmdb.Movie
 import org.mosad.teapod.util.tmdb.TMDBApiController
 import org.mosad.teapod.util.tmdb.TMDBResult
 import org.mosad.teapod.util.tmdb.TVSeason
@@ -21,7 +20,7 @@ class MediaFragmentViewModel(application: Application) : AndroidViewModel(applic
         internal set
     var nextEpisode = Episode()
         internal set
-    lateinit var tmdbResult: TMDBResult // TODO rename
+    var tmdbResult: TMDBResult? = null // TODO rename
         internal set
     var tmdbTVSeason: TVSeason? =null
         internal set
@@ -56,7 +55,7 @@ class MediaFragmentViewModel(application: Application) : AndroidViewModel(applic
         tmdbResult = when (media.type) {
             MediaType.MOVIE -> tmdbApiController.getMovieDetails(tmdbId)
             MediaType.TVSHOW -> tmdbApiController.getTVShowDetails(tmdbId)
-            else -> Movie(-1)
+            else -> null
         }
         println(tmdbResult) // TODO
 

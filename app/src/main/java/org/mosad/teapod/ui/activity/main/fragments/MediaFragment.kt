@@ -86,9 +86,9 @@ class MediaFragment(private val mediaId: Int) : Fragment() {
      */
     private fun updateGUI() = with(model) {
         // generic gui
-        val backdropUrl = tmdbResult.backdropPath?.let { TMDBApiController.imageUrl + it }
+        val backdropUrl = tmdbResult?.backdropPath?.let { TMDBApiController.imageUrl + it }
             ?: media.info.posterUrl
-        val posterUrl = tmdbResult.posterPath?.let { TMDBApiController.imageUrl + it }
+        val posterUrl = tmdbResult?.posterPath?.let { TMDBApiController.imageUrl + it }
             ?: media.info.posterUrl
 
         // load poster and backdrop
@@ -138,9 +138,9 @@ class MediaFragment(private val mediaId: Int) : Fragment() {
             fragments.add(MediaFragmentEpisodes())
             pagerAdapter.notifyDataSetChanged()
         } else if (media.type == MediaType.MOVIE) {
-            val tmdbMovie = (tmdbResult as Movie)
+            val tmdbMovie = (tmdbResult as Movie?)
 
-            if (tmdbMovie.runtime != null) {
+            if (tmdbMovie?.runtime != null) {
                 binding.textEpisodesOrRuntime.text = resources.getQuantityString(
                     R.plurals.text_runtime,
                     tmdbMovie.runtime,
