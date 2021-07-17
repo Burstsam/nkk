@@ -42,8 +42,6 @@ class MetaDBController {
             val url = URL("$repoUrl/list.json")
             val json = url.readText()
 
-            Thread.sleep(5000)
-
             mediaList = Gson().fromJson(json, MediaList::class.java)
         }
     }
@@ -148,11 +146,11 @@ data class EpisodeMeta(
     @SerializedName("tmdb_number")
     val tmdbNumber: Int,
     @SerializedName("opening_start")
-    val openingStart: Int,
+    val openingStart: Long,
     @SerializedName("opening_duration")
-    val openingDuration: Int,
+    val openingDuration: Long,
     @SerializedName("ending_start")
-    val endingStart: Int,
+    val endingStart: Long,
     @SerializedName("ending_duration")
-    val endingDuration: Int
+    val endingDuration: Long
 )

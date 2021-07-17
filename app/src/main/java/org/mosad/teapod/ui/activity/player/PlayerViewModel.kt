@@ -27,6 +27,9 @@ import kotlin.collections.ArrayList
  * PlayerViewModel handles all stuff related to media/episodes.
  * When currentEpisode is changed the player will start playing it (not initial media),
  * the next episode will be update and the callback is handled.
+ *
+ * TODO rework don't use episodes for everything, use media instead
+ *  this is a major rework of the AoDParser/Player/Media architecture
  */
 class PlayerViewModel(application: Application) : AndroidViewModel(application) {
 
@@ -44,6 +47,8 @@ class PlayerViewModel(application: Application) : AndroidViewModel(application) 
     var nextEpisode: Episode? = null
         internal set
     var mediaMeta: Meta? = null
+        internal set
+    var currentEpisodeMeta: EpisodeMeta? = null
         internal set
     var currentLanguage: Locale = Locale.ROOT
         internal set
@@ -75,11 +80,12 @@ class PlayerViewModel(application: Application) : AndroidViewModel(application) 
     fun loadMedia(mediaId: Int, episodeId: Int) {
         runBlocking {
             media = AoDParser.getMediaById(mediaId)
-            mediaMeta = loadMediaMeta(media.id)
+            mediaMeta = loadMediaMeta(media.id) // can be done blocking, since it should be cached
         }
 
         currentEpisode = media.getEpisodeById(episodeId)
         nextEpisode = selectNextEpisode()
+        currentEpisodeMeta = getEpisodeMetaByAoDMediaId(currentEpisode.id)
         currentLanguage = currentEpisode.getPreferredStream(preferredLanguage).language
     }
 
@@ -121,6 +127,7 @@ class PlayerViewModel(application: Application) : AndroidViewModel(application) 
         currentLanguage = preferredStream.language // update current language, since it may have changed
         currentEpisode = episode
         nextEpisode = selectNextEpisode()
+        currentEpisodeMeta = getEpisodeMetaByAoDMediaId(episode.id)
         currentEpisodeChangedListener.forEach { it() } // update player gui (title)
 
         val mediaSource = HlsMediaSource.Factory(dataSourceFactory).createMediaSource(
@@ -157,6 +164,15 @@ class PlayerViewModel(application: Application) : AndroidViewModel(application) 
             )
         } else {
             currentEpisode.title
+        }
+    }
+
+    fun getEpisodeMetaByAoDMediaId(aodMediaId: Int): EpisodeMeta? {
+        val meta = mediaMeta
+        return if (meta is TVShowMeta) {
+            meta.episodes.firstOrNull { it.aodMediaId == aodMediaId }
+        } else {
+            null
         }
     }
 

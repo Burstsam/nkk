@@ -32,10 +32,7 @@ import org.mosad.teapod.R
 import org.mosad.teapod.preferences.Preferences
 import org.mosad.teapod.ui.components.EpisodesListPlayer
 import org.mosad.teapod.ui.components.LanguageSettingsPlayer
-import org.mosad.teapod.util.DataTypes
-import org.mosad.teapod.util.hideBars
-import org.mosad.teapod.util.isInPiPMode
-import org.mosad.teapod.util.navToLauncherTask
+import org.mosad.teapod.util.*
 import java.util.*
 import java.util.concurrent.TimeUnit
 import kotlin.concurrent.scheduleAtFixedRate
@@ -226,7 +223,10 @@ class PlayerActivity : AppCompatActivity() {
         // when the player controls get hidden, hide the bars too
         video_view.setControllerVisibilityListener {
             when (it) {
-                View.GONE -> hideBars()
+                View.GONE -> {
+                    hideBars()
+                    // TODO also hide the skip op button
+                }
                 View.VISIBLE -> updateControls()
             }
         }
@@ -244,6 +244,7 @@ class PlayerActivity : AppCompatActivity() {
         rwd_10.setOnButtonClickListener { rewind() }
         ffwd_10.setOnButtonClickListener { fastForward() }
         button_next_ep.setOnClickListener { playNextEpisode() }
+        button_skip_op.setOnClickListener { skipOpening() }
         button_language.setOnClickListener { showLanguageSettings() }
         button_episodes.setOnClickListener { showEpisodesList() }
         button_next_ep_c.setOnClickListener { playNextEpisode() }
@@ -262,21 +263,38 @@ class PlayerActivity : AppCompatActivity() {
 
         timerUpdates = Timer().scheduleAtFixedRate(0, 500) {
             lifecycleScope.launch {
+                val currentPosition = model.player.currentPosition
                 val btnNextEpIsVisible = button_next_ep.isVisible
                 val controlsVisible = controller.isVisible
 
+                // make sure remaining time is > 0
                 if (model.player.duration > 0) {
-                    remainingTime = model.player.duration - model.player.currentPosition
+                    remainingTime = model.player.duration - currentPosition
                     remainingTime = if (remainingTime < 0) 0 else remainingTime
                 }
 
+                // TODO add metaDB ending_start support
+                // if remaining time < 20 sec, a next ep is set, autoplay is enabled and not in pip:
+                // show next ep button
                 if (remainingTime in 1..20000) {
-                    // if the next ep button is not visible, make it visible. Don't show in pip mode
                     if (!btnNextEpIsVisible && model.nextEpisode != null && Preferences.autoplay && !isInPiPMode()) {
                         showButtonNextEp()
                     }
                 } else if (btnNextEpIsVisible) {
                     hideButtonNextEp()
+                }
+
+                // if meta data is present and opening_start & opening_duration are valid, show skip opening
+                model.currentEpisodeMeta?.let {
+                    if (it.openingDuration > 0 &&
+                        currentPosition in it.openingStart..(it.openingStart + 10000) &&
+                        !button_skip_op.isVisible
+                    ) {
+                        showButtonSkipOp()
+                    } else if (button_skip_op.isVisible && currentPosition !in it.openingStart..(it.openingStart + 10000)) {
+                        // the button should only be visible, if currentEpisodeMeta != null
+                        hideButtonSkipOp()
+                    }
                 }
 
                 // if controls are visible, update them
@@ -376,12 +394,21 @@ class PlayerActivity : AppCompatActivity() {
         hideButtonNextEp()
     }
 
+    private fun skipOpening() {
+        // calculate the seek time
+        model.currentEpisodeMeta?.let {
+            val seekTime = (it.openingStart + it.openingDuration) - model.player.currentPosition
+            model.seekToOffset(seekTime)
+        }
+
+    }
+
     /**
      * show the next episode button
      * TODO improve the show animation
      */
     private fun showButtonNextEp() {
-        button_next_ep.visibility = View.VISIBLE
+        button_next_ep.isVisible = true
         button_next_ep.alpha = 0.0f
 
         button_next_ep.animate()
@@ -399,7 +426,28 @@ class PlayerActivity : AppCompatActivity() {
             .setListener(object : AnimatorListenerAdapter() {
                 override fun onAnimationEnd(animation: Animator?) {
                     super.onAnimationEnd(animation)
-                    button_next_ep.visibility = View.GONE
+                    button_next_ep.isVisible = false
+                }
+            })
+
+    }
+
+    private fun showButtonSkipOp() {
+        button_skip_op.isVisible = true
+        button_skip_op.alpha = 0.0f
+
+        button_skip_op.animate()
+            .alpha(1.0f)
+            .setListener(null)
+    }
+
+    private fun hideButtonSkipOp() {
+        button_skip_op.animate()
+            .alpha(0.0f)
+            .setListener(object : AnimatorListenerAdapter() {
+                override fun onAnimationEnd(animation: Animator?) {
+                    super.onAnimationEnd(animation)
+                    button_skip_op.isVisible = false
                 }
             })
 
@@ -437,7 +485,7 @@ class PlayerActivity : AppCompatActivity() {
          */
         override fun onSingleTapConfirmed(e: MotionEvent?): Boolean {
             if (!isInPiPMode()) {
-                if (controller.isVisible) controller.hide() else  controller.show()
+                if (controller.isVisible) controller.hide() else controller.show()
             }
 
             return true
