@@ -346,13 +346,13 @@ object AoDParser {
 
             playlists.forEach { aod ->
                 // TODO improve language handling
-                val locale = when (aod.extLanguage) {
+                val locale = when (aod.language) {
                     "ger" -> Locale.GERMAN
                     "jap" -> Locale.JAPANESE
                     else -> Locale.ROOT
                 }
 
-                aod.playlist.forEach { ep ->
+                aod.list.forEach { ep ->
                     try {
                         if (media.hasEpisode(ep.mediaid)) {
                             media.getEpisodeById(ep.mediaid).streams.add(
