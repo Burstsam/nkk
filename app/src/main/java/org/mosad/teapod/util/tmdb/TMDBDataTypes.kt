@@ -37,7 +37,7 @@ abstract class TMDBResult{
     abstract val backdropPath: String?
 }
 
-data class Movie(
+data class TMDBMovie(
     override val id: Int,
     override val name: String,
     override val overview: String?,
@@ -52,7 +52,7 @@ data class Movie(
     // TODO generes
 ): TMDBResult()
 
-data class TVShow(
+data class TMDBTVShow(
     override val id: Int,
     override val name: String,
     override val overview: String,
@@ -67,7 +67,7 @@ data class TVShow(
     // TODO generes
 ): TMDBResult()
 
-data class TVSeason(
+data class TMDBTVSeason(
     val id: Int,
     val name: String,
     val overview: String,
@@ -76,12 +76,12 @@ data class TVSeason(
     @SerializedName("air_date")
     val airDate: String,
     @SerializedName("episodes")
-    val episodes: List<TVEpisode>,
+    val episodes: List<TMDBTVEpisode>,
     @SerializedName("season_number")
     val seasonNumber: Int
 )
 
-data class TVEpisode(
+data class TMDBTVEpisode(
     val id: Int,
     val name: String,
     val overview: String,

@@ -30,7 +30,7 @@ class LibraryFragment : Fragment() {
         lifecycleScope.launch {
             // create and set the adapter, needs context
             context?.let {
-                adapter = MediaItemAdapter(AoDParser.itemMediaList)
+                adapter = MediaItemAdapter(AoDParser.guiMediaList)
                 adapter.onItemClick = { mediaId, _ ->
                     activity?.showFragment(MediaFragment(mediaId))
                 }

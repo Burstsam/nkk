@@ -25,7 +25,7 @@ import org.mosad.teapod.ui.activity.main.viewmodel.MediaFragmentViewModel
 import org.mosad.teapod.util.DataTypes.MediaType
 import org.mosad.teapod.util.Episode
 import org.mosad.teapod.util.StorageController
-import org.mosad.teapod.util.tmdb.Movie
+import org.mosad.teapod.util.tmdb.TMDBMovie
 import org.mosad.teapod.util.tmdb.TMDBApiController
 
 /**
@@ -138,7 +138,7 @@ class MediaFragment(private val mediaId: Int) : Fragment() {
             fragments.add(MediaFragmentEpisodes())
             pagerAdapter.notifyDataSetChanged()
         } else if (media.type == MediaType.MOVIE) {
-            val tmdbMovie = (tmdbResult as Movie?)
+            val tmdbMovie = (tmdbResult as TMDBMovie?)
 
             if (tmdbMovie?.runtime != null) {
                 binding.textEpisodesOrRuntime.text = resources.getQuantityString(
@@ -171,7 +171,7 @@ class MediaFragment(private val mediaId: Int) : Fragment() {
             when (media.type) {
                 MediaType.MOVIE -> playEpisode(media.episodes.first())
                 MediaType.TVSHOW -> playEpisode(nextEpisode)
-                else -> Log.e(javaClass.name, "Wrong Type: $media.type")
+                else -> Log.e(javaClass.name, "Wrong Type: ${media.type}")
             }
         }
 

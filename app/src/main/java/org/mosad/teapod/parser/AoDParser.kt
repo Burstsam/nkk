@@ -49,7 +49,10 @@ object AoDParser {
     private var loginSuccess = false
 
     private val mediaList = arrayListOf<Media>() // actual media (data)
-    val itemMediaList = arrayListOf<ItemMedia>() // gui media
+    private val aodMediaList = arrayListOf<IAoDMedia>()
+
+    // gui media
+    val guiMediaList = arrayListOf<ItemMedia>()
     val highlightsList = arrayListOf<ItemMedia>()
     val newEpisodesList = arrayListOf<ItemMedia>()
     val newSimulcastsList = arrayListOf<ItemMedia>()
@@ -110,8 +113,8 @@ object AoDParser {
      * get a media by it's ID (int)
      * @return Media
      */
-    suspend fun getMediaById(mediaId: Int): Media {
-        val media = mediaList.first { it.id == mediaId }
+    suspend fun getMediaById(aodId: Int): Media {
+        val media = mediaList.first { it.id == aodId }
 
         if (media.episodes.isEmpty()) {
             loadStreams(media).join()
@@ -180,24 +183,39 @@ object AoDParser {
             val resAnimes = Jsoup.connect(baseUrl + libraryPath).get()
             //println(resAnimes)
 
-            itemMediaList.clear()
+            guiMediaList.clear()
             mediaList.clear()
-            resAnimes.select("div.animebox").forEach {
-                val type = if (it.select("p.animebox-link").select("a").text().lowercase(Locale.ROOT) == "zur serie") {
-                    MediaType.TVSHOW
-                } else {
-                    MediaType.MOVIE
-                }
-                val mediaTitle = it.select("h3.animebox-title").text()
-                val mediaLink = it.select("p.animebox-link").select("a").attr("href")
-                val mediaImage = it.select("p.animebox-image").select("img").attr("src")
-                val mediaShortText = it.select("p.animebox-shorttext").text()
-                val mediaId = mediaLink.substringAfterLast("/").toInt()
+            val animes = resAnimes.select("div.animebox")
 
-                itemMediaList.add(ItemMedia(mediaId, mediaTitle, mediaImage))
-                mediaList.add(Media(mediaId, mediaLink, type).apply {
-                    info.title = mediaTitle
-                    info.posterUrl = mediaImage
+            guiMediaList.addAll(
+                animes.map {
+                    ItemMedia(
+                        id = it.select("p.animebox-link").select("a")
+                            .attr("href").substringAfterLast("/").toInt(),
+                        title = it.select("h3.animebox-title").text(),
+                        posterUrl = it.select("p.animebox-image").select("img")
+                            .attr("src")
+                    )
+                }
+            )
+
+            // TODO legacy
+            resAnimes.select("div.animebox").forEach {
+                val id = it.select("p.animebox-link").select("a").attr("href")
+                    .substringAfterLast("/").toInt()
+                val title = it.select("h3.animebox-title").text()
+                val image = it.select("p.animebox-image").select("img").attr("src")
+                val link = it.select("p.animebox-link").select("a").attr("href")
+                val type = when (it.select("p.animebox-link").select("a").text().lowercase(Locale.ROOT)) {
+                    "zur serie" -> MediaType.TVSHOW
+                    "zum film" -> MediaType.MOVIE
+                    else -> MediaType.OTHER
+                }
+                val mediaShortText = it.select("p.animebox-shorttext").text()
+
+                mediaList.add(Media(id, link, type).apply {
+                    info.title = title
+                    info.posterUrl = image
                     info.shortDesc = mediaShortText
                 })
             }
@@ -410,9 +428,9 @@ object AoDParser {
     /**
      * don't use Gson().fromJson() as we don't have any control over the api and it may change
      */
-    private fun parsePlaylistAsync(playlistPath: String, language: String): Deferred<AoDObject> {
+    private fun parsePlaylistAsync(playlistPath: String, language: String): Deferred<AoDPlaylist> {
         if (playlistPath == "[]") {
-            return CompletableDeferred(AoDObject(listOf(), language))
+            return CompletableDeferred(AoDPlaylist(listOf(), language))
         }
 
         return CoroutineScope(Dispatchers.IO).async(Dispatchers.IO) {
@@ -435,7 +453,7 @@ object AoDParser {
 
             //Gson().fromJson(res.body(), AoDObject::class.java)
 
-            return@async AoDObject(JsonParser.parseString(res.body()).asJsonObject
+            return@async AoDPlaylist(JsonParser.parseString(res.body()).asJsonObject
                 .get("playlist").asJsonArray.map {
                     Playlist(
                         sources = it.asJsonObject.get("sources").asJsonArray.map { source ->

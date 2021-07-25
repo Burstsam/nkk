@@ -85,12 +85,12 @@ class TMDBApiController {
      * @param movieId The tmdb ID of the movie
      * @return A tmdb movie object, or null if not found
      */
-    suspend fun getMovieDetails(movieId: Int): Movie? = withContext(Dispatchers.IO) {
+    suspend fun getMovieDetails(movieId: Int): TMDBMovie? = withContext(Dispatchers.IO) {
         val url = URL("$detailsMovieUrl/$movieId?api_key=$apiKey&language=$language")
 
         return@withContext try {
             val json = url.readText()
-            Gson().fromJson(json, Movie::class.java)
+            Gson().fromJson(json, TMDBMovie::class.java)
         } catch (ex: FileNotFoundException) {
             Log.w(javaClass.name, "Waring: The requested media was not found. Requested ID: $movieId", ex)
             null
@@ -103,12 +103,12 @@ class TMDBApiController {
      * @param tvId The tmdb ID of the tv show
      * @return A tmdb tv show object, or null if not found
      */
-    suspend fun getTVShowDetails(tvId: Int): TVShow? = withContext(Dispatchers.IO) {
+    suspend fun getTVShowDetails(tvId: Int): TMDBTVShow? = withContext(Dispatchers.IO) {
         val url = URL("$detailsTVUrl/$tvId?api_key=$apiKey&language=$language")
 
         return@withContext try {
             val json = url.readText()
-            Gson().fromJson(json, TVShow::class.java)
+            Gson().fromJson(json, TMDBTVShow::class.java)
         } catch (ex: FileNotFoundException) {
             Log.w(javaClass.name, "Waring: The requested media was not found. Requested ID: $tvId", ex)
             null
@@ -122,12 +122,12 @@ class TMDBApiController {
      * @param seasonNumber The tmdb season number
      * @return A tmdb tv season object, or null if not found
      */
-    suspend fun getTVSeasonDetails(tvId: Int, seasonNumber: Int): TVSeason? = withContext(Dispatchers.IO) {
+    suspend fun getTVSeasonDetails(tvId: Int, seasonNumber: Int): TMDBTVSeason? = withContext(Dispatchers.IO) {
         val url = URL("$detailsTVUrl/$tvId/season/$seasonNumber?api_key=$apiKey&language=$language")
 
         return@withContext try {
             val json = url.readText()
-            Gson().fromJson(json, TVSeason::class.java)
+            Gson().fromJson(json, TMDBTVSeason::class.java)
         } catch (ex: FileNotFoundException) {
             Log.w(javaClass.name, "Waring: The requested media was not found. Requested ID: $tvId, Season: $seasonNumber", ex)
             null

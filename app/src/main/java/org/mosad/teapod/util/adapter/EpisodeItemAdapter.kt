@@ -12,9 +12,9 @@ import jp.wasabeef.glide.transformations.RoundedCornersTransformation
 import org.mosad.teapod.R
 import org.mosad.teapod.databinding.ItemEpisodeBinding
 import org.mosad.teapod.util.Episode
-import org.mosad.teapod.util.tmdb.TVEpisode
+import org.mosad.teapod.util.tmdb.TMDBTVEpisode
 
-class EpisodeItemAdapter(private val episodes: List<Episode>, private val tmdbEpisodes: List<TVEpisode>?) : RecyclerView.Adapter<EpisodeItemAdapter.EpisodeViewHolder>() {
+class EpisodeItemAdapter(private val episodes: List<Episode>, private val tmdbEpisodes: List<TMDBTVEpisode>?) : RecyclerView.Adapter<EpisodeItemAdapter.EpisodeViewHolder>() {
 
     var onImageClick: ((String, Int) -> Unit)? = null
 

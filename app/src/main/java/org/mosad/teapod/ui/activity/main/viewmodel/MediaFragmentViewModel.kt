@@ -8,7 +8,7 @@ import org.mosad.teapod.util.*
 import org.mosad.teapod.util.DataTypes.MediaType
 import org.mosad.teapod.util.tmdb.TMDBApiController
 import org.mosad.teapod.util.tmdb.TMDBResult
-import org.mosad.teapod.util.tmdb.TVSeason
+import org.mosad.teapod.util.tmdb.TMDBTVSeason
 
 /**
  * handle media, next ep and tmdb
@@ -22,7 +22,7 @@ class MediaFragmentViewModel(application: Application) : AndroidViewModel(applic
         internal set
     var tmdbResult: TMDBResult? = null // TODO rename
         internal set
-    var tmdbTVSeason: TVSeason? =null
+    var tmdbTVSeason: TMDBTVSeason? =null
         internal set
     var mediaMeta: Meta? = null
         internal set
@@ -66,24 +66,6 @@ class MediaFragmentViewModel(application: Application) : AndroidViewModel(applic
         } else {
             null
         }
-
-        // TESTING
-//        if (media.type == MediaType.TVSHOW) {
-//            if (mediaMeta != null) {
-//                val tvShowMeta = mediaMeta as TVShowMeta
-//                val tmdbTVSeason = tmdbApiController.getTVSeasonDetails(tvShowMeta.tmdbId, tvShowMeta.tmdbSeasonNumber)
-//            } else {
-//                // for tv shows not in metaDB, try to guess/search
-//
-//                val seasonNumber = guessSeasonFromTitle(media.info.title)
-//                Log.d("test", "season number: $seasonNumber")
-//
-//                val tmdbTVSeason = tmdbApiController.getTVSeasonDetails(tmdbId, seasonNumber)
-//                Log.d("test", "Season Info: $tmdbTVSeason.")
-//            }
-//        }
-
-        // TESTING END
 
         if (media.type == MediaType.TVSHOW) {
             nextEpisode = media.episodes.firstOrNull{ !it.watched } ?: media.episodes.first()

@@ -36,7 +36,7 @@ data class ThirdPartyComponent(
  * it is uses in the ItemMediaAdapter (RecyclerView)
  */
 data class ItemMedia(
-    val id: Int,
+    val id: Int, // aod path id
     val title: String,
     val posterUrl: String
 )
@@ -101,9 +101,9 @@ data class Stream(
 /**
  * this class is used to represent the aod json API?
  */
-data class AoDObject(
-    val playlist: List<Playlist>,
-    val extLanguage: String
+data class AoDPlaylist(
+    val list: List<Playlist>,
+    val language: String
 )
 
 data class Playlist(
