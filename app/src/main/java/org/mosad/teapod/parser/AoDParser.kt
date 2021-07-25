@@ -49,7 +49,6 @@ object AoDParser {
     private var loginSuccess = false
 
     private val mediaList = arrayListOf<Media>() // actual media (data)
-    private val aodMediaList = arrayListOf<IAoDMedia>()
 
     // gui media
     val guiMediaList = arrayListOf<ItemMedia>()
@@ -345,23 +344,16 @@ object AoDParser {
             }.awaitAll()
 
             playlists.forEach { aod ->
-                // TODO improve language handling
-                val locale = when (aod.language) {
-                    "ger" -> Locale.GERMAN
-                    "jap" -> Locale.JAPANESE
-                    else -> Locale.ROOT
-                }
-
                 aod.list.forEach { ep ->
                     try {
                         if (media.hasEpisode(ep.mediaid)) {
                             media.getEpisodeById(ep.mediaid).streams.add(
-                                Stream(ep.sources.first().file, locale)
+                                Stream(ep.sources.first().file, aod.language)
                             )
                         } else {
                             media.episodes.add(Episode(
                                 id = ep.mediaid,
-                                streams = mutableListOf(Stream(ep.sources.first().file, locale)),
+                                streams = mutableListOf(Stream(ep.sources.first().file, aod.language)),
                                 posterUrl = ep.image,
                                 title = ep.title,
                                 description = ep.description,
@@ -430,7 +422,7 @@ object AoDParser {
      */
     private fun parsePlaylistAsync(playlistPath: String, language: String): Deferred<AoDPlaylist> {
         if (playlistPath == "[]") {
-            return CompletableDeferred(AoDPlaylist(listOf(), language))
+            return CompletableDeferred(AoDPlaylist(listOf(), Locale.ROOT))
         }
 
         return CoroutineScope(Dispatchers.IO).async(Dispatchers.IO) {
@@ -465,7 +457,12 @@ object AoDParser {
                         mediaid = it.asJsonObject.get("mediaid").asInt
                     )
                 },
-                language
+                // TODO improve language handling (via display language etc.)
+                language = when (language) {
+                    "ger" -> Locale.GERMAN
+                    "jap" -> Locale.JAPANESE
+                    else -> Locale.ROOT
+                }
             )
         }
     }

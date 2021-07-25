@@ -103,7 +103,7 @@ data class Stream(
  */
 data class AoDPlaylist(
     val list: List<Playlist>,
-    val language: String
+    val language: Locale
 )
 
 data class Playlist(
