@@ -76,7 +76,7 @@ class TMDBApiController {
             it.asJsonObject.get("title")?.asString
         }
 
-        return@withContext sortedResults.first().asJsonObject?.get("id")?.asInt ?: -1
+        return@withContext sortedResults.firstOrNull()?.asJsonObject?.get("id")?.asInt ?: -1
     }
 
     @Suppress("BlockingMethodInNonBlockingContext")
