@@ -14,7 +14,7 @@
         <item name="android:textColor">@color/textPrimaryLight</item>
         <item name="android:textColorPrimary">@color/textPrimaryLight</item>
         <item name="android:textColorHint">@color/textSecondaryLight</item>
-        <item name="textBackground">@color/textBackgroundLight</item>
+        <item name="shapeTextBackground">@color/textBackgroundLight</item>
         <item name="iconColor">@color/iconColorLight</item>
         <item name="buttonBackground">@color/buttonBackgroundLight</item>
         <item name="md_background_color">@color/themeSecondaryLight</item>
@@ -32,7 +32,7 @@
         <item name="android:textColor">@color/textPrimaryDark</item>
         <item name="android:textColorPrimary">@color/textPrimaryDark</item>
         <item name="android:textColorHint">@color/textSecondaryDark</item>
-        <item name="textBackground">@color/textBackgroundDark</item>
+        <item name="shapeTextBackground">@color/textBackgroundDark</item>
         <item name="iconColor">@color/iconColorDark</item>
         <item name="buttonBackground">@color/buttonBackgroundDark</item>
         <item name="md_background_color">@color/themeSecondaryDark</item>

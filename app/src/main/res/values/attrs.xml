@@ -4,7 +4,7 @@
     <attr format="color" name="themeSecondary"/>
     <attr format="color" name="textPrimary"/>
     <attr format="color" name="textSecondary"/>
-    <attr format="color" name="textBackground"/>
     <attr format="color" name="iconColor"/>
     <attr format="color" name="buttonBackground"/>
+    <attr format="color" name="shapeTextBackground"/>
 </resources>
