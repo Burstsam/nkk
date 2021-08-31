@@ -48,7 +48,8 @@ object AoDParser {
     private var csrfToken: String = ""
     private var loginSuccess = false
 
-    private val mediaList = arrayListOf<Media>() // actual media (data)
+    private val mediaList = arrayListOf<Media>() // actual media (data) TODO remove
+    private val aodMediaList = arrayListOf<AoDMedia>() // actual media (data)
 
     // gui media
     val guiMediaList = arrayListOf<ItemMedia>()
@@ -112,14 +113,36 @@ object AoDParser {
      * get a media by it's ID (int)
      * @return Media
      */
+    @Deprecated(message = "Use getMediaById2() instead")
     suspend fun getMediaById(aodId: Int): Media {
         val media = mediaList.first { it.id == aodId }
 
         if (media.episodes.isEmpty()) {
             loadStreams(media).join()
+
+            loadMediaAsync(media.id).await()
         }
 
         return media
+    }
+
+    /**
+     * get a media by it's ID (int)
+     * @param aodId The AoD ID of the requested media
+     * @return returns a AoDMedia of type Movie or TVShow if found, else return AoDMediaNone
+     */
+    suspend fun getMediaById2(aodId: Int): AoDMedia {
+        return aodMediaList.firstOrNull { it.aodId == aodId } ?:
+        try {
+            loadMediaAsync(aodId).await().apply {
+                aodMediaList.add(this)
+            }
+        } catch (exn:NullPointerException) {
+            Log.e(javaClass.name, "Error while loading media $aodId", exn)
+            AoDMediaNone
+        }
+
+
     }
 
     /**
@@ -414,6 +437,131 @@ object AoDParser {
                 }
             }
             Log.i(javaClass.name, "media loaded successfully")
+        }
+    }
+
+    private suspend fun loadMediaAsync(aodId: Int): Deferred<AoDMedia> = coroutineScope {
+        return@coroutineScope async (Dispatchers.IO) {
+            if (sessionCookies.isEmpty()) login() // TODO is this needed?
+
+            // return none object, if login wasn't successful
+            if (!loginSuccess) {
+                Log.w(javaClass.name, "Login, was not successful.")
+                return@async AoDMediaNone
+            }
+
+            // get the media page
+            val res = Jsoup.connect("$baseUrl/anime/$aodId")
+                .cookies(sessionCookies)
+                .get()
+            // println(res)
+
+            if (csrfToken.isEmpty()) {
+                csrfToken = res.select("meta[name=csrf-token]").attr("content")
+                Log.d(javaClass.name, "New csrf token is $csrfToken")
+            }
+
+            // playlist parsing TODO can this be async to the genral info marsing?
+            val besides = res.select("div.besides").first()
+            val aodPlaylists = besides.select("input.streamstarter_html5").map { streamstarter ->
+                parsePlaylistAsync(
+                    streamstarter.attr("data-playlist"),
+                    streamstarter.attr("data-lang")
+                )
+            }
+
+            /**
+             * generic aod media data
+             */
+            val title = res.select("h1[itemprop=name]").text()
+            val description = res.select("div[itemprop=description]").text()
+            val posterURL = res.select("img.fullwidth-image").attr("src")
+            val type = when {
+                posterURL.contains("films") -> MediaType.MOVIE
+                posterURL.contains("series") -> MediaType.TVSHOW
+                else -> MediaType.OTHER
+            }
+
+            var year = 0
+            var age = 0
+            res.select("table.vertical-table").select("tr").forEach { row ->
+                when (row.select("th").text().lowercase(Locale.ROOT)) {
+                    "produktionsjahr" -> year = row.select("td").text().toInt()
+                    "fsk" -> age = row.select("td").text().toInt()
+                }
+            }
+
+            // similar titles from media page
+            val similar = res.select("h2:contains(Ähnliche Animes)").next().select("li").mapNotNull {
+                val mediaId = it.select("a.thumbs").attr("href")
+                    .substringAfterLast("/").toIntOrNull()
+                val mediaImage = it.select("a.thumbs > img").attr("src")
+                val mediaTitle = it.select("a").text()
+
+                if (mediaId != null) {
+                    ItemMedia(mediaId, mediaTitle, mediaImage)
+                } else {
+                    null
+                }
+            }
+
+            /**
+             * additional information for episodes:
+             *  description: a short description of the episode
+             *  watched: indicates if the episodes has been watched
+             *  watched callback: url to set watched in aod
+             */
+            val episodesInfo: Map<Int, AoDEpisodeInfo> = if (type == MediaType.TVSHOW) {
+                res.select("div.three-box-container > div.episodebox").mapNotNull { episodeBox ->
+                    // make sure the episode has a streaming link
+                    if (episodeBox.select("input.streamstarter_html5").isNotEmpty()) {
+                        val mediaId = episodeBox.select("div.flip-front").attr("id").substringAfter("-").toInt()
+                        val episodeShortDesc = episodeBox.select("p.episodebox-shorttext").text()
+                        val episodeWatched = episodeBox.select("div.episodebox-icons > div").hasClass("status-icon-orange")
+                        val episodeWatchedCallback = episodeBox.select("input.streamstarter_html5").eachAttr("data-playlist").first()
+
+                        AoDEpisodeInfo(mediaId, episodeShortDesc, episodeWatched, episodeWatchedCallback)
+                    } else {
+                        null
+                    }
+                }.associateBy { it.aodMediaId }
+            } else {
+                mapOf()
+            }
+
+            // TODO make AoDPlaylist to teapod playlist
+            val playlist: List<AoDEpisode> = aodPlaylists.awaitAll().flatMap { aodPlaylist ->
+                aodPlaylist.list.mapIndexed { index, episode ->
+                    AoDEpisode(
+                        mediaId = episode.mediaid,
+                        title = episode.title,
+                        description = episode.description,
+                        shortDesc = episodesInfo[episode.mediaid]?.shortDesc ?: "",
+                        imageURL = episode.image,
+                        number = index,
+                        watched = episodesInfo[episode.mediaid]?.watched ?: false,
+                        watchedCallback = episodesInfo[episode.mediaid]?.watchedCallback ?: "",
+                        streams = mutableListOf(Stream(episode.sources.first().file, aodPlaylist.language))
+                    )
+                }
+            }.groupingBy { it.mediaId }.reduce{ _, accumulator, element ->
+                accumulator.copy().also {
+                    it.streams.addAll(element.streams)
+                }
+            }.values.toList()
+            println("new playlist object: $playlist")
+
+            return@async AoDMedia(
+                aodId = aodId,
+                type = type,
+                title = title,
+                shortText = description,
+                posterURL = posterURL,
+                year = year,
+                age = age,
+                similar = similar,
+                playlist = playlist
+            )
         }
     }
 

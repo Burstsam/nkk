@@ -10,7 +10,6 @@ import androidx.fragment.app.activityViewModels
 import org.mosad.teapod.ui.activity.main.MainActivity
 import org.mosad.teapod.ui.activity.main.viewmodel.MediaFragmentViewModel
 import org.mosad.teapod.databinding.FragmentMediaEpisodesBinding
-import org.mosad.teapod.util.Episode
 import org.mosad.teapod.util.adapter.EpisodeItemAdapter
 
 class MediaFragmentEpisodes : Fragment() {
@@ -28,13 +27,13 @@ class MediaFragmentEpisodes : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        adapterRecEpisodes = EpisodeItemAdapter(model.media.episodes, model.tmdbTVSeason?.episodes)
+        adapterRecEpisodes = EpisodeItemAdapter(model.media2.playlist, model.tmdbTVSeason?.episodes)
         binding.recyclerEpisodes.adapter = adapterRecEpisodes
 
         // set onItemClick only in adapter is initialized
         if (this::adapterRecEpisodes.isInitialized) {
             adapterRecEpisodes.onImageClick = { _, position ->
-                playEpisode(model.media.episodes[position])
+                playEpisode(model.media2.playlist[position].mediaId)
             }
         }
     }
@@ -44,18 +43,18 @@ class MediaFragmentEpisodes : Fragment() {
 
         // if adapterRecEpisodes is initialized, update the watched state for the episodes
         if (this::adapterRecEpisodes.isInitialized) {
-            model.media.episodes.forEachIndexed { index, episode ->
-                adapterRecEpisodes.updateWatchedState(episode.watched, index)
+            model.media2.playlist.forEachIndexed { index, episodeInfo ->
+                adapterRecEpisodes.updateWatchedState(episodeInfo.watched, index)
             }
             adapterRecEpisodes.notifyDataSetChanged()
         }
     }
 
-    private fun playEpisode(ep: Episode) {
-        (activity as MainActivity).startPlayer(model.media.id, ep.id)
-        Log.d(javaClass.name, "Started Player with  episodeId: ${ep.id}")
+    private fun playEpisode(episodeId: Int) {
+        (activity as MainActivity).startPlayer(model.media2.aodId, episodeId)
+        Log.d(javaClass.name, "Started Player with  episodeId: $episodeId")
 
-        model.updateNextEpisode(ep) // set the correct next episode
+        model.updateNextEpisode(episodeId) // set the correct next episode
     }
 
 }

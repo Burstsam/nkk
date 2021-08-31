@@ -96,10 +96,10 @@ class HomeFragment : Fragment() {
         binding.buttonPlayHighlight.setOnClickListener {
             // TODO get next episode
             lifecycleScope.launch {
-                val media = AoDParser.getMediaById(highlightMedia.id)
+                val media = AoDParser.getMediaById2(highlightMedia.id)
 
-                Log.d(javaClass.name, "Starting Player with  mediaId: ${media.id}")
-                (activity as MainActivity).startPlayer(media.id, media.episodes.first().id)
+                Log.d(javaClass.name, "Starting Player with  mediaId: ${media.aodId}")
+                (activity as MainActivity).startPlayer(media.aodId, media.playlist.first().mediaId)
             }
         }
 

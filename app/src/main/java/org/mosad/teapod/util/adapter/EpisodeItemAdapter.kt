@@ -11,10 +11,10 @@ import com.bumptech.glide.request.RequestOptions
 import jp.wasabeef.glide.transformations.RoundedCornersTransformation
 import org.mosad.teapod.R
 import org.mosad.teapod.databinding.ItemEpisodeBinding
-import org.mosad.teapod.util.Episode
+import org.mosad.teapod.util.AoDEpisode
 import org.mosad.teapod.util.tmdb.TMDBTVEpisode
 
-class EpisodeItemAdapter(private val episodes: List<Episode>, private val tmdbEpisodes: List<TMDBTVEpisode>?) : RecyclerView.Adapter<EpisodeItemAdapter.EpisodeViewHolder>() {
+class EpisodeItemAdapter(private val episodes: List<AoDEpisode>, private val tmdbEpisodes: List<TMDBTVEpisode>?) : RecyclerView.Adapter<EpisodeItemAdapter.EpisodeViewHolder>() {
 
     var onImageClick: ((String, Int) -> Unit)? = null
 
@@ -41,8 +41,8 @@ class EpisodeItemAdapter(private val episodes: List<Episode>, private val tmdbEp
             ""
         }
 
-        if (episodes[position].posterUrl.isNotEmpty()) {
-            Glide.with(context).load(ep.posterUrl)
+        if (ep.imageURL.isNotEmpty()) {
+            Glide.with(context).load(ep.imageURL)
                 .apply(RequestOptions.placeholderOf(ColorDrawable(Color.DKGRAY)))
                 .apply(RequestOptions.bitmapTransform(RoundedCornersTransformation(10, 0)))
                 .into(holder.binding.imageEpisode)

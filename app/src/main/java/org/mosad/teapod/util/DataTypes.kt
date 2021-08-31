@@ -44,6 +44,78 @@ data class ItemMedia(
 /**
  * TODO the episodes workflow could use a clean up/rework
  */
+// TODO replace playlist: List<AoDEpisode> with a map?
+data class AoDMedia(
+    val aodId: Int,
+    val type: DataTypes.MediaType,
+    val title: String,
+    val shortText: String,
+    val posterURL: String,
+    var year: Int,
+    var age: Int,
+    val similar: List<ItemMedia>,
+    val playlist: List<AoDEpisode>,
+) {
+    fun hasEpisode(mediaId: Int) = playlist.any { it.mediaId == mediaId }
+    fun getEpisodeById(mediaId: Int) = playlist.firstOrNull { it.mediaId == mediaId }
+        ?: AoDEpisodeNone
+}
+
+data class AoDEpisode(
+    val mediaId: Int,
+    val title: String,
+    val description: String,
+    val shortDesc: String,
+    val imageURL: String,
+    val number: Int,
+    var watched: Boolean,
+    val watchedCallback: String,
+    val streams: MutableList<Stream>,
+){
+    fun hasDub() = streams.any { it.language == Locale.GERMAN }
+
+    /**
+     * get the preferred stream
+     * @return the preferred stream, if not present use the first stream
+     */
+    fun getPreferredStream(language: Locale) = streams.firstOrNull { it.language == language }
+        ?: streams.first()
+}
+
+// TODO will be watched info (state and callback) -> remove description and number
+data class AoDEpisodeInfo(
+    val aodMediaId: Int,
+    val shortDesc: String,
+    var watched: Boolean,
+    val watchedCallback: String,
+)
+
+val AoDMediaNone = AoDMedia(
+    -1,
+    DataTypes.MediaType.OTHER,
+    "",
+    "",
+    "",
+    -1,
+    -1,
+    listOf(),
+    listOf()
+)
+
+val AoDEpisodeNone = AoDEpisode(
+    -1,
+    "",
+    "",
+    "",
+    "",
+    -1,
+    false,
+    "",
+    mutableListOf()
+)
+
+// LEGACY
+
 data class Media(
     val id: Int,
     val link: String,
