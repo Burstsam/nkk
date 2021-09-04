@@ -9,9 +9,9 @@ import com.bumptech.glide.request.RequestOptions
 import jp.wasabeef.glide.transformations.RoundedCornersTransformation
 import org.mosad.teapod.R
 import org.mosad.teapod.databinding.ItemEpisodePlayerBinding
-import org.mosad.teapod.util.Episode
+import org.mosad.teapod.util.AoDEpisode
 
-class PlayerEpisodeItemAdapter(private val episodes: List<Episode>) : RecyclerView.Adapter<PlayerEpisodeItemAdapter.EpisodeViewHolder>() {
+class PlayerEpisodeItemAdapter(private val episodes: List<AoDEpisode>) : RecyclerView.Adapter<PlayerEpisodeItemAdapter.EpisodeViewHolder>() {
 
     var onImageClick: ((String, Int) -> Unit)? = null
     var currentSelected: Int = -1 // -1, since position should never be < 0
@@ -33,8 +33,8 @@ class PlayerEpisodeItemAdapter(private val episodes: List<Episode>) : RecyclerVi
         holder.binding.textEpisodeTitle2.text = titleText
         holder.binding.textEpisodeDesc2.text = ep.shortDesc
 
-        if (episodes[position].posterUrl.isNotEmpty()) {
-            Glide.with(context).load(ep.posterUrl)
+        if (ep.imageURL.isNotEmpty()) {
+            Glide.with(context).load(ep.imageURL)
                 .apply(RequestOptions.bitmapTransform(RoundedCornersTransformation(10, 0)))
                 .into(holder.binding.imageEpisode)
         }

@@ -171,7 +171,7 @@ class PlayerActivity : AppCompatActivity() {
     }
 
     private fun initPlayer() {
-        if (model.media.id < 0) {
+        if (model.media.aodId < 0) {
             Log.e(javaClass.name, "No media was set.")
             this.finish()
         }

@@ -31,7 +31,6 @@ import org.mosad.teapod.preferences.EncryptedPreferences
 import org.mosad.teapod.util.*
 import org.mosad.teapod.util.DataTypes.MediaType
 import java.io.IOException
-import java.lang.NumberFormatException
 import java.util.*
 import kotlin.random.Random
 
@@ -48,7 +47,6 @@ object AoDParser {
     private var csrfToken: String = ""
     private var loginSuccess = false
 
-    private val mediaList = arrayListOf<Media>() // actual media (data) TODO remove
     private val aodMediaList = arrayListOf<AoDMedia>() // actual media (data)
 
     // gui media
@@ -111,27 +109,10 @@ object AoDParser {
 
     /**
      * get a media by it's ID (int)
-     * @return Media
-     */
-    @Deprecated(message = "Use getMediaById2() instead")
-    suspend fun getMediaById(aodId: Int): Media {
-        val media = mediaList.first { it.id == aodId }
-
-        if (media.episodes.isEmpty()) {
-            loadStreams(media).join()
-
-            loadMediaAsync(media.id).await()
-        }
-
-        return media
-    }
-
-    /**
-     * get a media by it's ID (int)
      * @param aodId The AoD ID of the requested media
      * @return returns a AoDMedia of type Movie or TVShow if found, else return AoDMediaNone
      */
-    suspend fun getMediaById2(aodId: Int): AoDMedia {
+    suspend fun getMediaById(aodId: Int): AoDMedia {
         return aodMediaList.firstOrNull { it.aodId == aodId } ?:
         try {
             loadMediaAsync(aodId).await().apply {
@@ -141,8 +122,6 @@ object AoDParser {
             Log.e(javaClass.name, "Error while loading media $aodId", exn)
             AoDMediaNone
         }
-
-
     }
 
     /**
@@ -165,12 +144,12 @@ object AoDParser {
         return baseUrl + subscriptionPath
     }
 
-    suspend fun markAsWatched(mediaId: Int, episodeId: Int) {
-        val episode = getMediaById(mediaId).getEpisodeById(episodeId)
+    suspend fun markAsWatched(aodId: Int, episodeId: Int) {
+        val episode = getMediaById(aodId).getEpisodeById(episodeId)
         episode.watched = true
         sendCallback(episode.watchedCallback)
 
-        Log.d(javaClass.name, "Marked episode ${episode.id} as watched")
+        Log.d(javaClass.name, "Marked episode ${episode.mediaId} as watched")
     }
 
     // TODO don't use jsoup here
@@ -206,7 +185,6 @@ object AoDParser {
             //println(resAnimes)
 
             guiMediaList.clear()
-            mediaList.clear()
             val animes = resAnimes.select("div.animebox")
 
             guiMediaList.addAll(
@@ -221,28 +199,7 @@ object AoDParser {
                 }
             )
 
-            // TODO legacy
-            resAnimes.select("div.animebox").forEach {
-                val id = it.select("p.animebox-link").select("a").attr("href")
-                    .substringAfterLast("/").toInt()
-                val title = it.select("h3.animebox-title").text()
-                val image = it.select("p.animebox-image").select("img").attr("src")
-                val link = it.select("p.animebox-link").select("a").attr("href")
-                val type = when (it.select("p.animebox-link").select("a").text().lowercase(Locale.ROOT)) {
-                    "zur serie" -> MediaType.TVSHOW
-                    "zum film" -> MediaType.MOVIE
-                    else -> MediaType.OTHER
-                }
-                val mediaShortText = it.select("p.animebox-shorttext").text()
-
-                mediaList.add(Media(id, link, type).apply {
-                    info.title = title
-                    info.posterUrl = image
-                    info.shortDesc = mediaShortText
-                })
-            }
-
-            Log.i(javaClass.name, "Total library size is: ${mediaList.size}")
+            Log.i(javaClass.name, "Total library size is: ${guiMediaList.size}")
         }
     }
 
@@ -332,121 +289,17 @@ object AoDParser {
     }
 
     /**
-     * TODO rework the media loading process, don't modify media object
      * TODO catch SocketTimeoutException from loading to show a waring dialog
-     * load streams for the media path, movies have one episode
-     * @param media is used as call ba reference
+     * Load media async. Every media has a playlist.
+     * @param aodId The AoD ID of the requested media
      */
-    private suspend fun loadStreams(media: Media) = coroutineScope {
-        launch(Dispatchers.IO) {
-            if (sessionCookies.isEmpty()) login()
-
-            if (!loginSuccess) {
-                Log.w(javaClass.name, "Login, was not successful.")
-                return@launch
-            }
-
-            // get the media page
-            val res = Jsoup.connect(baseUrl + media.link)
-                .cookies(sessionCookies)
-                .get()
-
-            //println(res)
-
-            if (csrfToken.isEmpty()) {
-                csrfToken = res.select("meta[name=csrf-token]").attr("content")
-                //Log.i(javaClass.name, "New csrf token is $csrfToken")
-            }
-
-            val besides = res.select("div.besides").first()
-            val playlists = besides.select("input.streamstarter_html5").map { streamstarter ->
-                parsePlaylistAsync(
-                    streamstarter.attr("data-playlist"),
-                    streamstarter.attr("data-lang")
-                )
-            }.awaitAll()
-
-            playlists.forEach { aod ->
-                aod.list.forEach { ep ->
-                    try {
-                        if (media.hasEpisode(ep.mediaid)) {
-                            media.getEpisodeById(ep.mediaid).streams.add(
-                                Stream(ep.sources.first().file, aod.language)
-                            )
-                        } else {
-                            media.episodes.add(Episode(
-                                id = ep.mediaid,
-                                streams = mutableListOf(Stream(ep.sources.first().file, aod.language)),
-                                posterUrl = ep.image,
-                                title = ep.title,
-                                description = ep.description,
-                                number = getNumberFromTitle(ep.title, media.type)
-                            ))
-                        }
-                    } catch (ex: Exception) {
-                        Log.w(javaClass.name, "Could not parse episode information.", ex)
-                    }
-                }
-            }
-            Log.i(javaClass.name, "Loaded playlists successfully")
-
-            // additional info from the media page
-            res.select("table.vertical-table").select("tr").forEach { row ->
-                when (row.select("th").text().lowercase(Locale.ROOT)) {
-                    "produktionsjahr" -> media.info.year = row.select("td").text().toInt()
-                    "fsk" -> media.info.age = row.select("td").text().toInt()
-                    "episodenanzahl" -> {
-                        media.info.episodesCount = row.select("td").text()
-                            .substringBefore("/")
-                            .filter { it.isDigit() }
-                            .toInt()
-                    }
-                }
-            }
-
-            // similar titles from media page
-            media.info.similar = res.select("h2:contains(Ähnliche Animes)").next().select("li").mapNotNull {
-                val mediaId = it.select("a.thumbs").attr("href")
-                    .substringAfterLast("/").toIntOrNull()
-                val mediaImage = it.select("a.thumbs > img").attr("src")
-                val mediaTitle = it.select("a").text()
-
-                if (mediaId != null) {
-                    ItemMedia(mediaId, mediaTitle, mediaImage)
-                } else {
-                    null
-                }
-            }
-
-            // additional information for tv shows the episode title (description) is loaded from the "api"
-            if (media.type == MediaType.TVSHOW) {
-                res.select("div.three-box-container > div.episodebox").forEach { episodebox ->
-                    // make sure the episode has a streaming link
-                    if (episodebox.select("input.streamstarter_html5").isNotEmpty()) {
-                        val episodeId = episodebox.select("div.flip-front").attr("id").substringAfter("-").toInt()
-                        val episodeShortDesc = episodebox.select("p.episodebox-shorttext").text()
-                        val episodeWatched = episodebox.select("div.episodebox-icons > div").hasClass("status-icon-orange")
-                        val episodeWatchedCallback = episodebox.select("input.streamstarter_html5").eachAttr("data-playlist").first()
-
-                        media.episodes.firstOrNull { it.id == episodeId }?.apply {
-                            shortDesc = episodeShortDesc
-                            watched = episodeWatched
-                            watchedCallback = episodeWatchedCallback
-                        }
-                    }
-                }
-            }
-            Log.i(javaClass.name, "media loaded successfully")
-        }
-    }
-
     private suspend fun loadMediaAsync(aodId: Int): Deferred<AoDMedia> = coroutineScope {
         return@coroutineScope async (Dispatchers.IO) {
             if (sessionCookies.isEmpty()) login() // TODO is this needed?
 
             // return none object, if login wasn't successful
             if (!loginSuccess) {
-                Log.w(javaClass.name, "Login, was not successful.")
+                Log.w(javaClass.name, "Login was not successful")
                 return@async AoDMediaNone
             }
 
@@ -461,7 +314,7 @@ object AoDParser {
                 Log.d(javaClass.name, "New csrf token is $csrfToken")
             }
 
-            // playlist parsing TODO can this be async to the genral info marsing?
+            // playlist parsing TODO can this be async to the general info parsing?
             val besides = res.select("div.besides").first()
             val aodPlaylists = besides.select("input.streamstarter_html5").map { streamstarter ->
                 parsePlaylistAsync(
@@ -501,6 +354,7 @@ object AoDParser {
                 if (mediaId != null) {
                     ItemMedia(mediaId, mediaTitle, mediaImage)
                 } else {
+                    Log.i(javaClass.name, "MediaId for similar to $aodId was null")
                     null
                 }
             }
@@ -522,6 +376,7 @@ object AoDParser {
 
                         AoDEpisodeInfo(mediaId, episodeShortDesc, episodeWatched, episodeWatchedCallback)
                     } else {
+                        Log.i(javaClass.name, "Episode info for $aodId has empty streamstarter_html5 ")
                         null
                     }
                 }.associateBy { it.aodMediaId }
@@ -529,7 +384,7 @@ object AoDParser {
                 mapOf()
             }
 
-            // TODO make AoDPlaylist to teapod playlist
+            // map the aod api playlist to a teapod playlist
             val playlist: List<AoDEpisode> = aodPlaylists.awaitAll().flatMap { aodPlaylist ->
                 aodPlaylist.list.mapIndexed { index, episode ->
                     AoDEpisode(
@@ -549,7 +404,6 @@ object AoDParser {
                     it.streams.addAll(element.streams)
                 }
             }.values.toList()
-            println("new playlist object: $playlist")
 
             return@async AoDMedia(
                 aodId = aodId,
@@ -612,24 +466,6 @@ object AoDParser {
                     else -> Locale.ROOT
                 }
             )
-        }
-    }
-
-    /**
-     * get the episode number from the title
-     * @param title the episode title, containing a number after "Ep."
-     * @param type the media type, if not TVSHOW, return 0
-     * @return the episode number, on NumberFormatException return 0
-     */
-    private fun getNumberFromTitle(title: String, type: MediaType): Int {
-        return if (type == MediaType.TVSHOW) {
-            try {
-                title.substringAfter(", Ep. ").toInt()
-            } catch (nex: NumberFormatException) {
-                0
-            }
-        } else {
-            0
         }
     }
 

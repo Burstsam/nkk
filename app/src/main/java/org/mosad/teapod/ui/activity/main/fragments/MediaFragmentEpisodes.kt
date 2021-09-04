@@ -27,13 +27,13 @@ class MediaFragmentEpisodes : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        adapterRecEpisodes = EpisodeItemAdapter(model.media2.playlist, model.tmdbTVSeason?.episodes)
+        adapterRecEpisodes = EpisodeItemAdapter(model.media.playlist, model.tmdbTVSeason?.episodes)
         binding.recyclerEpisodes.adapter = adapterRecEpisodes
 
         // set onItemClick only in adapter is initialized
         if (this::adapterRecEpisodes.isInitialized) {
             adapterRecEpisodes.onImageClick = { _, position ->
-                playEpisode(model.media2.playlist[position].mediaId)
+                playEpisode(model.media.playlist[position].mediaId)
             }
         }
     }
@@ -43,7 +43,7 @@ class MediaFragmentEpisodes : Fragment() {
 
         // if adapterRecEpisodes is initialized, update the watched state for the episodes
         if (this::adapterRecEpisodes.isInitialized) {
-            model.media2.playlist.forEachIndexed { index, episodeInfo ->
+            model.media.playlist.forEachIndexed { index, episodeInfo ->
                 adapterRecEpisodes.updateWatchedState(episodeInfo.watched, index)
             }
             adapterRecEpisodes.notifyDataSetChanged()
@@ -51,7 +51,7 @@ class MediaFragmentEpisodes : Fragment() {
     }
 
     private fun playEpisode(episodeId: Int) {
-        (activity as MainActivity).startPlayer(model.media2.aodId, episodeId)
+        (activity as MainActivity).startPlayer(model.media.aodId, episodeId)
         Log.d(javaClass.name, "Started Player with  episodeId: $episodeId")
 
         model.updateNextEpisode(episodeId) // set the correct next episode

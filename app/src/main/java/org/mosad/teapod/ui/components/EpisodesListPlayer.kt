@@ -28,11 +28,11 @@ class EpisodesListPlayer @JvmOverloads constructor(
         }
 
         model?.let {
-            adapterRecEpisodes = PlayerEpisodeItemAdapter(model.media.episodes)
+            adapterRecEpisodes = PlayerEpisodeItemAdapter(model.media.playlist)
 
             adapterRecEpisodes.onImageClick = { _, position ->
                 (this.parent as ViewGroup).removeView(this)
-                model.playEpisode(model.media.episodes[position], replace = true)
+                model.playEpisode(model.media.playlist[position], replace = true)
             }
             adapterRecEpisodes.currentSelected = model.currentEpisode.number - 1
 

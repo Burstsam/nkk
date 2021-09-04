@@ -16,16 +16,10 @@ import org.mosad.teapod.util.tmdb.TMDBTVSeason
  */
 class MediaFragmentViewModel(application: Application) : AndroidViewModel(application) {
 
-//    var media = Media(-1, "", MediaType.OTHER)
-//        internal set
-//    var nextEpisode = Episode()
-//        internal set
-
-    var media2 = AoDMediaNone
+    var media = AoDMediaNone
         internal set
     var nextEpisodeId = -1
         internal set
-
 
     var tmdbResult: TMDBResult? = null // TODO rename
         internal set
@@ -38,18 +32,17 @@ class MediaFragmentViewModel(application: Application) : AndroidViewModel(applic
      * set media, tmdb and nextEpisode
      * TODO run aod and tmdb load parallel
      */
-    suspend fun load(mediaId: Int) {
+    suspend fun load(aodId: Int) {
         val tmdbApiController = TMDBApiController()
-        //media = AoDParser.getMediaById(mediaId)
-        media2 = AoDParser.getMediaById2(mediaId)
+        media = AoDParser.getMediaById(aodId)
 
         // check if metaDB knows the title
-        val tmdbId: Int = if (MetaDBController.mediaList.media.contains(media2.aodId)) {
+        val tmdbId: Int = if (MetaDBController.mediaList.media.contains(aodId)) {
             // load media info from metaDB
             val metaDB = MetaDBController()
-            mediaMeta = when (media2.type) {
-                MediaType.MOVIE -> metaDB.getMovieMetadata(media2.aodId)
-                MediaType.TVSHOW -> metaDB.getTVShowMetadata(media2.aodId)
+            mediaMeta = when (media.type) {
+                MediaType.MOVIE -> metaDB.getMovieMetadata(media.aodId)
+                MediaType.TVSHOW -> metaDB.getTVShowMetadata(media.aodId)
                 else -> null
             }
 
@@ -57,28 +50,27 @@ class MediaFragmentViewModel(application: Application) : AndroidViewModel(applic
         } else {
             // use tmdb search to get media info
             mediaMeta = null // set mediaMeta to null, if metaDB doesn't know the media
-            tmdbApiController.search(stripTitleInfo(media2.title), media2.type)
+            tmdbApiController.search(stripTitleInfo(media.title), media.type)
         }
 
-        tmdbResult = when (media2.type) {
+        tmdbResult = when (media.type) {
             MediaType.MOVIE -> tmdbApiController.getMovieDetails(tmdbId)
             MediaType.TVSHOW -> tmdbApiController.getTVShowDetails(tmdbId)
             else -> null
         }
-        println(tmdbResult) // TODO
 
         // get season info, if metaDB knows the tv show
-        tmdbTVSeason = if (media2.type == MediaType.TVSHOW && mediaMeta != null) {
+        tmdbTVSeason = if (media.type == MediaType.TVSHOW && mediaMeta != null) {
             val tvShowMeta = mediaMeta as TVShowMeta
             tmdbApiController.getTVSeasonDetails(tvShowMeta.tmdbId, tvShowMeta.tmdbSeasonNumber)
         } else {
             null
         }
 
-        if (media2.type == MediaType.TVSHOW) {
+        if (media.type == MediaType.TVSHOW) {
             //nextEpisode = media.episodes.firstOrNull{ !it.watched } ?: media.episodes.first()
-            nextEpisodeId = media2.playlist.firstOrNull { !it.watched }?.mediaId
-                ?: media2.playlist.first().mediaId
+            nextEpisodeId = media.playlist.firstOrNull { !it.watched }?.mediaId
+                ?: media.playlist.first().mediaId
         }
     }
 
@@ -87,13 +79,10 @@ class MediaFragmentViewModel(application: Application) : AndroidViewModel(applic
      * if no matching is found, use first episode
      */
     fun updateNextEpisode(episodeId: Int) {
-        if (media2.type == MediaType.MOVIE) return // return if movie
+        if (media.type == MediaType.MOVIE) return // return if movie
 
-//        nextEpisode = media.episodes.firstOrNull{ it.number > currentEp.number }
-//            ?: media.episodes.first()
-
-        nextEpisodeId = media2.playlist.firstOrNull { it.number > media2.getEpisodeById(episodeId).number }?.mediaId
-            ?: media2.playlist.first().mediaId
+        nextEpisodeId = media.playlist.firstOrNull { it.number > media.getEpisodeById(episodeId).number }?.mediaId
+            ?: media.playlist.first().mediaId
     }
 
     // remove unneeded info from the media title before searching

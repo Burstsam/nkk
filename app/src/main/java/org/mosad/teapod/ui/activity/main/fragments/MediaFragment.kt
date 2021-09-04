@@ -56,7 +56,7 @@ class MediaFragment(private val mediaId: Int) : Fragment() {
         binding.pagerEpisodesSimilar.offscreenPageLimit = 2
         binding.pagerEpisodesSimilar.adapter = pagerAdapter
         TabLayoutMediator(binding.tabEpisodesSimilar, binding.pagerEpisodesSimilar) { tab, position ->
-            tab.text = if (model.media2.type == MediaType.TVSHOW && position == 0) {
+            tab.text = if (model.media.type == MediaType.TVSHOW && position == 0) {
                 getString(R.string.episodes)
             } else {
                 getString(R.string.similar_titles)
@@ -75,9 +75,8 @@ class MediaFragment(private val mediaId: Int) : Fragment() {
         super.onResume()
 
         // update the next ep text if there is one, since it may have changed
-        println(model.nextEpisodeId)
-        if (model.media2.getEpisodeById(model.nextEpisodeId).title.isNotEmpty()) {
-            binding.textTitle.text = model.media2.getEpisodeById(model.nextEpisodeId).title
+        if (model.media.getEpisodeById(model.nextEpisodeId).title.isNotEmpty()) {
+            binding.textTitle.text = model.media.getEpisodeById(model.nextEpisodeId).title
         }
     }
 
@@ -87,9 +86,9 @@ class MediaFragment(private val mediaId: Int) : Fragment() {
     private fun updateGUI() = with(model) {
         // generic gui
         val backdropUrl = tmdbResult?.backdropPath?.let { TMDBApiController.imageUrl + it }
-            ?: media2.posterURL
+            ?: media.posterURL
         val posterUrl = tmdbResult?.posterPath?.let { TMDBApiController.imageUrl + it }
-            ?: media2.posterURL
+            ?: media.posterURL
 
         // load poster and backdrop
         Glide.with(requireContext()).load(posterUrl)
@@ -99,13 +98,13 @@ class MediaFragment(private val mediaId: Int) : Fragment() {
             .apply(RequestOptions.bitmapTransform(BlurTransformation(20, 3)))
             .into(binding.imageBackdrop)
 
-        binding.textTitle.text = media2.title
-        binding.textYear.text = media2.year.toString()
-        binding.textAge.text = media2.age.toString()
-        binding.textOverview.text = media2.shortText
+        binding.textTitle.text = media.title
+        binding.textYear.text = media.year.toString()
+        binding.textAge.text = media.age.toString()
+        binding.textOverview.text = media.shortText
 
         // set "my list" indicator
-        if (StorageController.myList.contains(media2.aodId)) {
+        if (StorageController.myList.contains(media.aodId)) {
             Glide.with(requireContext()).load(R.drawable.ic_baseline_check_24).into(binding.imageMyListAction)
         } else {
             Glide.with(requireContext()).load(R.drawable.ic_baseline_add_24).into(binding.imageMyListAction)
@@ -116,25 +115,25 @@ class MediaFragment(private val mediaId: Int) : Fragment() {
         pagerAdapter.notifyDataSetChanged()
 
         // specific gui
-        if (media2.type == MediaType.TVSHOW) {
+        if (media.type == MediaType.TVSHOW) {
             // get next episode
-            nextEpisodeId = media2.playlist.firstOrNull{ !it.watched }?.mediaId
-                ?: media2.playlist.first().mediaId
+            nextEpisodeId = media.playlist.firstOrNull{ !it.watched }?.mediaId
+                ?: media.playlist.first().mediaId
 
             // title is the next episodes title
-            binding.textTitle.text = media2.getEpisodeById(nextEpisodeId).title
+            binding.textTitle.text = media.getEpisodeById(nextEpisodeId).title
 
             // episodes count
             binding.textEpisodesOrRuntime.text = resources.getQuantityString(
                 R.plurals.text_episodes_count,
-                media2.playlist.size,
-                media2.playlist.size
+                media.playlist.size,
+                media.playlist.size
             )
 
             // episodes
             fragments.add(MediaFragmentEpisodes())
             pagerAdapter.notifyDataSetChanged()
-        } else if (media2.type == MediaType.MOVIE) {
+        } else if (media.type == MediaType.MOVIE) {
             val tmdbMovie = (tmdbResult as TMDBMovie?)
 
             if (tmdbMovie?.runtime != null) {
@@ -149,7 +148,7 @@ class MediaFragment(private val mediaId: Int) : Fragment() {
         }
 
         // if has similar titles
-        if (media2.similar.isNotEmpty()) {
+        if (media.similar.isNotEmpty()) {
             fragments.add(MediaFragmentSimilar())
             pagerAdapter.notifyDataSetChanged()
         }
@@ -165,20 +164,20 @@ class MediaFragment(private val mediaId: Int) : Fragment() {
 
     private fun initActions() = with(model) {
         binding.buttonPlay.setOnClickListener {
-            when (media2.type) {
-                MediaType.MOVIE -> playEpisode(media2.playlist.first().mediaId)
+            when (media.type) {
+                MediaType.MOVIE -> playEpisode(media.playlist.first().mediaId)
                 MediaType.TVSHOW -> playEpisode(nextEpisodeId)
-                else -> Log.e(javaClass.name, "Wrong Type: ${media2.type}")
+                else -> Log.e(javaClass.name, "Wrong Type: ${media.type}")
             }
         }
 
         // add or remove media from myList
         binding.linearMyListAction.setOnClickListener {
-            if (StorageController.myList.contains(media2.aodId)) {
-                StorageController.myList.remove(media2.aodId)
+            if (StorageController.myList.contains(media.aodId)) {
+                StorageController.myList.remove(media.aodId)
                 Glide.with(requireContext()).load(R.drawable.ic_baseline_add_24).into(binding.imageMyListAction)
             } else {
-                StorageController.myList.add(media2.aodId)
+                StorageController.myList.add(media.aodId)
                 Glide.with(requireContext()).load(R.drawable.ic_baseline_check_24).into(binding.imageMyListAction)
             }
             StorageController.saveMyList(requireContext())
@@ -195,7 +194,7 @@ class MediaFragment(private val mediaId: Int) : Fragment() {
      * TODO this is also used in MediaFragmentEpisode, we should only have on implementation
      */
     private fun playEpisode(episodeId: Int) {
-        (activity as MainActivity).startPlayer(model.media2.aodId, episodeId)
+        (activity as MainActivity).startPlayer(model.media.aodId, episodeId)
         Log.d(javaClass.name, "Started Player with  episodeId: $episodeId")
 
         model.updateNextEpisode(episodeId) // set the correct next episode

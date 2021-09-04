@@ -82,6 +82,11 @@ data class AoDEpisode(
         ?: streams.first()
 }
 
+data class Stream(
+    val url: String,
+    val language : Locale
+)
+
 // TODO will be watched info (state and callback) -> remove description and number
 data class AoDEpisodeInfo(
     val aodMediaId: Int,
@@ -112,62 +117,6 @@ val AoDEpisodeNone = AoDEpisode(
     false,
     "",
     mutableListOf()
-)
-
-// LEGACY
-
-data class Media(
-    val id: Int,
-    val link: String,
-    val type: DataTypes.MediaType,
-    val info: Info = Info(),
-    val episodes: ArrayList<Episode> = arrayListOf()
-) {
-    fun hasEpisode(id: Int) = episodes.any { it.id == id }
-    fun getEpisodeById(id: Int) = episodes.first { it.id == id }
-}
-
-/**
- * uses var, since the values are written in different steps
- */
-data class Info(
-    var title: String = "",
-    var posterUrl: String = "",
-    var shortDesc: String = "",
-    var description: String = "",
-    var year: Int = 0,
-    var age: Int = 0,
-    var episodesCount: Int = 0,
-    var similar: List<ItemMedia> = listOf()
-)
-
-/**
- * number = episode number (0..n)
- */
-data class Episode(
-    val id: Int = -1,
-    val streams: MutableList<Stream> = mutableListOf(),
-    val title: String = "",
-    val posterUrl: String = "",
-    val description: String = "",
-    var shortDesc: String = "",
-    val number: Int = 0,
-    var watched: Boolean = false,
-    var watchedCallback: String = ""
-) {
-    /**
-     * get the preferred stream
-     * @return the preferred stream, if not present use the first stream
-     */
-    fun getPreferredStream(language: Locale) =
-        streams.firstOrNull { it.language == language } ?: streams.first()
-
-    fun hasDub() = streams.any { it.language == Locale.GERMAN }
-}
-
-data class Stream(
-    val url: String,
-    val language : Locale
 )
 
 /**

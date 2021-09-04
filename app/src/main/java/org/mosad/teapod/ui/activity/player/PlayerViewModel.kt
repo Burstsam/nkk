@@ -40,11 +40,11 @@ class PlayerViewModel(application: Application) : AndroidViewModel(application) 
     val currentEpisodeChangedListener = ArrayList<() -> Unit>()
     private val preferredLanguage = if (Preferences.preferSecondary) Locale.JAPANESE else Locale.GERMAN
 
-    var media: Media = Media(-1, "", DataTypes.MediaType.OTHER)
+    var media: AoDMedia = AoDMediaNone
         internal set
-    var currentEpisode = Episode()
+    var currentEpisode = AoDEpisodeNone
         internal set
-    var nextEpisode: Episode? = null
+    var nextEpisode: AoDEpisode? = null
         internal set
     var mediaMeta: Meta? = null
         internal set
@@ -80,12 +80,12 @@ class PlayerViewModel(application: Application) : AndroidViewModel(application) 
     fun loadMedia(mediaId: Int, episodeId: Int) {
         runBlocking {
             media = AoDParser.getMediaById(mediaId)
-            mediaMeta = loadMediaMeta(media.id) // can be done blocking, since it should be cached
+            mediaMeta = loadMediaMeta(media.aodId) // can be done blocking, since it should be cached
         }
 
         currentEpisode = media.getEpisodeById(episodeId)
         nextEpisode = selectNextEpisode()
-        currentEpisodeMeta = getEpisodeMetaByAoDMediaId(currentEpisode.id)
+        currentEpisodeMeta = getEpisodeMetaByAoDMediaId(currentEpisode.mediaId)
         currentLanguage = currentEpisode.getPreferredStream(preferredLanguage).language
     }
 
@@ -122,12 +122,12 @@ class PlayerViewModel(application: Application) : AndroidViewModel(application) 
      *
      * updateWatchedState for the next (now current) episode
      */
-    fun playEpisode(episode: Episode, replace: Boolean = false, seekPosition: Long = 0) {
+    fun playEpisode(episode: AoDEpisode, replace: Boolean = false, seekPosition: Long = 0) {
         val preferredStream = episode.getPreferredStream(currentLanguage)
         currentLanguage = preferredStream.language // update current language, since it may have changed
         currentEpisode = episode
         nextEpisode = selectNextEpisode()
-        currentEpisodeMeta = getEpisodeMetaByAoDMediaId(episode.id)
+        currentEpisodeMeta = getEpisodeMetaByAoDMediaId(episode.mediaId)
         currentEpisodeChangedListener.forEach { it() } // update player gui (title)
 
         val mediaSource = HlsMediaSource.Factory(dataSourceFactory).createMediaSource(
@@ -138,7 +138,7 @@ class PlayerViewModel(application: Application) : AndroidViewModel(application) 
         // if episodes has not been watched, mark as watched
         if (!episode.watched) {
             viewModelScope.launch {
-                AoDParser.markAsWatched(media.id, episode.id)
+                AoDParser.markAsWatched(media.aodId, episode.mediaId)
             }
         }
     }
@@ -188,13 +188,8 @@ class PlayerViewModel(application: Application) : AndroidViewModel(application) 
      * Based on the current episodeId, get the next episode. If there is no next
      * episode, return null
      */
-    private fun selectNextEpisode(): Episode? {
-        val nextEpIndex = media.episodes.indexOfFirst { it.id == currentEpisode.id } + 1
-        return if (nextEpIndex < media.episodes.size) {
-            media.episodes[nextEpIndex]
-        } else {
-            null
-        }
+    private fun selectNextEpisode(): AoDEpisode? {
+        return media.playlist.firstOrNull { it.number > media.getEpisodeById(currentEpisode.mediaId).number }
     }
 
 }
