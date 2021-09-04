@@ -111,8 +111,9 @@ class MediaFragment(private val mediaId: Int) : Fragment() {
         }
 
         // clear fragments, since it lives in onCreate scope (don't do this in onPause/onStop -> FragmentManager transaction)
+        val fragmentsSize = if (fragments.lastIndex < 0) 0 else fragments.lastIndex
         fragments.clear()
-        pagerAdapter.notifyDataSetChanged()
+        pagerAdapter.notifyItemRangeRemoved(0, fragmentsSize)
 
         // specific gui
         if (media.type == MediaType.TVSHOW) {
@@ -131,8 +132,10 @@ class MediaFragment(private val mediaId: Int) : Fragment() {
             )
 
             // episodes
-            fragments.add(MediaFragmentEpisodes())
-            pagerAdapter.notifyDataSetChanged()
+            MediaFragmentEpisodes().also {
+                fragments.add(it)
+                pagerAdapter.notifyItemInserted(fragments.indexOf(it))
+            }
         } else if (media.type == MediaType.MOVIE) {
             val tmdbMovie = (tmdbResult as TMDBMovie?)
 
@@ -149,8 +152,10 @@ class MediaFragment(private val mediaId: Int) : Fragment() {
 
         // if has similar titles
         if (media.similar.isNotEmpty()) {
-            fragments.add(MediaFragmentSimilar())
-            pagerAdapter.notifyDataSetChanged()
+            MediaFragmentSimilar().also {
+                fragments.add(it)
+                pagerAdapter.notifyItemInserted(fragments.indexOf(it))
+            }
         }
 
         // disable scrolling on appbar, if no tabs where added
