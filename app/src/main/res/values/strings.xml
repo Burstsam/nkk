@@ -34,8 +34,8 @@
         <item quantity="other">%d Minutes</item>
     </plurals>
     <string name="similar_titles">Similar titles</string>
-    <string name="component_episode_title">Ep. %1$d %2$s</string>
-    <string name="component_episode_title_sub">Ep. %1$d %2$s (Sub)</string>
+    <string name="component_episode_title">Ep. %1$s %2$s</string>
+    <string name="component_episode_title_sub">Ep. %1$s %2$s (Sub)</string>
     <string name="component_poster_desc" translatable="false">episode poster</string>
     <string name="component_watched_desc" translatable="false">already watched</string>
 

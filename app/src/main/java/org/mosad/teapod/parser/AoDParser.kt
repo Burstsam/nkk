@@ -393,7 +393,8 @@ object AoDParser {
                         description = episode.description,
                         shortDesc = episodesInfo[episode.mediaid]?.shortDesc ?: "",
                         imageURL = episode.image,
-                        number = index,
+                        numberStr = episode.title.substringAfter(", Ep. ", ""), // TODO move to parsePalylist
+                        index = index,
                         watched = episodesInfo[episode.mediaid]?.watched ?: false,
                         watchedCallback = episodesInfo[episode.mediaid]?.watchedCallback ?: "",
                         streams = mutableListOf(Stream(episode.sources.first().file, aodPlaylist.language))

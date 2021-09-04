@@ -1,7 +1,6 @@
 package org.mosad.teapod.util
 
-import java.util.*
-import kotlin.collections.ArrayList
+import java.util.Locale
 
 class DataTypes {
     enum class MediaType {
@@ -41,9 +40,6 @@ data class ItemMedia(
     val posterUrl: String
 )
 
-/**
- * TODO the episodes workflow could use a clean up/rework
- */
 // TODO replace playlist: List<AoDEpisode> with a map?
 data class AoDMedia(
     val aodId: Int,
@@ -56,7 +52,6 @@ data class AoDMedia(
     val similar: List<ItemMedia>,
     val playlist: List<AoDEpisode>,
 ) {
-    fun hasEpisode(mediaId: Int) = playlist.any { it.mediaId == mediaId }
     fun getEpisodeById(mediaId: Int) = playlist.firstOrNull { it.mediaId == mediaId }
         ?: AoDEpisodeNone
 }
@@ -67,7 +62,8 @@ data class AoDEpisode(
     val description: String,
     val shortDesc: String,
     val imageURL: String,
-    val number: Int,
+    val numberStr: String,
+    val index: Int,
     var watched: Boolean,
     val watchedCallback: String,
     val streams: MutableList<Stream>,
@@ -109,6 +105,7 @@ val AoDMediaNone = AoDMedia(
 
 val AoDEpisodeNone = AoDEpisode(
     -1,
+    "",
     "",
     "",
     "",

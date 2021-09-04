@@ -81,7 +81,7 @@ class MediaFragmentViewModel(application: Application) : AndroidViewModel(applic
     fun updateNextEpisode(episodeId: Int) {
         if (media.type == MediaType.MOVIE) return // return if movie
 
-        nextEpisodeId = media.playlist.firstOrNull { it.number > media.getEpisodeById(episodeId).number }?.mediaId
+        nextEpisodeId = media.playlist.firstOrNull { it.index > media.getEpisodeById(episodeId).index }?.mediaId
             ?: media.playlist.first().mediaId
     }
 

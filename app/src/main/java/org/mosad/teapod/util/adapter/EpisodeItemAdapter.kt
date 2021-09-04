@@ -27,9 +27,9 @@ class EpisodeItemAdapter(private val episodes: List<AoDEpisode>, private val tmd
         val ep = episodes[position]
 
         val titleText = if (ep.hasDub()) {
-            context.getString(R.string.component_episode_title, ep.number, ep.description)
+            context.getString(R.string.component_episode_title, ep.numberStr, ep.description)
         } else {
-            context.getString(R.string.component_episode_title_sub, ep.number, ep.description)
+            context.getString(R.string.component_episode_title_sub, ep.numberStr, ep.description)
         }
 
         holder.binding.textEpisodeTitle.text = titleText

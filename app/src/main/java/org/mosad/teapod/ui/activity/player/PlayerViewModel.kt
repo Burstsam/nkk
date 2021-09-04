@@ -20,6 +20,8 @@ import org.mosad.teapod.R
 import org.mosad.teapod.parser.AoDParser
 import org.mosad.teapod.preferences.Preferences
 import org.mosad.teapod.util.*
+import org.mosad.teapod.util.tmdb.TMDBApiController
+import org.mosad.teapod.util.tmdb.TMDBTVSeason
 import java.util.*
 import kotlin.collections.ArrayList
 
@@ -45,6 +47,8 @@ class PlayerViewModel(application: Application) : AndroidViewModel(application) 
     var currentEpisode = AoDEpisodeNone
         internal set
     var nextEpisode: AoDEpisode? = null
+        internal set
+    var tmdbTVSeason: TMDBTVSeason? =null
         internal set
     var mediaMeta: Meta? = null
         internal set
@@ -81,6 +85,15 @@ class PlayerViewModel(application: Application) : AndroidViewModel(application) 
         runBlocking {
             media = AoDParser.getMediaById(mediaId)
             mediaMeta = loadMediaMeta(media.aodId) // can be done blocking, since it should be cached
+        }
+
+        // run async as it should be loaded by the time the episodes a
+        viewModelScope.launch {
+            // get season info, if metaDB knows the tv show
+            if (media.type == DataTypes.MediaType.TVSHOW && mediaMeta != null) {
+                val tvShowMeta = mediaMeta as TVShowMeta
+                //tmdbTVSeason = TMDBApiController().getTVSeasonDetails(tvShowMeta.tmdbId, tvShowMeta.tmdbSeasonNumber)
+            }
         }
 
         currentEpisode = media.getEpisodeById(episodeId)
@@ -159,7 +172,7 @@ class PlayerViewModel(application: Application) : AndroidViewModel(application) 
         return if (media.type == DataTypes.MediaType.TVSHOW) {
             getApplication<Application>().getString(
                 R.string.component_episode_title,
-                currentEpisode.number,
+                currentEpisode.numberStr,
                 currentEpisode.description
             )
         } else {
@@ -189,7 +202,7 @@ class PlayerViewModel(application: Application) : AndroidViewModel(application) 
      * episode, return null
      */
     private fun selectNextEpisode(): AoDEpisode? {
-        return media.playlist.firstOrNull { it.number > media.getEpisodeById(currentEpisode.mediaId).number }
+        return media.playlist.firstOrNull { it.index > media.getEpisodeById(currentEpisode.mediaId).index }
     }
 
 }
