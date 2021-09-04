@@ -92,7 +92,7 @@ class PlayerViewModel(application: Application) : AndroidViewModel(application) 
             // get season info, if metaDB knows the tv show
             if (media.type == DataTypes.MediaType.TVSHOW && mediaMeta != null) {
                 val tvShowMeta = mediaMeta as TVShowMeta
-                //tmdbTVSeason = TMDBApiController().getTVSeasonDetails(tvShowMeta.tmdbId, tvShowMeta.tmdbSeasonNumber)
+                tmdbTVSeason = TMDBApiController().getTVSeasonDetails(tvShowMeta.tmdbId, tvShowMeta.tmdbSeasonNumber)
             }
         }
 
