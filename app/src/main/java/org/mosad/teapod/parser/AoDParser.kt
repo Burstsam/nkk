@@ -31,8 +31,10 @@ import org.mosad.teapod.preferences.EncryptedPreferences
 import org.mosad.teapod.util.*
 import org.mosad.teapod.util.DataTypes.MediaType
 import java.io.IOException
+import java.net.CookieStore
 import java.util.*
 import kotlin.random.Random
+import kotlin.reflect.jvm.jvmName
 
 object AoDParser {
 
@@ -43,7 +45,7 @@ object AoDParser {
 
     private const val userAgent = "Mozilla/5.0 (X11; Linux x86_64; rv:84.0) Gecko/20100101 Firefox/84.0"
 
-    private var sessionCookies = mutableMapOf<String, String>()
+    private lateinit var cookieStore: CookieStore
     private var csrfToken: String = ""
     private var loginSuccess = false
 
@@ -60,23 +62,22 @@ object AoDParser {
     fun login(): Boolean = runBlocking {
 
         withContext(Dispatchers.IO) {
-            // get the authenticity token
-            val resAuth = Jsoup.connect(baseUrl + loginPath)
+            // get the authenticity token and cookies
+            val conAuth = Jsoup.connect(baseUrl + loginPath)
                 .header("User-Agent", userAgent)
-                .execute()
 
-            val authenticityToken = resAuth.parse().select("meta[name=csrf-token]").attr("content")
-            val authCookies = resAuth.cookies()
+            cookieStore = conAuth.cookieStore()
+            csrfToken = conAuth.execute().parse().select("meta[name=csrf-token]").attr("content")
 
-            //Log.d(javaClass.name, "Received authenticity token: $authenticityToken")
-            //Log.d(javaClass.name, "Received authenticity cookies: $authCookies")
+            Log.d(AoDParser::class.jvmName, "Received authenticity token: $csrfToken")
+            Log.d(AoDParser::class.jvmName, "Received authenticity cookies: $cookieStore")
 
             val data = mapOf(
                 Pair("user[login]", EncryptedPreferences.login),
                 Pair("user[password]", EncryptedPreferences.password),
                 Pair("user[remember_me]", "1"),
                 Pair("commit", "Einloggen"),
-                Pair("authenticity_token", authenticityToken)
+                Pair("authenticity_token", csrfToken)
             )
 
             val resLogin = Jsoup.connect(baseUrl + loginPath)
@@ -84,14 +85,12 @@ object AoDParser {
                 .timeout(60000) // login can take some time default is 60000 (60 sec)
                 .data(data)
                 .postDataCharset("UTF-8")
-                .cookies(authCookies)
+                .cookieStore(cookieStore)
                 .execute()
-
             //println(resLogin.body())
 
-            sessionCookies = resLogin.cookies()
             loginSuccess = resLogin.body().contains("Hallo, du bist jetzt angemeldet.")
-            Log.i(javaClass.name, "Status: ${resLogin.statusCode()} (${resLogin.statusMessage()}), login successful: $loginSuccess")
+            Log.i(AoDParser::class.jvmName, "Status: ${resLogin.statusCode()} (${resLogin.statusMessage()}), login successful: $loginSuccess")
 
             loginSuccess
         }
@@ -119,7 +118,7 @@ object AoDParser {
                 aodMediaList.add(this)
             }
         } catch (exn:NullPointerException) {
-            Log.e(javaClass.name, "Error while loading media $aodId", exn)
+            Log.e(AoDParser::class.jvmName, "Error while loading media $aodId", exn)
             AoDMediaNone
         }
     }
@@ -131,7 +130,7 @@ object AoDParser {
         return coroutineScope {
             async(Dispatchers.IO) {
                 val res = Jsoup.connect(baseUrl + subscriptionPath)
-                    .cookies(sessionCookies)
+                    .cookieStore(cookieStore)
                     .get()
 
                 return@async res.select("a:contains(Anime-Abo)").text()
@@ -149,7 +148,7 @@ object AoDParser {
         episode.watched = true
         sendCallback(episode.watchedCallback)
 
-        Log.d(javaClass.name, "Marked episode ${episode.mediaId} as watched")
+        Log.d(AoDParser::class.jvmName, "Marked episode ${episode.mediaId} as watched")
     }
 
     // TODO don't use jsoup here
@@ -166,11 +165,11 @@ object AoDParser {
             try {
                 Jsoup.connect(baseUrl + callbackPath)
                     .ignoreContentType(true)
-                    .cookies(sessionCookies)
+                    .cookieStore(cookieStore)
                     .headers(headers)
                     .execute()
             } catch (ex: IOException) {
-                Log.e(javaClass.name, "Callback for $callbackPath failed.", ex)
+                Log.e(AoDParser::class.jvmName, "Callback for $callbackPath failed.", ex)
             }
         }
     }
@@ -199,7 +198,7 @@ object AoDParser {
                 }
             )
 
-            Log.i(javaClass.name, "Total library size is: ${guiMediaList.size}")
+            Log.i(AoDParser::class.jvmName, "Total library size is: ${guiMediaList.size}")
         }
     }
 
@@ -284,7 +283,7 @@ object AoDParser {
                 }
             }
 
-            Log.i(javaClass.name, "loaded home")
+            Log.i(AoDParser::class.jvmName, "loaded home")
         }
     }
 
@@ -295,27 +294,27 @@ object AoDParser {
      */
     private suspend fun loadMediaAsync(aodId: Int): Deferred<AoDMedia> = coroutineScope {
         return@coroutineScope async (Dispatchers.IO) {
-            if (sessionCookies.isEmpty()) login() // TODO is this needed?
+            if (cookieStore.cookies.isEmpty()) login() // TODO is this needed?
 
             // return none object, if login wasn't successful
             if (!loginSuccess) {
-                Log.w(javaClass.name, "Login was not successful")
+                Log.w(AoDParser::class.jvmName, "Login was not successful")
                 return@async AoDMediaNone
             }
 
             // get the media page
             val res = Jsoup.connect("$baseUrl/anime/$aodId")
-                .cookies(sessionCookies)
+                .cookieStore(cookieStore)
                 .get()
             // println(res)
 
             if (csrfToken.isEmpty()) {
                 csrfToken = res.select("meta[name=csrf-token]").attr("content")
-                Log.d(javaClass.name, "New csrf token is $csrfToken")
+                Log.d(AoDParser::class.jvmName, "New csrf token is $csrfToken")
             }
 
             // playlist parsing TODO can this be async to the general info parsing?
-            val besides = res.select("div.besides").first()
+            val besides = res.select("div.besides").first()!!
             val aodPlaylists = besides.select("input.streamstarter_html5").map { streamstarter ->
                 parsePlaylistAsync(
                     streamstarter.attr("data-playlist"),
@@ -354,7 +353,7 @@ object AoDParser {
                 if (mediaId != null) {
                     ItemMedia(mediaId, mediaTitle, mediaImage)
                 } else {
-                    Log.i(javaClass.name, "MediaId for similar to $aodId was null")
+                    Log.i(AoDParser::class.jvmName, "MediaId for similar to $aodId was null")
                     null
                 }
             }
@@ -376,7 +375,7 @@ object AoDParser {
 
                         AoDEpisodeInfo(mediaId, episodeShortDesc, episodeWatched, episodeWatchedCallback)
                     } else {
-                        Log.i(javaClass.name, "Episode info for $aodId has empty streamstarter_html5 ")
+                        Log.i(AoDParser::class.jvmName, "Episode info for $aodId has empty streamstarter_html5 ")
                         null
                     }
                 }.associateBy { it.aodMediaId }
@@ -441,7 +440,7 @@ object AoDParser {
 
             val res = Jsoup.connect(baseUrl + playlistPath)
                 .ignoreContentType(true)
-                .cookies(sessionCookies)
+                .cookieStore(cookieStore)
                 .headers(headers)
                 .timeout(120000) // loading the playlist can take some time
                 .execute()

@@ -16,9 +16,7 @@
         android:layout_gravity="center"
         android:animateLayoutChanges="true"
         android:foreground="@drawable/ripple_background"
-        app:controller_layout_id="@layout/player_controls"
-        app:fastforward_increment="10000"
-        app:rewind_increment="10000" />
+        app:controller_layout_id="@layout/player_controls" />
 
     <com.google.android.material.progressindicator.CircularProgressIndicator
         android:id="@+id/loading"
