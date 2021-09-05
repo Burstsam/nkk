@@ -31,7 +31,7 @@ class EpisodesListPlayer @JvmOverloads constructor(
             adapterRecEpisodes = PlayerEpisodeItemAdapter(model.media.playlist, model.tmdbTVSeason?.episodes)
             adapterRecEpisodes.onImageClick = { _, position ->
                 (this.parent as ViewGroup).removeView(this)
-                model.playEpisode(model.media.playlist[position], replace = true)
+                model.playEpisode(model.media.playlist[position].mediaId, replace = true)
             }
             adapterRecEpisodes.currentSelected = model.currentEpisode.index
 

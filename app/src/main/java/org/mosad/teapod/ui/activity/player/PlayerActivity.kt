@@ -118,13 +118,13 @@ class PlayerActivity : AppCompatActivity() {
     override fun onNewIntent(intent: Intent?) {
         super.onNewIntent(intent)
 
-        // when the intent changed, lead the new media and play it
+        // when the intent changed, load the new media and play it
         intent?.let {
             model.loadMedia(
                 it.getIntExtra(getString(R.string.intent_media_id), 0),
                 it.getIntExtra(getString(R.string.intent_episode_id), 0)
             )
-            model.playEpisode(model.currentEpisode, replace = true)
+            model.playEpisode(model.currentEpisode.mediaId, replace = true)
         }
     }
 
@@ -206,14 +206,14 @@ class PlayerActivity : AppCompatActivity() {
                     else -> View.VISIBLE
                 }
 
-                if (state == ExoPlayer.STATE_ENDED && model.nextEpisode != null && Preferences.autoplay) {
+                if (state == ExoPlayer.STATE_ENDED && model.nextEpisodeId != null && Preferences.autoplay) {
                     playNextEpisode()
                 }
             }
         })
         
         // start playing the current episode, after all needed player components have been initialized
-        model.playEpisode(model.currentEpisode, true)
+        model.playEpisode(model.currentEpisode.mediaId, true)
     }
 
     @SuppressLint("ClickableViewAccessibility")
@@ -277,7 +277,7 @@ class PlayerActivity : AppCompatActivity() {
                 // if remaining time < 20 sec, a next ep is set, autoplay is enabled and not in pip:
                 // show next ep button
                 if (remainingTime in 1..20000) {
-                    if (!btnNextEpIsVisible && model.nextEpisode != null && Preferences.autoplay && !isInPiPMode()) {
+                    if (!btnNextEpIsVisible && model.nextEpisodeId != null && Preferences.autoplay && !isInPiPMode()) {
                         showButtonNextEp()
                     }
                 } else if (btnNextEpIsVisible) {
@@ -335,7 +335,7 @@ class PlayerActivity : AppCompatActivity() {
         exo_text_title.text = model.getMediaTitle()
 
         // hide the next ep button, if there is none
-        button_next_ep_c.visibility = if (model.nextEpisode == null) {
+        button_next_ep_c.visibility = if (model.nextEpisodeId == null) {
             View.GONE
         } else {
             View.VISIBLE

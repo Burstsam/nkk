@@ -29,9 +29,6 @@ import kotlin.collections.ArrayList
  * PlayerViewModel handles all stuff related to media/episodes.
  * When currentEpisode is changed the player will start playing it (not initial media),
  * the next episode will be update and the callback is handled.
- *
- * TODO rework don't use episodes for everything, use media instead
- *  this is a major rework of the AoDParser/Player/Media architecture
  */
 class PlayerViewModel(application: Application) : AndroidViewModel(application) {
 
@@ -44,15 +41,15 @@ class PlayerViewModel(application: Application) : AndroidViewModel(application) 
 
     var media: AoDMedia = AoDMediaNone
         internal set
-    var currentEpisode = AoDEpisodeNone
-        internal set
-    var nextEpisode: AoDEpisode? = null
+    var mediaMeta: Meta? = null
         internal set
     var tmdbTVSeason: TMDBTVSeason? =null
         internal set
-    var mediaMeta: Meta? = null
+    var currentEpisode = AoDEpisodeNone
         internal set
     var currentEpisodeMeta: EpisodeMeta? = null
+        internal set
+    var nextEpisodeId: Int? = null
         internal set
     var currentLanguage: Locale = Locale.ROOT
         internal set
@@ -97,7 +94,7 @@ class PlayerViewModel(application: Application) : AndroidViewModel(application) 
         }
 
         currentEpisode = media.getEpisodeById(episodeId)
-        nextEpisode = selectNextEpisode()
+        nextEpisodeId = selectNextEpisode()
         currentEpisodeMeta = getEpisodeMetaByAoDMediaId(currentEpisode.mediaId)
         currentLanguage = currentEpisode.getPreferredStream(preferredLanguage).language
     }
@@ -125,33 +122,37 @@ class PlayerViewModel(application: Application) : AndroidViewModel(application) 
     /**
      * play the next episode, if nextEpisode is not null
      */
-    fun playNextEpisode() = nextEpisode?.let { it ->
+    fun playNextEpisode() = nextEpisodeId?.let { it ->
         playEpisode(it, replace = true)
     }
 
     /**
-     * set currentEpisode to the param episode and start playing it
-     * update nextEpisode to reflect the change
+     * Set currentEpisode and start playing it.
+     * Update nextEpisode to reflect the change and update
+     * the watched state for the now playing episode.
      *
-     * updateWatchedState for the next (now current) episode
+     * @param episodeId The aod media id of the episode to play.
+     * @param replace (default = false)
+     * @param seekPosition The seek position for the episode (default = 0).
      */
-    fun playEpisode(episode: AoDEpisode, replace: Boolean = false, seekPosition: Long = 0) {
-        val preferredStream = episode.getPreferredStream(currentLanguage)
-        currentLanguage = preferredStream.language // update current language, since it may have changed
-        currentEpisode = episode
-        nextEpisode = selectNextEpisode()
-        currentEpisodeMeta = getEpisodeMetaByAoDMediaId(episode.mediaId)
-        currentEpisodeChangedListener.forEach { it() } // update player gui (title)
+    fun playEpisode(episodeId: Int, replace: Boolean = false, seekPosition: Long = 0) {
+        currentEpisode = media.getEpisodeById(episodeId)
+        currentLanguage = currentEpisode.getPreferredStream(currentLanguage).language
+        currentEpisodeMeta = getEpisodeMetaByAoDMediaId(currentEpisode.mediaId)
+        nextEpisodeId = selectNextEpisode()
+
+        // update player gui (title, next ep button) after nextEpisodeId has been set
+        currentEpisodeChangedListener.forEach { it() }
 
         val mediaSource = HlsMediaSource.Factory(dataSourceFactory).createMediaSource(
-            MediaItem.fromUri(Uri.parse(preferredStream.url))
+            MediaItem.fromUri(Uri.parse(currentEpisode.getPreferredStream(currentLanguage).url))
         )
         playMedia(mediaSource, replace, seekPosition)
 
         // if episodes has not been watched, mark as watched
-        if (!episode.watched) {
+        if (!currentEpisode.watched) {
             viewModelScope.launch {
-                AoDParser.markAsWatched(media.aodId, episode.mediaId)
+                AoDParser.markAsWatched(media.aodId, currentEpisode.mediaId)
             }
         }
     }
@@ -198,11 +199,13 @@ class PlayerViewModel(application: Application) : AndroidViewModel(application) 
     }
 
     /**
-     * Based on the current episodeId, get the next episode. If there is no next
-     * episode, return null
+     * Based on the current episodes index, get the next episode.
+     * @return The next episode or null if there is none.
      */
-    private fun selectNextEpisode(): AoDEpisode? {
-        return media.playlist.firstOrNull { it.index > media.getEpisodeById(currentEpisode.mediaId).index }
+    private fun selectNextEpisode(): Int? {
+        return media.playlist.firstOrNull {
+            it.index > media.getEpisodeById(currentEpisode.mediaId).index
+        }?.mediaId
     }
 
 }
