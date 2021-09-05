@@ -1,7 +1,6 @@
 package org.mosad.teapod.util
 
-import java.util.*
-import kotlin.collections.ArrayList
+import java.util.Locale
 
 class DataTypes {
     enum class MediaType {
@@ -36,61 +35,47 @@ data class ThirdPartyComponent(
  * it is uses in the ItemMediaAdapter (RecyclerView)
  */
 data class ItemMedia(
-    val id: Int,
+    val id: Int, // aod path id
     val title: String,
     val posterUrl: String
 )
 
-/**
- * TODO the episodes workflow could use a clean up/rework
- */
-data class Media(
-    val id: Int,
-    val link: String,
+// TODO replace playlist: List<AoDEpisode> with a map?
+data class AoDMedia(
+    val aodId: Int,
     val type: DataTypes.MediaType,
-    val info: Info = Info(),
-    val episodes: ArrayList<Episode> = arrayListOf()
+    val title: String,
+    val shortText: String,
+    val posterURL: String,
+    var year: Int,
+    var age: Int,
+    val similar: List<ItemMedia>,
+    val playlist: List<AoDEpisode>,
 ) {
-    fun hasEpisode(id: Int) = episodes.any { it.id == id }
-    fun getEpisodeById(id: Int) = episodes.first { it.id == id }
+    fun getEpisodeById(mediaId: Int) = playlist.firstOrNull { it.mediaId == mediaId }
+        ?: AoDEpisodeNone
 }
 
-/**
- * uses var, since the values are written in different steps
- */
-data class Info(
-    var title: String = "",
-    var posterUrl: String = "",
-    var shortDesc: String = "",
-    var description: String = "",
-    var year: Int = 0,
-    var age: Int = 0,
-    var episodesCount: Int = 0,
-    var similar: List<ItemMedia> = listOf()
-)
+data class AoDEpisode(
+    val mediaId: Int,
+    val title: String,
+    val description: String,
+    val shortDesc: String,
+    val imageURL: String,
+    val numberStr: String,
+    val index: Int,
+    var watched: Boolean,
+    val watchedCallback: String,
+    val streams: MutableList<Stream>,
+){
+    fun hasDub() = streams.any { it.language == Locale.GERMAN }
 
-/**
- * number = episode number (0..n)
- */
-data class Episode(
-    val id: Int = -1,
-    val streams: MutableList<Stream> = mutableListOf(),
-    val title: String = "",
-    val posterUrl: String = "",
-    val description: String = "",
-    var shortDesc: String = "",
-    val number: Int = 0,
-    var watched: Boolean = false,
-    var watchedCallback: String = ""
-) {
     /**
      * get the preferred stream
      * @return the preferred stream, if not present use the first stream
      */
-    fun getPreferredStream(language: Locale) =
-        streams.firstOrNull { it.language == language } ?: streams.first()
-
-    fun hasDub() = streams.any { it.language == Locale.GERMAN }
+    fun getPreferredStream(language: Locale) = streams.firstOrNull { it.language == language }
+        ?: streams.first()
 }
 
 data class Stream(
@@ -98,24 +83,45 @@ data class Stream(
     val language : Locale
 )
 
-/**
- * this class is used for tmdb responses
- */
-data class TMDBResponse(
-    val id: Int = 0,
-    val title: String = "",
-    val overview: String = "",
-    val posterUrl: String = "",
-    val backdropUrl: String = "",
-    val runtime: Int = 0
+// TODO will be watched info (state and callback) -> remove description and number
+data class AoDEpisodeInfo(
+    val aodMediaId: Int,
+    val shortDesc: String,
+    var watched: Boolean,
+    val watchedCallback: String,
+)
+
+val AoDMediaNone = AoDMedia(
+    -1,
+    DataTypes.MediaType.OTHER,
+    "",
+    "",
+    "",
+    -1,
+    -1,
+    listOf(),
+    listOf()
+)
+
+val AoDEpisodeNone = AoDEpisode(
+    -1,
+    "",
+    "",
+    "",
+    "",
+    "",
+    -1,
+    false,
+    "",
+    mutableListOf()
 )
 
 /**
  * this class is used to represent the aod json API?
  */
-data class AoDObject(
-    val playlist: List<Playlist>,
-    val extLanguage: String
+data class AoDPlaylist(
+    val list: List<Playlist>,
+    val language: Locale
 )
 
 data class Playlist(

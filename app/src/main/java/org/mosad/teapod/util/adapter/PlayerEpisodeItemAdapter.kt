@@ -9,9 +9,10 @@ import com.bumptech.glide.request.RequestOptions
 import jp.wasabeef.glide.transformations.RoundedCornersTransformation
 import org.mosad.teapod.R
 import org.mosad.teapod.databinding.ItemEpisodePlayerBinding
-import org.mosad.teapod.util.Episode
+import org.mosad.teapod.util.AoDEpisode
+import org.mosad.teapod.util.tmdb.TMDBTVEpisode
 
-class PlayerEpisodeItemAdapter(private val episodes: List<Episode>) : RecyclerView.Adapter<PlayerEpisodeItemAdapter.EpisodeViewHolder>() {
+class PlayerEpisodeItemAdapter(private val episodes: List<AoDEpisode>, private val tmdbEpisodes: List<TMDBTVEpisode>?) : RecyclerView.Adapter<PlayerEpisodeItemAdapter.EpisodeViewHolder>() {
 
     var onImageClick: ((String, Int) -> Unit)? = null
     var currentSelected: Int = -1 // -1, since position should never be < 0
@@ -25,16 +26,22 @@ class PlayerEpisodeItemAdapter(private val episodes: List<Episode>) : RecyclerVi
         val ep = episodes[position]
 
         val titleText = if (ep.hasDub()) {
-            context.getString(R.string.component_episode_title, ep.number, ep.description)
+            context.getString(R.string.component_episode_title, ep.numberStr, ep.description)
         } else {
-            context.getString(R.string.component_episode_title_sub, ep.number, ep.description)
+            context.getString(R.string.component_episode_title_sub, ep.numberStr, ep.description)
         }
 
         holder.binding.textEpisodeTitle2.text = titleText
-        holder.binding.textEpisodeDesc2.text = ep.shortDesc
+        holder.binding.textEpisodeDesc2.text = if (ep.shortDesc.isNotEmpty()) {
+            ep.shortDesc
+        } else if (tmdbEpisodes != null && position < tmdbEpisodes.size){
+            tmdbEpisodes[position].overview
+        } else {
+            ""
+        }
 
-        if (episodes[position].posterUrl.isNotEmpty()) {
-            Glide.with(context).load(ep.posterUrl)
+        if (ep.imageURL.isNotEmpty()) {
+            Glide.with(context).load(ep.imageURL)
                 .apply(RequestOptions.bitmapTransform(RoundedCornersTransformation(10, 0)))
                 .into(holder.binding.imageEpisode)
         }

@@ -98,8 +98,8 @@ class HomeFragment : Fragment() {
             lifecycleScope.launch {
                 val media = AoDParser.getMediaById(highlightMedia.id)
 
-                Log.d(javaClass.name, "Starting Player with  mediaId: ${media.id}")
-                (activity as MainActivity).startPlayer(media.id, media.episodes.first().id)
+                Log.d(javaClass.name, "Starting Player with  mediaId: ${media.aodId}")
+                (activity as MainActivity).startPlayer(media.aodId, media.playlist.first().mediaId)
             }
         }
 
@@ -120,24 +120,24 @@ class HomeFragment : Fragment() {
             activity?.showFragment(MediaFragment(highlightMedia.id))
         }
 
-        adapterMyList.onItemClick = { mediaId, _ ->
-            activity?.showFragment(MediaFragment(mediaId))
+        adapterMyList.onItemClick = { id, _ ->
+            activity?.showFragment(MediaFragment(id))
         }
 
-        adapterNewEpisodes.onItemClick = { mediaId, _ ->
-            activity?.showFragment(MediaFragment(mediaId))
+        adapterNewEpisodes.onItemClick = { id, _ ->
+            activity?.showFragment(MediaFragment(id))
         }
 
-        adapterNewSimulcasts.onItemClick = { mediaId, _ ->
-            activity?.showFragment(MediaFragment(mediaId))
+        adapterNewSimulcasts.onItemClick = { id, _ ->
+            activity?.showFragment(MediaFragment(id))
         }
 
-        adapterNewTitles.onItemClick = { mediaId, _ ->
-            activity?.showFragment(MediaFragment(mediaId))
+        adapterNewTitles.onItemClick = { id, _ ->
+            activity?.showFragment(MediaFragment(id))
         }
 
-        adapterTopTen.onItemClick = { mediaId, _ ->
-            activity?.showFragment(MediaFragment(mediaId))
+        adapterTopTen.onItemClick = { id, _ ->
+            activity?.showFragment(MediaFragment(id))
         }
     }
 
@@ -154,7 +154,7 @@ class HomeFragment : Fragment() {
 
     private fun mapMyListToItemMedia(): List<ItemMedia> {
         return StorageController.myList.mapNotNull { elementId ->
-            AoDParser.itemMediaList.firstOrNull { it.id == elementId }.also {
+            AoDParser.guiMediaList.firstOrNull { it.id == elementId }.also {
                 // it the my list entry wasn't found in itemMediaList Log it
                 if (it == null) {
                     Log.w(javaClass.name, "The element with the id $elementId was not found.")

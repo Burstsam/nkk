@@ -19,9 +19,9 @@ import kotlinx.coroutines.runBlocking
 import org.mosad.teapod.R
 import org.mosad.teapod.parser.AoDParser
 import org.mosad.teapod.preferences.Preferences
-import org.mosad.teapod.util.DataTypes
-import org.mosad.teapod.util.Episode
-import org.mosad.teapod.util.Media
+import org.mosad.teapod.util.*
+import org.mosad.teapod.util.tmdb.TMDBApiController
+import org.mosad.teapod.util.tmdb.TMDBTVSeason
 import java.util.*
 import kotlin.collections.ArrayList
 
@@ -39,11 +39,17 @@ class PlayerViewModel(application: Application) : AndroidViewModel(application) 
     val currentEpisodeChangedListener = ArrayList<() -> Unit>()
     private val preferredLanguage = if (Preferences.preferSecondary) Locale.JAPANESE else Locale.GERMAN
 
-    var media: Media = Media(-1, "", DataTypes.MediaType.OTHER)
+    var media: AoDMedia = AoDMediaNone
         internal set
-    var currentEpisode = Episode()
+    var mediaMeta: Meta? = null
         internal set
-    var nextEpisode: Episode? = null
+    var tmdbTVSeason: TMDBTVSeason? =null
+        internal set
+    var currentEpisode = AoDEpisodeNone
+        internal set
+    var currentEpisodeMeta: EpisodeMeta? = null
+        internal set
+    var nextEpisodeId: Int? = null
         internal set
     var currentLanguage: Locale = Locale.ROOT
         internal set
@@ -75,10 +81,21 @@ class PlayerViewModel(application: Application) : AndroidViewModel(application) 
     fun loadMedia(mediaId: Int, episodeId: Int) {
         runBlocking {
             media = AoDParser.getMediaById(mediaId)
+            mediaMeta = loadMediaMeta(media.aodId) // can be done blocking, since it should be cached
+        }
+
+        // run async as it should be loaded by the time the episodes a
+        viewModelScope.launch {
+            // get season info, if metaDB knows the tv show
+            if (media.type == DataTypes.MediaType.TVSHOW && mediaMeta != null) {
+                val tvShowMeta = mediaMeta as TVShowMeta
+                tmdbTVSeason = TMDBApiController().getTVSeasonDetails(tvShowMeta.tmdbId, tvShowMeta.tmdbSeasonNumber)
+            }
         }
 
         currentEpisode = media.getEpisodeById(episodeId)
-        nextEpisode = selectNextEpisode()
+        nextEpisodeId = selectNextEpisode()
+        currentEpisodeMeta = getEpisodeMetaByAoDMediaId(currentEpisode.mediaId)
         currentLanguage = currentEpisode.getPreferredStream(preferredLanguage).language
     }
 
@@ -105,32 +122,37 @@ class PlayerViewModel(application: Application) : AndroidViewModel(application) 
     /**
      * play the next episode, if nextEpisode is not null
      */
-    fun playNextEpisode() = nextEpisode?.let { it ->
+    fun playNextEpisode() = nextEpisodeId?.let { it ->
         playEpisode(it, replace = true)
     }
 
     /**
-     * set currentEpisode to the param episode and start playing it
-     * update nextEpisode to reflect the change
+     * Set currentEpisode and start playing it.
+     * Update nextEpisode to reflect the change and update
+     * the watched state for the now playing episode.
      *
-     * updateWatchedState for the next (now current) episode
+     * @param episodeId The aod media id of the episode to play.
+     * @param replace (default = false)
+     * @param seekPosition The seek position for the episode (default = 0).
      */
-    fun playEpisode(episode: Episode, replace: Boolean = false, seekPosition: Long = 0) {
-        val preferredStream = episode.getPreferredStream(currentLanguage)
-        currentLanguage = preferredStream.language // update current language, since it may have changed
-        currentEpisode = episode
-        nextEpisode = selectNextEpisode()
-        currentEpisodeChangedListener.forEach { it() } // update player gui (title)
+    fun playEpisode(episodeId: Int, replace: Boolean = false, seekPosition: Long = 0) {
+        currentEpisode = media.getEpisodeById(episodeId)
+        currentLanguage = currentEpisode.getPreferredStream(currentLanguage).language
+        currentEpisodeMeta = getEpisodeMetaByAoDMediaId(currentEpisode.mediaId)
+        nextEpisodeId = selectNextEpisode()
+
+        // update player gui (title, next ep button) after nextEpisodeId has been set
+        currentEpisodeChangedListener.forEach { it() }
 
         val mediaSource = HlsMediaSource.Factory(dataSourceFactory).createMediaSource(
-            MediaItem.fromUri(Uri.parse(preferredStream.url))
+            MediaItem.fromUri(Uri.parse(currentEpisode.getPreferredStream(currentLanguage).url))
         )
         playMedia(mediaSource, replace, seekPosition)
 
         // if episodes has not been watched, mark as watched
-        if (!episode.watched) {
+        if (!currentEpisode.watched) {
             viewModelScope.launch {
-                AoDParser.markAsWatched(media.id, episode.id)
+                AoDParser.markAsWatched(media.aodId, currentEpisode.mediaId)
             }
         }
     }
@@ -151,7 +173,7 @@ class PlayerViewModel(application: Application) : AndroidViewModel(application) 
         return if (media.type == DataTypes.MediaType.TVSHOW) {
             getApplication<Application>().getString(
                 R.string.component_episode_title,
-                currentEpisode.number,
+                currentEpisode.numberStr,
                 currentEpisode.description
             )
         } else {
@@ -159,17 +181,31 @@ class PlayerViewModel(application: Application) : AndroidViewModel(application) 
         }
     }
 
-    /**
-     * Based on the current episodeId, get the next episode. If there is no next
-     * episode, return null
-     */
-    private fun selectNextEpisode(): Episode? {
-        val nextEpIndex = media.episodes.indexOfFirst { it.id == currentEpisode.id } + 1
-        return if (nextEpIndex < media.episodes.size) {
-            media.episodes[nextEpIndex]
+    fun getEpisodeMetaByAoDMediaId(aodMediaId: Int): EpisodeMeta? {
+        val meta = mediaMeta
+        return if (meta is TVShowMeta) {
+            meta.episodes.firstOrNull { it.aodMediaId == aodMediaId }
         } else {
             null
         }
+    }
+
+    private suspend fun loadMediaMeta(aodId: Int): Meta? {
+        return if (media.type == DataTypes.MediaType.TVSHOW) {
+            MetaDBController().getTVShowMetadata(aodId)
+        } else {
+            null
+        }
+    }
+
+    /**
+     * Based on the current episodes index, get the next episode.
+     * @return The next episode or null if there is none.
+     */
+    private fun selectNextEpisode(): Int? {
+        return media.playlist.firstOrNull {
+            it.index > media.getEpisodeById(currentEpisode.mediaId).index
+        }?.mediaId
     }
 
 }

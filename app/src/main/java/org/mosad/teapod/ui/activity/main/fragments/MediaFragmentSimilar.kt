@@ -27,7 +27,7 @@ class MediaFragmentSimilar : Fragment()  {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        adapterSimilar = MediaItemAdapter(model.media.info.similar)
+        adapterSimilar = MediaItemAdapter(model.media.similar)
         binding.recyclerMediaSimilar.adapter = adapterSimilar
         binding.recyclerMediaSimilar.addItemDecoration(MediaItemDecoration(9))
 

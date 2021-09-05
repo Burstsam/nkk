@@ -89,4 +89,20 @@
         app:backgroundTint="@color/exo_white"
         app:iconGravity="textStart" />
 
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/button_skip_op"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="bottom|end"
+        android:layout_marginEnd="12dp"
+        android:layout_marginBottom="70dp"
+        android:gravity="center"
+        android:text="@string/skip_opening"
+        android:textAllCaps="false"
+        android:textColor="@android:color/primary_text_light"
+        android:textSize="16sp"
+        android:visibility="gone"
+        app:backgroundTint="@color/exo_white"
+        app:iconGravity="textStart" />
+
 </FrameLayout>

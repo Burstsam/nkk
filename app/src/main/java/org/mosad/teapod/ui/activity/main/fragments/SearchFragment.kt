@@ -30,7 +30,7 @@ class SearchFragment : Fragment() {
         lifecycleScope.launch {
             // create and set the adapter, needs context
                 context?.let {
-                    adapter = MediaItemAdapter(AoDParser.itemMediaList)
+                    adapter = MediaItemAdapter(AoDParser.guiMediaList)
                     adapter!!.onItemClick = { mediaId, _ ->
                         binding.searchText.clearFocus()
                         activity?.showFragment(MediaFragment(mediaId))

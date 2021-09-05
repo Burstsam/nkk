@@ -51,7 +51,8 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:layout_marginTop="5dp"
+        android:maxLines="10"
         android:text="@string/text_overview_ex"
-        android:textColor="@color/textPrimaryDark"/>
+        android:textColor="@color/textPrimaryDark" />
 
 </LinearLayout>
