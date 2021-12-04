@@ -1,7 +1,9 @@
 package org.mosad.teapod.parser.crunchyroll
 
+import android.util.Log
 import com.github.kittinunf.fuel.Fuel
 import com.github.kittinunf.fuel.core.FuelError
+import com.github.kittinunf.fuel.core.Parameters
 import com.github.kittinunf.fuel.json.FuelJson
 import com.github.kittinunf.fuel.json.responseJson
 import com.github.kittinunf.result.Result
@@ -12,7 +14,7 @@ import kotlinx.serialization.json.Json
 
 private val json = Json { ignoreUnknownKeys = true }
 
-class Cruncyroll {
+object Crunchyroll {
 
     private val baseUrl = "https://beta-api.crunchyroll.com"
 
@@ -47,7 +49,7 @@ class Cruncyroll {
 //            println("response: $response")
 //            println("response: $result")
 
-            println("login complete with code ${response.statusCode}")
+            Log.i(javaClass.name, "login complete with code ${response.statusCode}")
 
             return@withContext response.statusCode == 200
         }
@@ -56,9 +58,9 @@ class Cruncyroll {
     }
 
     // TODO get/post difference
-    private suspend fun requestA(endpoint: String): Result<FuelJson, FuelError> = coroutineScope {
+    private suspend fun request(endpoint: String, params: Parameters = listOf()): Result<FuelJson, FuelError> = coroutineScope {
         return@coroutineScope (Dispatchers.IO) {
-            val (request, response, result) = Fuel.get("$baseUrl$endpoint")
+            val (request, response, result) = Fuel.get("$baseUrl$endpoint", params)
                 .header("Authorization", "$tokenType $accessToken")
                 .responseJson()
 
@@ -71,34 +73,30 @@ class Cruncyroll {
     }
 
     // TESTING
-    @Serializable
-    data class Test(val total: Int, val items: List<Item>)
 
-    @Serializable
-    data class Item(val channel_id: String, val description: String)
 
-    // TODO sort_by, default alphabetical, n, locale de-DE
-    suspend fun browse() {
+    // TODO sort_by, default alphabetical, n, locale de-DE, categories
+    suspend fun browse(sortBy: SortBy = SortBy.ALPHABETICAL, n: Int = 10): BrowseResult {
         val browseEndpoint = "/content/v1/browse"
+        val parameters = listOf("sort_by" to sortBy.str, "n" to n)
 
-        val result = requestA(browseEndpoint)
+        val result = request(browseEndpoint, parameters)
 
-        println("${result.component1()?.obj()?.get("total")}")
+//        val browseResult = json.decodeFromString<BrowseResult>(result.component1()?.obj()?.toString()!!)
+//        println(browseResult.items.size)
 
-        val test = json.decodeFromString<Test>(result.component1()?.obj()?.toString()!!)
-        println(test)
-
+        return json.decodeFromString<BrowseResult>(result.component1()?.obj()?.toString()!!)
     }
 
+    // TODO
     suspend fun search() {
         val searchEndpoint = "/content/v1/search"
-
-        val result = requestA(searchEndpoint)
+        val result = request(searchEndpoint)
 
         println("${result.component1()?.obj()?.get("total")}")
 
-        val test = json.decodeFromString<Test>(result.component1()?.obj()?.toString()!!)
-        println(test)
+        val test = json.decodeFromString<BrowseResult>(result.component1()?.obj()?.toString()!!)
+        println(test.items.size)
 
     }
 

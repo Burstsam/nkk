@@ -9,6 +9,8 @@ import androidx.lifecycle.lifecycleScope
 import kotlinx.coroutines.launch
 import org.mosad.teapod.databinding.FragmentLibraryBinding
 import org.mosad.teapod.parser.AoDParser
+import org.mosad.teapod.parser.crunchyroll.Crunchyroll
+import org.mosad.teapod.util.ItemMedia
 import org.mosad.teapod.util.adapter.MediaItemAdapter
 import org.mosad.teapod.util.decoration.MediaItemDecoration
 import org.mosad.teapod.util.showFragment
@@ -30,7 +32,14 @@ class LibraryFragment : Fragment() {
         lifecycleScope.launch {
             // create and set the adapter, needs context
             context?.let {
-                adapter = MediaItemAdapter(AoDParser.guiMediaList)
+                // crunchy testing TODO implement lazy loading
+                val results = Crunchyroll.browse(n = 50)
+                val list = results.items.mapIndexed { index, item ->
+                    ItemMedia(index, item.title, item.images.poster_wide[0][0].source)
+                }
+
+
+                adapter = MediaItemAdapter(list)
                 adapter.onItemClick = { mediaId, _ ->
                     activity?.showFragment(MediaFragment(mediaId))
                 }

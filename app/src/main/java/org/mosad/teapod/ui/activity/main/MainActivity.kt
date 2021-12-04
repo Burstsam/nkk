@@ -29,14 +29,12 @@ import android.view.MenuItem
 import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.commit
-import com.afollestad.materialdialogs.MaterialDialog
-import com.afollestad.materialdialogs.callbacks.onDismiss
 import com.google.android.material.navigation.NavigationBarView
 import kotlinx.coroutines.*
 import org.mosad.teapod.R
 import org.mosad.teapod.databinding.ActivityMainBinding
 import org.mosad.teapod.parser.AoDParser
-import org.mosad.teapod.parser.crunchyroll.Cruncyroll
+import org.mosad.teapod.parser.crunchyroll.Crunchyroll
 import org.mosad.teapod.preferences.EncryptedPreferences
 import org.mosad.teapod.preferences.Preferences
 import org.mosad.teapod.ui.activity.main.fragments.AccountFragment
@@ -49,8 +47,6 @@ import org.mosad.teapod.ui.components.LoginDialog
 import org.mosad.teapod.util.DataTypes
 import org.mosad.teapod.util.MetaDBController
 import org.mosad.teapod.util.StorageController
-import org.mosad.teapod.util.exitAndRemoveTask
-import java.net.SocketTimeoutException
 import kotlin.system.measureTimeMillis
 
 class MainActivity : AppCompatActivity(), NavigationBarView.OnItemSelectedListener {
@@ -155,11 +151,8 @@ class MainActivity : AppCompatActivity(), NavigationBarView.OnItemSelectedListen
             if (EncryptedPreferences.password.isEmpty()) {
                 showOnboarding()
             } else {
-                val crunchy = Cruncyroll()
-                crunchy.login(EncryptedPreferences.login, EncryptedPreferences.password)
-                println("after login")
-
-                runBlocking { crunchy.browse() }
+                Crunchyroll.login(EncryptedPreferences.login, EncryptedPreferences.password)
+                //runBlocking { Crunchyroll.browse() }
             }
 
 
