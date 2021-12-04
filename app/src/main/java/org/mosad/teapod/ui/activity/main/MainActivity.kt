@@ -36,6 +36,7 @@ import kotlinx.coroutines.*
 import org.mosad.teapod.R
 import org.mosad.teapod.databinding.ActivityMainBinding
 import org.mosad.teapod.parser.AoDParser
+import org.mosad.teapod.parser.crunchyroll.Cruncyroll
 import org.mosad.teapod.preferences.EncryptedPreferences
 import org.mosad.teapod.preferences.Preferences
 import org.mosad.teapod.ui.activity.main.fragments.AccountFragment
@@ -150,25 +151,37 @@ class MainActivity : AppCompatActivity(), NavigationBarView.OnItemSelectedListen
             EncryptedPreferences.readCredentials(this)
             StorageController.load(this)
 
-            // show onboarding
+            // show onboarding TODO rework
             if (EncryptedPreferences.password.isEmpty()) {
                 showOnboarding()
             } else {
-                try {
-                    if (!AoDParser.login()) {
-                        showLoginDialog()
-                    }
-                } catch (ex: SocketTimeoutException) {
-                    Log.w(javaClass.name, "Timeout during login!")
+                val crunchy = Cruncyroll()
+                crunchy.login(EncryptedPreferences.login, EncryptedPreferences.password)
+                println("after login")
 
-                    // show waring dialog before finishing
-                    MaterialDialog(this).show {
-                        title(R.string.dialog_timeout_head)
-                        message(R.string.dialog_timeout_desc)
-                        onDismiss { exitAndRemoveTask() }
-                    }
-                }
+                runBlocking { crunchy.browse() }
             }
+
+
+
+//            if (EncryptedPreferences.password.isEmpty()) {
+//                showOnboarding()
+//            } else {
+//                try {
+//                    if (!AoDParser.login()) {
+//                        showLoginDialog()
+//                    }
+//                } catch (ex: SocketTimeoutException) {
+//                    Log.w(javaClass.name, "Timeout during login!")
+//
+//                    // show waring dialog before finishing
+//                    MaterialDialog(this).show {
+//                        title(R.string.dialog_timeout_head)
+//                        message(R.string.dialog_timeout_desc)
+//                        onDismiss { exitAndRemoveTask() }
+//                    }
+//                }
+//            }
 
             runBlocking { loadingJob.await() } // wait for initial loading to finish
         }
