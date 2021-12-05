@@ -152,7 +152,8 @@ class MainActivity : AppCompatActivity(), NavigationBarView.OnItemSelectedListen
                 showOnboarding()
             } else {
                 Crunchyroll.login(EncryptedPreferences.login, EncryptedPreferences.password)
-                //runBlocking { Crunchyroll.browse() }
+                runBlocking { Crunchyroll.browse() }
+                runBlocking { Crunchyroll.index() }
             }
 
 
