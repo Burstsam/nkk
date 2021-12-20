@@ -11,12 +11,13 @@ import kotlinx.coroutines.*
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.json.Json
+import java.util.*
 
 private val json = Json { ignoreUnknownKeys = true }
 
 object Crunchyroll {
 
-    private val baseUrl = "https://beta-api.crunchyroll.com"
+    private const val baseUrl = "https://beta-api.crunchyroll.com"
 
     private var accessToken = ""
     private var tokenType = ""
@@ -25,9 +26,14 @@ object Crunchyroll {
     private var signature = ""
     private var keyPairID = ""
 
+    // TODO temp helper vary
+    var locale = "${Locale.GERMANY.language}-${Locale.GERMANY.country}"
+    var country = Locale.GERMANY.country
+
+    val browsingCache = arrayListOf<Item>()
+
     fun login(username: String, password: String): Boolean = runBlocking {
         val tokenEndpoint = "/auth/v1/token"
-
         val formData = listOf(
             "username" to username,
             "password" to password,
@@ -63,9 +69,15 @@ object Crunchyroll {
     }
 
     // TODO get/post difference
-    private suspend fun request(endpoint: String, params: Parameters = listOf()): Result<FuelJson, FuelError> = coroutineScope {
+    private suspend fun request(
+        endpoint: String,
+        params: Parameters = listOf(),
+        url: String = ""
+    ): Result<FuelJson, FuelError> = coroutineScope {
+        val path = if (url.isEmpty()) "$baseUrl$endpoint" else url
+
         return@coroutineScope (Dispatchers.IO) {
-            val (request, response, result) = Fuel.get("$baseUrl$endpoint", params)
+            val (request, response, result) = Fuel.get(path, params)
                 .header("Authorization", "$tokenType $accessToken")
                 .responseJson()
 
@@ -75,42 +87,6 @@ object Crunchyroll {
 
             result
         }
-    }
-
-    // TESTING
-
-
-    // TODO sort_by, default alphabetical, n, locale de-DE, categories
-    /**
-     * Browse the media available on crunchyroll.
-     *
-     * @param sortBy
-     * @param n Number of items to return, defaults to 10
-     *
-     * @return A **[BrowseResult]** object is returned.
-     */
-    suspend fun browse(sortBy: SortBy = SortBy.ALPHABETICAL, n: Int = 10): BrowseResult {
-        val browseEndpoint = "/content/v1/browse"
-        val parameters = listOf("sort_by" to sortBy.str, "n" to n)
-
-        val result = request(browseEndpoint, parameters)
-
-//        val browseResult = json.decodeFromString<BrowseResult>(result.component1()?.obj()?.toString()!!)
-//        println(browseResult.items.size)
-
-        return json.decodeFromString(result.component1()?.obj()?.toString()!!)
-    }
-
-    // TODO
-    suspend fun search() {
-        val searchEndpoint = "/content/v1/search"
-        val result = request(searchEndpoint)
-
-        println("${result.component1()?.obj()?.get("total")}")
-
-        val test = json.decodeFromString<BrowseResult>(result.component1()?.obj()?.toString()!!)
-        println(test.items.size)
-
     }
 
     /**
@@ -130,6 +106,110 @@ object Crunchyroll {
         println("policy: $policy")
         println("signature: $signature")
         println("keyPairID: $keyPairID")
+    }
+
+
+    // TODO locale de-DE, categories
+    /**
+     * Browse the media available on crunchyroll.
+     *
+     * @param sortBy
+     * @param n Number of items to return, defaults to 10
+     *
+     * @return A **[BrowseResult]** object is returned.
+     */
+    suspend fun browse(sortBy: SortBy = SortBy.ALPHABETICAL, n: Int = 10): BrowseResult {
+        val browseEndpoint = "/content/v1/browse"
+        val parameters = listOf("sort_by" to sortBy.str, "n" to n)
+
+        val result = request(browseEndpoint, parameters)
+        val browseResult = result.component1()?.obj()?.let {
+            json.decodeFromString(it.toString())
+        } ?: NoneBrowseResult
+
+        // add results to cache TODO improve
+        browsingCache.clear()
+        browsingCache.addAll(browseResult.items)
+
+        return browseResult
+    }
+
+    // // TODO locale de-DE, type
+    suspend fun search(query: String, n: Int = 10) {
+        val searchEndpoint = "/content/v1/search"
+        val parameters = listOf("q" to query, "n" to n)
+
+        val result = request(searchEndpoint, parameters)
+        println("${result.component1()?.obj()?.get("total")}")
+
+        val test = json.decodeFromString<BrowseResult>(result.component1()?.obj()?.toString()!!)
+        println(test.items.size)
+
+        // TODO return
+    }
+
+    /**
+     * series id == crunchyroll id?
+     */
+    suspend fun series(seriesId: String): Series {
+        val seriesEndpoint = "/cms/v2/$country/M3/crunchyroll/series/$seriesId"
+        val parameters = listOf(
+            "locale" to locale,
+            "Signature" to signature,
+            "Policy" to policy,
+            "Key-Pair-Id" to keyPairID
+        )
+
+        val result = request(seriesEndpoint, parameters)
+
+        return result.component1()?.obj()?.let {
+            json.decodeFromString(it.toString())
+        } ?: NoneSeries
+    }
+
+    suspend fun seasons(seriesId: String): Seasons {
+        val episodesEndpoint = "/cms/v2/$country/M3/crunchyroll/seasons"
+        val parameters = listOf(
+            "series_id" to seriesId,
+            "locale" to locale,
+            "Signature" to signature,
+            "Policy" to policy,
+            "Key-Pair-Id" to keyPairID
+        )
+
+        val result = request(episodesEndpoint, parameters)
+
+        return result.component1()?.obj()?.let {
+            println(it)
+            json.decodeFromString(it.toString())
+        } ?: NoneSeasons
+    }
+
+    suspend fun episodes(seasonId: String): Episodes {
+        val episodesEndpoint = "/cms/v2/$country/M3/crunchyroll/episodes"
+        val parameters = listOf(
+            "season_id" to seasonId,
+            "locale" to locale,
+            "Signature" to signature,
+            "Policy" to policy,
+            "Key-Pair-Id" to keyPairID
+        )
+
+        val result = request(episodesEndpoint, parameters)
+
+        return result.component1()?.obj()?.let {
+            println(it)
+            json.decodeFromString(it.toString())
+        } ?: NoneEpisodes
+    }
+
+    suspend fun playback(url: String): Playback {
+        val result = request("", url = url)
+
+        return result.component1()?.obj()?.let {
+            println(it)
+            json.decodeFromString(it.toString())
+        } ?: NonePlayback
     }
 
 }

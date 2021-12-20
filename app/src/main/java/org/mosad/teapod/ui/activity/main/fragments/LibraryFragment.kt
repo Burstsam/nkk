@@ -35,13 +35,13 @@ class LibraryFragment : Fragment() {
                 // crunchy testing TODO implement lazy loading
                 val results = Crunchyroll.browse(n = 50)
                 val list = results.items.mapIndexed { index, item ->
-                    ItemMedia(index, item.title, item.images.poster_wide[0][0].source)
+                    ItemMedia(index, item.title, item.images.poster_wide[0][0].source, idStr = item.id)
                 }
 
 
                 adapter = MediaItemAdapter(list)
-                adapter.onItemClick = { mediaId, _ ->
-                    activity?.showFragment(MediaFragment(mediaId))
+                adapter.onItemClick = { mediaIdStr, _ ->
+                    activity?.showFragment(MediaFragment(mediaIdStr = mediaIdStr))
                 }
 
                 binding.recyclerMediaLibrary.adapter = adapter

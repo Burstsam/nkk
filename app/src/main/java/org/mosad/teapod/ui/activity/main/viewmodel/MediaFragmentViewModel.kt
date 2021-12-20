@@ -4,6 +4,8 @@ import android.app.Application
 import android.util.Log
 import androidx.lifecycle.AndroidViewModel
 import org.mosad.teapod.parser.AoDParser
+import org.mosad.teapod.parser.crunchyroll.*
+import org.mosad.teapod.ui.activity.main.MainActivity
 import org.mosad.teapod.util.*
 import org.mosad.teapod.util.DataTypes.MediaType
 import org.mosad.teapod.util.tmdb.TMDBApiController
@@ -21,6 +23,13 @@ class MediaFragmentViewModel(application: Application) : AndroidViewModel(applic
     var nextEpisodeId = -1
         internal set
 
+    var mediaCrunchy = NoneItem
+        internal set
+    var seasonsCrunchy = NoneSeasons
+        internal set
+    var episodesCrunchy = NoneEpisodes
+        internal set
+
     var tmdbResult: TMDBResult? = null // TODO rename
         internal set
     var tmdbTVSeason: TMDBTVSeason? =null
@@ -28,11 +37,45 @@ class MediaFragmentViewModel(application: Application) : AndroidViewModel(applic
     var mediaMeta: Meta? = null
         internal set
 
+    suspend fun loadCrunchy(crunchyId: String) {
+        val tmdbApiController = TMDBApiController()
+
+        println("loading crunchyroll media $crunchyId")
+
+        // TODO info also in browse result item
+        mediaCrunchy = Crunchyroll.browsingCache.find { it ->
+            it.id == crunchyId
+        } ?: NoneItem
+        println("media: $mediaCrunchy")
+
+        // load seasons
+        seasonsCrunchy = Crunchyroll.seasons(crunchyId)
+        println("media: $seasonsCrunchy")
+
+        // load first season
+        episodesCrunchy = Crunchyroll.episodes(seasonsCrunchy.items.first().id)
+        println("media: $episodesCrunchy")
+
+
+
+        // TODO check if metaDB knows the title
+
+        // use tmdb search to get media info TODO media type is hardcoded, use type info from browse result once implemented
+        mediaMeta = null // set mediaMeta to null, if metaDB doesn't know the media
+        val tmdbId = tmdbApiController.search(stripTitleInfo(mediaCrunchy.title), MediaType.TVSHOW)
+
+        tmdbResult = when (MediaType.TVSHOW) {
+            MediaType.MOVIE -> tmdbApiController.getMovieDetails(tmdbId)
+            MediaType.TVSHOW -> tmdbApiController.getTVShowDetails(tmdbId)
+            else -> null
+        }
+    }
+
     /**
      * set media, tmdb and nextEpisode
      * TODO run aod and tmdb load parallel
      */
-    suspend fun load(aodId: Int) {
+    suspend fun loadAoD(aodId: Int) {
         val tmdbApiController = TMDBApiController()
         media = AoDParser.getMediaById(aodId)
 

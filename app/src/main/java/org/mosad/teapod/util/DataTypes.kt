@@ -3,10 +3,10 @@ package org.mosad.teapod.util
 import java.util.Locale
 
 class DataTypes {
-    enum class MediaType {
-        OTHER,
-        MOVIE,
-        TVSHOW
+    enum class MediaType(val str: String) {
+        OTHER("other"),
+        MOVIE("movie"), // TODO
+        TVSHOW("series")
     }
 
     enum class Theme(val str: String) {
@@ -37,7 +37,8 @@ data class ThirdPartyComponent(
 data class ItemMedia(
     val id: Int, // aod path id
     val title: String,
-    val posterUrl: String
+    val posterUrl: String,
+    val idStr: String = "" // crunchyroll id
 )
 
 // TODO replace playlist: List<AoDEpisode> with a map?

@@ -99,7 +99,7 @@ class HomeFragment : Fragment() {
                 val media = AoDParser.getMediaById(highlightMedia.id)
 
                 Log.d(javaClass.name, "Starting Player with  mediaId: ${media.aodId}")
-                (activity as MainActivity).startPlayer(media.aodId, media.playlist.first().mediaId)
+                //(activity as MainActivity).startPlayer(media.aodId, media.playlist.first().mediaId) // TODO
             }
         }
 
@@ -117,27 +117,27 @@ class HomeFragment : Fragment() {
         }
 
         binding.textHighlightInfo.setOnClickListener {
-            activity?.showFragment(MediaFragment(highlightMedia.id))
+            activity?.showFragment(MediaFragment(""))
         }
 
         adapterMyList.onItemClick = { id, _ ->
-            activity?.showFragment(MediaFragment(id))
+            activity?.showFragment(MediaFragment("")) //(mediaId))
         }
 
         adapterNewEpisodes.onItemClick = { id, _ ->
-            activity?.showFragment(MediaFragment(id))
+            activity?.showFragment(MediaFragment("")) //(mediaId))
         }
 
         adapterNewSimulcasts.onItemClick = { id, _ ->
-            activity?.showFragment(MediaFragment(id))
+            activity?.showFragment(MediaFragment("")) //(mediaId))
         }
 
         adapterNewTitles.onItemClick = { id, _ ->
-            activity?.showFragment(MediaFragment(id))
+            activity?.showFragment(MediaFragment("")) //(mediaId))
         }
 
         adapterTopTen.onItemClick = { id, _ ->
-            activity?.showFragment(MediaFragment(id))
+            activity?.showFragment(MediaFragment("")) //(mediaId))
         }
     }
 

@@ -18,6 +18,10 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import org.mosad.teapod.R
 import org.mosad.teapod.parser.AoDParser
+import org.mosad.teapod.parser.crunchyroll.Crunchyroll
+import org.mosad.teapod.parser.crunchyroll.NoneEpisode
+import org.mosad.teapod.parser.crunchyroll.NoneEpisodes
+import org.mosad.teapod.parser.crunchyroll.NonePlayback
 import org.mosad.teapod.preferences.Preferences
 import org.mosad.teapod.util.*
 import org.mosad.teapod.util.tmdb.TMDBApiController
@@ -54,6 +58,13 @@ class PlayerViewModel(application: Application) : AndroidViewModel(application) 
     var currentLanguage: Locale = Locale.ROOT
         internal set
 
+    var episodesCrunchy = NoneEpisodes
+        internal set
+    var currentEpisodeCr = NoneEpisode
+        internal set
+    var currentPlaybackCr = NonePlayback
+        internal set
+
     init {
         initMediaSession()
     }
@@ -78,10 +89,17 @@ class PlayerViewModel(application: Application) : AndroidViewModel(application) 
         mediaSession.isActive = true
     }
 
-    fun loadMedia(mediaId: Int, episodeId: Int) {
+    fun loadMedia(seasonId: String, episodeId: String) {
         runBlocking {
-            media = AoDParser.getMediaById(mediaId)
-            mediaMeta = loadMediaMeta(media.aodId) // can be done blocking, since it should be cached
+            episodesCrunchy = Crunchyroll.episodes(seasonId)
+            //mediaMeta = loadMediaMeta(media.aodId) // can be done blocking, since it should be cached
+
+            currentEpisodeCr = episodesCrunchy.items.find { episode ->
+                episode.id == episodeId
+            } ?: NoneEpisode
+            println("loading playback ${currentEpisodeCr.playback}")
+
+            currentPlaybackCr = Crunchyroll.playback(currentEpisodeCr.playback)
         }
 
         // run async as it should be loaded by the time the episodes a
@@ -93,8 +111,6 @@ class PlayerViewModel(application: Application) : AndroidViewModel(application) 
             }
         }
 
-        currentEpisode = media.getEpisodeById(episodeId)
-        nextEpisodeId = selectNextEpisode()
         currentEpisodeMeta = getEpisodeMetaByAoDMediaId(currentEpisode.mediaId)
         currentLanguage = currentEpisode.getPreferredStream(preferredLanguage).language
     }

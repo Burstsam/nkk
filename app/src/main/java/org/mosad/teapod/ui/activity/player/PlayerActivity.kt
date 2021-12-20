@@ -58,8 +58,8 @@ class PlayerActivity : AppCompatActivity() {
         hideBars() // Initial hide the bars
 
         model.loadMedia(
-            intent.getIntExtra(getString(R.string.intent_media_id), 0),
-            intent.getIntExtra(getString(R.string.intent_episode_id), 0)
+            intent.getStringExtra(getString(R.string.intent_season_id)) ?: "",
+            intent.getStringExtra(getString(R.string.intent_episode_id)) ?: ""
         )
         model.currentEpisodeChangedListener.add { onMediaChanged() }
         gestureDetector = GestureDetectorCompat(this, PlayerGestureListener())
@@ -121,8 +121,8 @@ class PlayerActivity : AppCompatActivity() {
         // when the intent changed, load the new media and play it
         intent?.let {
             model.loadMedia(
-                it.getIntExtra(getString(R.string.intent_media_id), 0),
-                it.getIntExtra(getString(R.string.intent_episode_id), 0)
+                it.getStringExtra(getString(R.string.intent_season_id)) ?: "",
+                it.getStringExtra(getString(R.string.intent_episode_id)) ?: ""
             )
             model.playEpisode(model.currentEpisode.mediaId, replace = true)
         }

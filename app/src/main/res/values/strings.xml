@@ -131,5 +131,6 @@
 
     <!-- intents & states -->
     <string name="intent_media_id" translatable="false">intent_media_id</string>
+    <string name="intent_season_id" translatable="false">intent_season_id</string>
     <string name="intent_episode_id" translatable="false">intent_episode_id</string>
 </resources>

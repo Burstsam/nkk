@@ -34,7 +34,7 @@ class MediaFragmentSimilar : Fragment()  {
         // set onItemClick only in adapter is initialized
         if (this::adapterSimilar.isInitialized) {
             adapterSimilar.onItemClick = { mediaId, _ ->
-                activity?.showFragment(MediaFragment(mediaId))
+                activity?.showFragment(MediaFragment("")) //(mediaId))
             }
         }
     }

@@ -47,6 +47,7 @@ import org.mosad.teapod.ui.components.LoginDialog
 import org.mosad.teapod.util.DataTypes
 import org.mosad.teapod.util.MetaDBController
 import org.mosad.teapod.util.StorageController
+import java.util.*
 import kotlin.system.measureTimeMillis
 
 class MainActivity : AppCompatActivity(), NavigationBarView.OnItemSelectedListener {
@@ -138,7 +139,6 @@ class MainActivity : AppCompatActivity(), NavigationBarView.OnItemSelectedListen
             // start the initial loading
             val loadingJob = CoroutineScope(Dispatchers.IO + CoroutineName("InitialLoadingScope"))
                 .async {
-                    launch { AoDParser.initialLoading() }
                     launch { MetaDBController.list() }
                 }
 
@@ -209,9 +209,9 @@ class MainActivity : AppCompatActivity(), NavigationBarView.OnItemSelectedListen
     /**
      * start the player as new activity
      */
-    fun startPlayer(mediaId: Int, episodeId: Int) {
+    fun startPlayer(seasonId: String, episodeId: String) {
         val intent = Intent(this, PlayerActivity::class.java).apply {
-            putExtra(getString(R.string.intent_media_id), mediaId)
+            putExtra(getString(R.string.intent_season_id), seasonId)
             putExtra(getString(R.string.intent_episode_id), episodeId)
         }
         startActivity(intent)
