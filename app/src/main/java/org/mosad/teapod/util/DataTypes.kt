@@ -76,7 +76,7 @@ data class AoDEpisode(
      * @return the preferred stream, if not present use the first stream
      */
     fun getPreferredStream(language: Locale) = streams.firstOrNull { it.language == language }
-        ?: streams.first()
+        ?: Stream("", Locale.ROOT)
 }
 
 data class Stream(
@@ -112,7 +112,7 @@ val AoDEpisodeNone = AoDEpisode(
     "",
     "",
     -1,
-    false,
+    true,
     "",
     mutableListOf()
 )

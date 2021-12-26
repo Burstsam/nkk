@@ -29,6 +29,7 @@ import kotlinx.android.synthetic.main.activity_player.*
 import kotlinx.android.synthetic.main.player_controls.*
 import kotlinx.coroutines.launch
 import org.mosad.teapod.R
+import org.mosad.teapod.parser.crunchyroll.NoneEpisode
 import org.mosad.teapod.preferences.Preferences
 import org.mosad.teapod.ui.components.EpisodesListPlayer
 import org.mosad.teapod.ui.components.LanguageSettingsPlayer
@@ -124,7 +125,7 @@ class PlayerActivity : AppCompatActivity() {
                 it.getStringExtra(getString(R.string.intent_season_id)) ?: "",
                 it.getStringExtra(getString(R.string.intent_episode_id)) ?: ""
             )
-            model.playEpisode(model.currentEpisode.mediaId, replace = true)
+            model.playCurrentMedia()
         }
     }
 
@@ -171,7 +172,7 @@ class PlayerActivity : AppCompatActivity() {
     }
 
     private fun initPlayer() {
-        if (model.media.aodId < 0) {
+        if (model.currentEpisode.equals(NoneEpisode)) {
             Log.e(javaClass.name, "No media was set.")
             this.finish()
         }
@@ -206,14 +207,14 @@ class PlayerActivity : AppCompatActivity() {
                     else -> View.VISIBLE
                 }
 
-                if (state == ExoPlayer.STATE_ENDED && model.nextEpisodeId != null && Preferences.autoplay) {
+                if (state == ExoPlayer.STATE_ENDED && model.currentEpisodeCr.nextEpisodeId != null && Preferences.autoplay) {
                     playNextEpisode()
                 }
             }
         })
         
         // start playing the current episode, after all needed player components have been initialized
-        model.playEpisode(model.currentEpisode.mediaId, true)
+        model.playCurrentMedia()
     }
 
     @SuppressLint("ClickableViewAccessibility")
@@ -251,9 +252,10 @@ class PlayerActivity : AppCompatActivity() {
     }
 
     private fun initGUI() {
-        if (model.media.type == DataTypes.MediaType.MOVIE) {
-            button_episodes.visibility = View.GONE
-        }
+        // TODO reimplement for cr
+//        if (model.media.type == DataTypes.MediaType.MOVIE) {
+//            button_episodes.visibility = View.GONE
+//        }
     }
 
     private fun initTimeUpdates() {
@@ -277,7 +279,7 @@ class PlayerActivity : AppCompatActivity() {
                 // if remaining time < 20 sec, a next ep is set, autoplay is enabled and not in pip:
                 // show next ep button
                 if (remainingTime in 1..20000) {
-                    if (!btnNextEpIsVisible && model.nextEpisodeId != null && Preferences.autoplay && !isInPiPMode()) {
+                    if (!btnNextEpIsVisible && model.currentEpisodeCr.nextEpisodeId != null && Preferences.autoplay && !isInPiPMode()) {
                         showButtonNextEp()
                     }
                 } else if (btnNextEpIsVisible) {
@@ -335,18 +337,19 @@ class PlayerActivity : AppCompatActivity() {
         exo_text_title.text = model.getMediaTitle()
 
         // hide the next ep button, if there is none
-        button_next_ep_c.visibility = if (model.nextEpisodeId == null) {
+        button_next_ep_c.visibility = if (model.currentEpisodeCr.nextEpisodeId == null) {
             View.GONE
         } else {
             View.VISIBLE
         }
 
+        // TODO reimplement for cr
         // hide the episodes button, if the media type changed
-        button_episodes.visibility = if (model.media.type == DataTypes.MediaType.MOVIE) {
-            View.GONE
-        } else {
-            View.VISIBLE
-        }
+//        button_episodes.visibility = if (model.media.type == DataTypes.MediaType.MOVIE) {
+//            View.GONE
+//        } else {
+//            View.VISIBLE
+//        }
     }
 
     /**

@@ -40,7 +40,7 @@ class EpisodeItemAdapter(private val episodes: Episodes, private val tmdbEpisode
             ""
         }
 
-        // TODO is isNotEmpty() needed?
+        // TODO is isNotEmpty() needed? also in PlayerEpisodeItemAdapter
         if (ep.images.thumbnail[0][0].source.isNotEmpty()) {
             Glide.with(context).load(ep.images.thumbnail[0][0].source)
                 .apply(RequestOptions.placeholderOf(ColorDrawable(Color.DKGRAY)))

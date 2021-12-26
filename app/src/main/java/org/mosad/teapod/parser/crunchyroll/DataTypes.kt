@@ -83,8 +83,8 @@ data class Episode(
     @SerialName("episode") val episode: String,
     @SerialName("episode_number") val episodeNumber: Int,
     @SerialName("description") val description: String,
-    @SerialName("next_episode_id") val nextEpisodeId: String = "", // use default value since the field is optional
-    @SerialName("next_episode_title") val nextEpisodeTitle: String = "", // use default value since the field is optional
+    @SerialName("next_episode_id") val nextEpisodeId: String? = null, // default/nullable value since optional
+    @SerialName("next_episode_title") val nextEpisodeTitle: String? = null, // default/nullable value since optional
     @SerialName("is_subbed") val isSubbed: Boolean,
     @SerialName("is_dubbed") val isDubbed: Boolean,
     @SerialName("images") val images: Thumbnail,
