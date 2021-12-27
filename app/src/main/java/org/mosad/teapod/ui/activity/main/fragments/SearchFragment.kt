@@ -9,7 +9,6 @@ import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
 import kotlinx.coroutines.launch
 import org.mosad.teapod.databinding.FragmentSearchBinding
-import org.mosad.teapod.parser.AoDParser
 import org.mosad.teapod.util.decoration.MediaItemDecoration
 import org.mosad.teapod.util.adapter.MediaItemAdapter
 import org.mosad.teapod.util.showFragment
@@ -30,7 +29,7 @@ class SearchFragment : Fragment() {
         lifecycleScope.launch {
             // create and set the adapter, needs context
                 context?.let {
-                    adapter = MediaItemAdapter(AoDParser.guiMediaList)
+                    adapter = MediaItemAdapter(emptyList()) // TODO
                     adapter!!.onItemClick = { mediaId, _ ->
                         binding.searchText.clearFocus()
                         activity?.showFragment(MediaFragment("")) //(mediaId))

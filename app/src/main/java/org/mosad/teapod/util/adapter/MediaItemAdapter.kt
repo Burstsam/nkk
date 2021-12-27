@@ -12,7 +12,7 @@ import java.util.*
 
 class MediaItemAdapter(private val initMedia: List<ItemMedia>) : RecyclerView.Adapter<MediaItemAdapter.MediaViewHolder>(), Filterable {
 
-    var onItemClick: ((String, Int) -> Unit)? = null
+    var onItemClick: ((id: String, position: Int) -> Unit)? = null
     private val filter = MediaFilter()
     private var filteredMedia = initMedia.map { it.copy() }
 
@@ -39,10 +39,14 @@ class MediaItemAdapter(private val initMedia: List<ItemMedia>) : RecyclerView.Ad
         filteredMedia = mediaList
     }
 
-    inner class MediaViewHolder(val binding: ItemMediaBinding) : RecyclerView.ViewHolder(binding.root) {
+    inner class MediaViewHolder(val binding: ItemMediaBinding) :
+        RecyclerView.ViewHolder(binding.root) {
         init {
             binding.root.setOnClickListener {
-                onItemClick?.invoke(filteredMedia[adapterPosition].idStr, adapterPosition)
+                onItemClick?.invoke(
+                    filteredMedia[bindingAdapterPosition].id,
+                    bindingAdapterPosition
+                )
             }
         }
     }

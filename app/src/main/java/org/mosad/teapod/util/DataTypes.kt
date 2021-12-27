@@ -35,10 +35,9 @@ data class ThirdPartyComponent(
  * it is uses in the ItemMediaAdapter (RecyclerView)
  */
 data class ItemMedia(
-    val id: Int, // aod path id
+    val id: String,
     val title: String,
     val posterUrl: String,
-    val idStr: String = "" // crunchyroll id
 )
 
 // TODO replace playlist: List<AoDEpisode> with a map?

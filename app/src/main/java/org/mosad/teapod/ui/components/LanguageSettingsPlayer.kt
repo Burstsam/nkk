@@ -30,12 +30,13 @@ class LanguageSettingsPlayer @JvmOverloads constructor(
 
     init {
         model?.let {
-            model.currentEpisode.streams.forEach { stream ->
-                addLanguage(stream.language.displayName, stream.language == currentLanguage) {
-                    currentLanguage = stream.language
-                    updateSelectedLanguage(it as TextView)
-                }
-            }
+            // TODO reimplement for cr
+//            it.currentEpisode.streams.forEach { stream ->
+//                addLanguage(stream.language.displayName, stream.language == currentLanguage) {
+//                    currentLanguage = stream.language
+//                    updateSelectedLanguage(it as TextView)
+//                }
+//            }
         }
 
         binding.buttonCloseLanguageSettings.setOnClickListener { close() }

@@ -18,7 +18,6 @@ import org.mosad.teapod.parser.crunchyroll.NoneEpisode
 import org.mosad.teapod.parser.crunchyroll.NoneEpisodes
 import org.mosad.teapod.parser.crunchyroll.NonePlayback
 import org.mosad.teapod.preferences.Preferences
-import org.mosad.teapod.util.AoDEpisodeNone
 import org.mosad.teapod.util.EpisodeMeta
 import org.mosad.teapod.util.Meta
 import org.mosad.teapod.util.TVShowMeta
@@ -40,26 +39,24 @@ class PlayerViewModel(application: Application) : AndroidViewModel(application) 
     val currentEpisodeChangedListener = ArrayList<() -> Unit>()
     private val preferredLanguage = if (Preferences.preferSecondary) Locale.JAPANESE else Locale.GERMAN
 
-//    var media: AoDMedia = AoDMediaNone
-//        internal set
+    // tmdb/meta data TODO currently not implemented for cr
     var mediaMeta: Meta? = null
         internal set
     var tmdbTVSeason: TMDBTVSeason? =null
         internal set
-    var currentEpisode = AoDEpisodeNone
-        internal set
     var currentEpisodeMeta: EpisodeMeta? = null
         internal set
-//    var nextEpisodeId: Int? = null
-//        internal set
+
+    // crunchyroll episodes/playback
+    var episodes = NoneEpisodes
+        internal set
+    var currentEpisode = NoneEpisode
+        internal set
+    private var currentPlayback = NonePlayback
+
+    // current playback settings
     var currentLanguage: Locale = Locale.ROOT
         internal set
-
-    var episodesCrunchy = NoneEpisodes
-        internal set
-    var currentEpisodeCr = NoneEpisode
-        internal set
-    private var currentPlaybackCr = NonePlayback
 
     init {
         initMediaSession()
@@ -87,16 +84,16 @@ class PlayerViewModel(application: Application) : AndroidViewModel(application) 
 
     fun loadMedia(seasonId: String, episodeId: String) {
         runBlocking {
-            episodesCrunchy = Crunchyroll.episodes(seasonId)
+            episodes = Crunchyroll.episodes(seasonId)
             //mediaMeta = loadMediaMeta(media.aodId) // can be done blocking, since it should be cached
 
             // TODO replace this with setCurrentEpisode
-            currentEpisodeCr = episodesCrunchy.items.find { episode ->
+            currentEpisode = episodes.items.find { episode ->
                 episode.id == episodeId
             } ?: NoneEpisode
-            println("loading playback ${currentEpisodeCr.playback}")
+            println("loading playback ${currentEpisode.playback}")
 
-            currentPlaybackCr = Crunchyroll.playback(currentEpisodeCr.playback)
+            currentPlayback = Crunchyroll.playback(currentEpisode.playback)
         }
 
         // TODO reimplement for cr
@@ -108,9 +105,9 @@ class PlayerViewModel(application: Application) : AndroidViewModel(application) 
 //                tmdbTVSeason = TMDBApiController().getTVSeasonDetails(tvShowMeta.tmdbId, tvShowMeta.tmdbSeasonNumber)
 //            }
 //        }
-
-        currentEpisodeMeta = getEpisodeMetaByAoDMediaId(currentEpisode.mediaId)
-        currentLanguage = currentEpisode.getPreferredStream(preferredLanguage).language
+//
+//        currentEpisodeMeta = getEpisodeMetaByAoDMediaId(currentEpisodeAoD.mediaId)
+//        currentLanguage = currentEpisodeAoD.getPreferredStream(preferredLanguage).language
     }
 
     fun setLanguage(language: Locale) {
@@ -118,7 +115,7 @@ class PlayerViewModel(application: Application) : AndroidViewModel(application) 
         playCurrentMedia(player.currentPosition)
 
 //        val mediaSource = HlsMediaSource.Factory(dataSourceFactory).createMediaSource(
-//            MediaItem.fromUri(Uri.parse(currentEpisode.getPreferredStream(language).url))
+//            MediaItem.fromUri(Uri.parse(currentEpisodeAoD.getPreferredStream(language).url))
 //        )
 //        playMedia(mediaSource, seekTime)
     }
@@ -134,9 +131,9 @@ class PlayerViewModel(application: Application) : AndroidViewModel(application) 
     }
 
     /**
-     * play the next episode, if nextEpisode is not null
+     * play the next episode, if nextEpisodeId is not null
      */
-    fun playNextEpisode() = currentEpisodeCr.nextEpisodeId?.let { nextEpisodeId ->
+    fun playNextEpisode() = currentEpisode.nextEpisodeId?.let { nextEpisodeId ->
         setCurrentEpisode(nextEpisodeId, startPlayback = true)
     }
 
@@ -145,13 +142,13 @@ class PlayerViewModel(application: Application) : AndroidViewModel(application) 
      * @param episodeId The ID of the episode you want to set currentEpisodeCr to
      */
     fun setCurrentEpisode(episodeId: String, startPlayback: Boolean = false) {
-        currentEpisodeCr = episodesCrunchy.items.find { episode ->
+        currentEpisode = episodes.items.find { episode ->
             episode.id == episodeId
         } ?: NoneEpisode
 
         // TODO don't run blocking
         runBlocking {
-            currentPlaybackCr = Crunchyroll.playback(currentEpisodeCr.playback)
+            currentPlayback = Crunchyroll.playback(currentEpisode.playback)
         }
 
         // TODO update metadata and language (it should not be needed to update the language here!)
@@ -171,7 +168,7 @@ class PlayerViewModel(application: Application) : AndroidViewModel(application) 
         currentEpisodeChangedListener.forEach { it() }
 
         // get preferred stream url TODO implement
-        val url = currentPlaybackCr.streams.adaptive_hls["en-US"]?.url ?: ""
+        val url = currentPlayback.streams.adaptive_hls["en-US"]?.url ?: ""
         println("stream url: $url")
 
         // create the media source object
@@ -194,12 +191,12 @@ class PlayerViewModel(application: Application) : AndroidViewModel(application) 
         return if(isTVShow) {
             getApplication<Application>().getString(
                 R.string.component_episode_title,
-                currentEpisodeCr.episode,
-                currentEpisodeCr.title
+                currentEpisode.episode,
+                currentEpisode.title
             )
         } else {
             // TODO movie
-            currentEpisodeCr.title
+            currentEpisode.title
         }
     }
 
@@ -219,19 +216,6 @@ class PlayerViewModel(application: Application) : AndroidViewModel(application) 
 //        } else {
 //            null
 //        }
-
-        return null
-    }
-
-    /**
-     * TODO reimplement for cr
-     * Based on the current episodes index, get the next episode.
-     * @return The next episode or null if there is none.
-     */
-    private fun selectNextEpisode(): Int? {
-//        return media.playlist.firstOrNull {
-//            it.index > media.getEpisodeById(currentEpisode.mediaId).index
-//        }?.mediaId
 
         return null
     }

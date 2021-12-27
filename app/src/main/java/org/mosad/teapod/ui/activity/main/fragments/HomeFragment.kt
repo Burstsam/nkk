@@ -1,18 +1,14 @@
 package org.mosad.teapod.ui.activity.main.fragments
 
 import android.os.Bundle
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
-import com.bumptech.glide.Glide
 import kotlinx.coroutines.launch
 import org.mosad.teapod.R
 import org.mosad.teapod.databinding.FragmentHomeBinding
-import org.mosad.teapod.parser.AoDParser
-import org.mosad.teapod.ui.activity.main.MainActivity
 import org.mosad.teapod.util.ItemMedia
 import org.mosad.teapod.util.StorageController
 import org.mosad.teapod.util.adapter.MediaItemAdapter
@@ -49,19 +45,20 @@ class HomeFragment : Fragment() {
     }
 
     private fun initHighlight() {
-        if (AoDParser.highlightsList.isNotEmpty()) {
-            highlightMedia =  AoDParser.highlightsList[0]
-
-            binding.textHighlightTitle.text = highlightMedia.title
-            Glide.with(requireContext()).load(highlightMedia.posterUrl)
-                .into(binding.imageHighlight)
-
-            if (StorageController.myList.contains(highlightMedia.id)) {
-                binding.textHighlightMyList.setDrawableTop(R.drawable.ic_baseline_check_24)
-            } else {
-                binding.textHighlightMyList.setDrawableTop(R.drawable.ic_baseline_add_24)
-            }
-        }
+        // TODO
+//        if (AoDParser.highlightsList.isNotEmpty()) {
+//            highlightMedia =  AoDParser.highlightsList[0]
+//
+//            binding.textHighlightTitle.text = highlightMedia.title
+//            Glide.with(requireContext()).load(highlightMedia.posterUrl)
+//                .into(binding.imageHighlight)
+//
+//            if (StorageController.myList.contains(0)) {
+//                binding.textHighlightMyList.setDrawableTop(R.drawable.ic_baseline_check_24)
+//            } else {
+//                binding.textHighlightMyList.setDrawableTop(R.drawable.ic_baseline_add_24)
+//            }
+//        }
     }
 
     private fun initRecyclerViews() {
@@ -75,40 +72,42 @@ class HomeFragment : Fragment() {
         adapterMyList = MediaItemAdapter(mapMyListToItemMedia())
         binding.recyclerMyList.adapter = adapterMyList
 
+        // TODO
         // new episodes
-        adapterNewEpisodes = MediaItemAdapter(AoDParser.newEpisodesList)
-        binding.recyclerNewEpisodes.adapter = adapterNewEpisodes
+//        adapterNewEpisodes = MediaItemAdapter(AoDParser.newEpisodesList)
+//        binding.recyclerNewEpisodes.adapter = adapterNewEpisodes
 
         // new simulcasts
-        adapterNewSimulcasts = MediaItemAdapter(AoDParser.newSimulcastsList)
-        binding.recyclerNewSimulcasts.adapter = adapterNewSimulcasts
+//        adapterNewSimulcasts = MediaItemAdapter(AoDParser.newSimulcastsList)
+//        binding.recyclerNewSimulcasts.adapter = adapterNewSimulcasts
 
         // new titles
-        adapterNewTitles = MediaItemAdapter(AoDParser.newTitlesList)
-        binding.recyclerNewTitles.adapter = adapterNewTitles
+//        adapterNewTitles = MediaItemAdapter(AoDParser.newTitlesList)
+//        binding.recyclerNewTitles.adapter = adapterNewTitles
 
         // top ten
-        adapterTopTen = MediaItemAdapter(AoDParser.topTenList)
-        binding.recyclerTopTen.adapter = adapterTopTen
+//        adapterTopTen = MediaItemAdapter(AoDParser.topTenList)
+//        binding.recyclerTopTen.adapter = adapterTopTen
     }
 
     private fun initActions() {
         binding.buttonPlayHighlight.setOnClickListener {
             // TODO get next episode
             lifecycleScope.launch {
-                val media = AoDParser.getMediaById(highlightMedia.id)
+                // TODO
+                //val media = AoDParser.getMediaById(0)
 
-                Log.d(javaClass.name, "Starting Player with  mediaId: ${media.aodId}")
-                //(activity as MainActivity).startPlayer(media.aodId, media.playlist.first().mediaId) // TODO
+                // Log.d(javaClass.name, "Starting Player with  mediaId: ${media.aodId}")
+                //(activity as MainActivity).startPlayer(media.aodId, media.playlist.first().mediaId)
             }
         }
 
         binding.textHighlightMyList.setOnClickListener {
-            if (StorageController.myList.contains(highlightMedia.id)) {
-                StorageController.myList.remove(highlightMedia.id)
+            if (StorageController.myList.contains(0)) {
+                StorageController.myList.remove(0)
                 binding.textHighlightMyList.setDrawableTop(R.drawable.ic_baseline_add_24)
             } else {
-                StorageController.myList.add(highlightMedia.id)
+                StorageController.myList.add(0)
                 binding.textHighlightMyList.setDrawableTop(R.drawable.ic_baseline_check_24)
             }
             StorageController.saveMyList(requireContext())
@@ -124,21 +123,21 @@ class HomeFragment : Fragment() {
             activity?.showFragment(MediaFragment("")) //(mediaId))
         }
 
-        adapterNewEpisodes.onItemClick = { id, _ ->
-            activity?.showFragment(MediaFragment("")) //(mediaId))
-        }
-
-        adapterNewSimulcasts.onItemClick = { id, _ ->
-            activity?.showFragment(MediaFragment("")) //(mediaId))
-        }
-
-        adapterNewTitles.onItemClick = { id, _ ->
-            activity?.showFragment(MediaFragment("")) //(mediaId))
-        }
-
-        adapterTopTen.onItemClick = { id, _ ->
-            activity?.showFragment(MediaFragment("")) //(mediaId))
-        }
+//        adapterNewEpisodes.onItemClick = { id, _ ->
+//            activity?.showFragment(MediaFragment("")) //(mediaId))
+//        }
+//
+//        adapterNewSimulcasts.onItemClick = { id, _ ->
+//            activity?.showFragment(MediaFragment("")) //(mediaId))
+//        }
+//
+//        adapterNewTitles.onItemClick = { id, _ ->
+//            activity?.showFragment(MediaFragment("")) //(mediaId))
+//        }
+//
+//        adapterTopTen.onItemClick = { id, _ ->
+//            activity?.showFragment(MediaFragment("")) //(mediaId))
+//        }
     }
 
     /**
@@ -153,14 +152,15 @@ class HomeFragment : Fragment() {
     }
 
     private fun mapMyListToItemMedia(): List<ItemMedia> {
-        return StorageController.myList.mapNotNull { elementId ->
-            AoDParser.guiMediaList.firstOrNull { it.id == elementId }.also {
-                // it the my list entry wasn't found in itemMediaList Log it
-                if (it == null) {
-                    Log.w(javaClass.name, "The element with the id $elementId was not found.")
-                }
-            }
-        }
+        return emptyList()
+//        return StorageController.myList.mapNotNull { elementId ->
+//            AoDParser.guiMediaList.firstOrNull { it.id == elementId.toString() }.also {
+//                // it the my list entry wasn't found in itemMediaList Log it
+//                if (it == null) {
+//                    Log.w(javaClass.name, "The element with the id $elementId was not found.")
+//                }
+//            }
+//        }
     }
 
 }

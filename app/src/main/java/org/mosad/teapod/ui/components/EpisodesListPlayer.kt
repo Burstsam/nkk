@@ -28,16 +28,16 @@ class EpisodesListPlayer @JvmOverloads constructor(
         }
 
         model?.let {
-            adapterRecEpisodes = PlayerEpisodeItemAdapter(model.episodesCrunchy, model.tmdbTVSeason?.episodes)
+            adapterRecEpisodes = PlayerEpisodeItemAdapter(model.episodes, model.tmdbTVSeason?.episodes)
             adapterRecEpisodes.onImageClick = {_, episodeId ->
                 (this.parent as ViewGroup).removeView(this)
                 model.setCurrentEpisode(episodeId, startPlayback = true)
             }
             // episodeNumber starts at 1, we need the episode index -> - 1
-            adapterRecEpisodes.currentSelected = (model.currentEpisodeCr.episodeNumber - 1)
+            adapterRecEpisodes.currentSelected = (model.currentEpisode.episodeNumber - 1)
 
             binding.recyclerEpisodesPlayer.adapter = adapterRecEpisodes
-            binding.recyclerEpisodesPlayer.scrollToPosition(model.currentEpisode.index)
+            binding.recyclerEpisodesPlayer.scrollToPosition(adapterRecEpisodes.currentSelected)
         }
     }
 

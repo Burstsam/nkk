@@ -33,7 +33,6 @@ import com.google.android.material.navigation.NavigationBarView
 import kotlinx.coroutines.*
 import org.mosad.teapod.R
 import org.mosad.teapod.databinding.ActivityMainBinding
-import org.mosad.teapod.parser.AoDParser
 import org.mosad.teapod.parser.crunchyroll.Crunchyroll
 import org.mosad.teapod.preferences.EncryptedPreferences
 import org.mosad.teapod.preferences.Preferences
@@ -47,7 +46,6 @@ import org.mosad.teapod.ui.components.LoginDialog
 import org.mosad.teapod.util.DataTypes
 import org.mosad.teapod.util.MetaDBController
 import org.mosad.teapod.util.StorageController
-import java.util.*
 import kotlin.system.measureTimeMillis
 
 class MainActivity : AppCompatActivity(), NavigationBarView.OnItemSelectedListener {
@@ -152,7 +150,6 @@ class MainActivity : AppCompatActivity(), NavigationBarView.OnItemSelectedListen
                 showOnboarding()
             } else {
                 Crunchyroll.login(EncryptedPreferences.login, EncryptedPreferences.password)
-                runBlocking { Crunchyroll.browse() }
                 runBlocking { Crunchyroll.index() }
             }
 
@@ -188,10 +185,11 @@ class MainActivity : AppCompatActivity(), NavigationBarView.OnItemSelectedListen
         LoginDialog(this, false).positiveButton {
             EncryptedPreferences.saveCredentials(login, password, context)
 
-            if (!AoDParser.login()) {
-                showLoginDialog()
-                Log.w(javaClass.name, "Login failed, please try again.")
-            }
+            // TODO
+//            if (!AoDParser.login()) {
+//                showLoginDialog()
+//                Log.w(javaClass.name, "Login failed, please try again.")
+//            }
         }.negativeButton {
             Log.i(javaClass.name, "Login canceled, exiting.")
             finish()

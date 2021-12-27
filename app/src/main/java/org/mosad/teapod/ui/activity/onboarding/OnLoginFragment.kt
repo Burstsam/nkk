@@ -7,9 +7,7 @@ import android.view.ViewGroup
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
 import kotlinx.coroutines.*
-import org.mosad.teapod.R
 import org.mosad.teapod.databinding.FragmentOnLoginBinding
-import org.mosad.teapod.parser.AoDParser
 import org.mosad.teapod.preferences.EncryptedPreferences
 
 class OnLoginFragment: Fragment() {
@@ -37,17 +35,18 @@ class OnLoginFragment: Fragment() {
 
             binding.buttonLogin.isClickable = false
             loginJob = lifecycleScope.launch {
-                if (AoDParser.login()) {
-                    // if login was successful, switch to main
-                    if (activity is OnboardingActivity) {
-                            (activity as OnboardingActivity).launchMainActivity()
-                    }
-                } else {
-                    withContext(Dispatchers.Main) {
-                        binding.textLoginDesc.text = getString(R.string.on_login_failed)
-                        binding.buttonLogin.isClickable = true
-                    }
-                }
+                // TODO
+//                if (AoDParser.login()) {
+//                    // if login was successful, switch to main
+//                    if (activity is OnboardingActivity) {
+//                            (activity as OnboardingActivity).launchMainActivity()
+//                    }
+//                } else {
+//                    withContext(Dispatchers.Main) {
+//                        binding.textLoginDesc.text = getString(R.string.on_login_failed)
+//                        binding.buttonLogin.isClickable = true
+//                    }
+//                }
             }
         }
     }

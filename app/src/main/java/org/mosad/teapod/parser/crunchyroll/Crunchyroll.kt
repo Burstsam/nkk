@@ -118,9 +118,9 @@ object Crunchyroll {
      *
      * @return A **[BrowseResult]** object is returned.
      */
-    suspend fun browse(sortBy: SortBy = SortBy.ALPHABETICAL, n: Int = 10): BrowseResult {
+    suspend fun browse(sortBy: SortBy = SortBy.ALPHABETICAL, start: Int = 0, n: Int = 10): BrowseResult {
         val browseEndpoint = "/content/v1/browse"
-        val parameters = listOf("sort_by" to sortBy.str, "n" to n)
+        val parameters = listOf("sort_by" to sortBy.str, "start" to start, "n" to n)
 
         val result = request(browseEndpoint, parameters)
         val browseResult = result.component1()?.obj()?.let {

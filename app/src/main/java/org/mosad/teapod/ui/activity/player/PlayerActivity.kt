@@ -172,7 +172,7 @@ class PlayerActivity : AppCompatActivity() {
     }
 
     private fun initPlayer() {
-        if (model.currentEpisode.equals(NoneEpisode)) {
+        if (model.currentEpisode == NoneEpisode) {
             Log.e(javaClass.name, "No media was set.")
             this.finish()
         }
@@ -207,7 +207,7 @@ class PlayerActivity : AppCompatActivity() {
                     else -> View.VISIBLE
                 }
 
-                if (state == ExoPlayer.STATE_ENDED && model.currentEpisodeCr.nextEpisodeId != null && Preferences.autoplay) {
+                if (state == ExoPlayer.STATE_ENDED && model.currentEpisode.nextEpisodeId != null && Preferences.autoplay) {
                     playNextEpisode()
                 }
             }
@@ -279,7 +279,7 @@ class PlayerActivity : AppCompatActivity() {
                 // if remaining time < 20 sec, a next ep is set, autoplay is enabled and not in pip:
                 // show next ep button
                 if (remainingTime in 1..20000) {
-                    if (!btnNextEpIsVisible && model.currentEpisodeCr.nextEpisodeId != null && Preferences.autoplay && !isInPiPMode()) {
+                    if (!btnNextEpIsVisible && model.currentEpisode.nextEpisodeId != null && Preferences.autoplay && !isInPiPMode()) {
                         showButtonNextEp()
                     }
                 } else if (btnNextEpIsVisible) {
@@ -337,7 +337,7 @@ class PlayerActivity : AppCompatActivity() {
         exo_text_title.text = model.getMediaTitle()
 
         // hide the next ep button, if there is none
-        button_next_ep_c.visibility = if (model.currentEpisodeCr.nextEpisodeId == null) {
+        button_next_ep_c.visibility = if (model.currentEpisode.nextEpisodeId == null) {
             View.GONE
         } else {
             View.VISIBLE

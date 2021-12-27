@@ -2,9 +2,7 @@ package org.mosad.teapod.ui.activity.main.fragments
 
 import android.app.Activity
 import android.content.Intent
-import android.net.Uri
 import android.os.Bundle
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -19,7 +17,6 @@ import kotlinx.coroutines.launch
 import org.mosad.teapod.BuildConfig
 import org.mosad.teapod.R
 import org.mosad.teapod.databinding.FragmentAccountBinding
-import org.mosad.teapod.parser.AoDParser
 import org.mosad.teapod.preferences.EncryptedPreferences
 import org.mosad.teapod.preferences.Preferences
 import org.mosad.teapod.ui.activity.main.MainActivity
@@ -62,12 +59,13 @@ class AccountFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
+        // TODO reimplement for ct, if possible (maybe account status would be better? (premium))
         // load subscription (async) info before anything else
         binding.textAccountSubscription.text = getString(R.string.account_subscription, getString(R.string.loading))
         lifecycleScope.launch {
             binding.textAccountSubscription.text = getString(
                 R.string.account_subscription,
-                AoDParser.getSubscriptionInfoAsync().await()
+                "TODO"
             )
         }
 
@@ -92,7 +90,8 @@ class AccountFragment : Fragment() {
         }
 
         binding.linearAccountSubscription.setOnClickListener {
-            startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(AoDParser.getSubscriptionUrl())))
+            // TODO
+            //startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(AoDParser.getSubscriptionUrl())))
         }
 
         binding.linearTheme.setOnClickListener {
@@ -133,10 +132,11 @@ class AccountFragment : Fragment() {
         LoginDialog(requireContext(), firstTry).positiveButton {
             EncryptedPreferences.saveCredentials(login, password, context)
 
-            if (!AoDParser.login()) {
-                showLoginDialog(false)
-                Log.w(javaClass.name, "Login failed, please try again.")
-            }
+            // TODO
+//            if (!AoDParser.login()) {
+//                showLoginDialog(false)
+//                Log.w(javaClass.name, "Login failed, please try again.")
+//            }
         }.show {
             login = EncryptedPreferences.login
             password = ""

@@ -3,9 +3,7 @@ package org.mosad.teapod.ui.activity.main.viewmodel
 import android.app.Application
 import android.util.Log
 import androidx.lifecycle.AndroidViewModel
-import org.mosad.teapod.parser.AoDParser
 import org.mosad.teapod.parser.crunchyroll.*
-import org.mosad.teapod.ui.activity.main.MainActivity
 import org.mosad.teapod.util.*
 import org.mosad.teapod.util.DataTypes.MediaType
 import org.mosad.teapod.util.tmdb.TMDBApiController
@@ -50,11 +48,12 @@ class MediaFragmentViewModel(application: Application) : AndroidViewModel(applic
 
         // load seasons
         seasonsCrunchy = Crunchyroll.seasons(crunchyId)
-        println("media: $seasonsCrunchy")
+        println("seasons: $seasonsCrunchy")
 
         // load first season
+        // TODO make sure to load the preferred season (language), language is set per season, not per stream
         episodesCrunchy = Crunchyroll.episodes(seasonsCrunchy.items.first().id)
-        println("media: $episodesCrunchy")
+        println("episodes: $episodesCrunchy")
 
 
 
@@ -75,47 +74,47 @@ class MediaFragmentViewModel(application: Application) : AndroidViewModel(applic
      * set media, tmdb and nextEpisode
      * TODO run aod and tmdb load parallel
      */
-    suspend fun loadAoD(aodId: Int) {
-        val tmdbApiController = TMDBApiController()
-        media = AoDParser.getMediaById(aodId)
-
-        // check if metaDB knows the title
-        val tmdbId: Int = if (MetaDBController.mediaList.media.contains(aodId)) {
-            // load media info from metaDB
-            val metaDB = MetaDBController()
-            mediaMeta = when (media.type) {
-                MediaType.MOVIE -> metaDB.getMovieMetadata(media.aodId)
-                MediaType.TVSHOW -> metaDB.getTVShowMetadata(media.aodId)
-                else -> null
-            }
-
-            mediaMeta?.tmdbId ?: -1
-        } else {
-            // use tmdb search to get media info
-            mediaMeta = null // set mediaMeta to null, if metaDB doesn't know the media
-            tmdbApiController.search(stripTitleInfo(media.title), media.type)
-        }
-
-        tmdbResult = when (media.type) {
-            MediaType.MOVIE -> tmdbApiController.getMovieDetails(tmdbId)
-            MediaType.TVSHOW -> tmdbApiController.getTVShowDetails(tmdbId)
-            else -> null
-        }
-
-        // get season info, if metaDB knows the tv show
-        tmdbTVSeason = if (media.type == MediaType.TVSHOW && mediaMeta != null) {
-            val tvShowMeta = mediaMeta as TVShowMeta
-            tmdbApiController.getTVSeasonDetails(tvShowMeta.tmdbId, tvShowMeta.tmdbSeasonNumber)
-        } else {
-            null
-        }
-
-        if (media.type == MediaType.TVSHOW) {
-            //nextEpisode = media.episodes.firstOrNull{ !it.watched } ?: media.episodes.first()
-            nextEpisodeId = media.playlist.firstOrNull { !it.watched }?.mediaId
-                ?: media.playlist.first().mediaId
-        }
-    }
+//    suspend fun loadAoD(aodId: Int) {
+//        val tmdbApiController = TMDBApiController()
+//        media = AoDParser.getMediaById(aodId)
+//
+//        // check if metaDB knows the title
+//        val tmdbId: Int = if (MetaDBController.mediaList.media.contains(aodId)) {
+//            // load media info from metaDB
+//            val metaDB = MetaDBController()
+//            mediaMeta = when (media.type) {
+//                MediaType.MOVIE -> metaDB.getMovieMetadata(media.aodId)
+//                MediaType.TVSHOW -> metaDB.getTVShowMetadata(media.aodId)
+//                else -> null
+//            }
+//
+//            mediaMeta?.tmdbId ?: -1
+//        } else {
+//            // use tmdb search to get media info
+//            mediaMeta = null // set mediaMeta to null, if metaDB doesn't know the media
+//            tmdbApiController.search(stripTitleInfo(media.title), media.type)
+//        }
+//
+//        tmdbResult = when (media.type) {
+//            MediaType.MOVIE -> tmdbApiController.getMovieDetails(tmdbId)
+//            MediaType.TVSHOW -> tmdbApiController.getTVShowDetails(tmdbId)
+//            else -> null
+//        }
+//
+//        // get season info, if metaDB knows the tv show
+//        tmdbTVSeason = if (media.type == MediaType.TVSHOW && mediaMeta != null) {
+//            val tvShowMeta = mediaMeta as TVShowMeta
+//            tmdbApiController.getTVSeasonDetails(tvShowMeta.tmdbId, tvShowMeta.tmdbSeasonNumber)
+//        } else {
+//            null
+//        }
+//
+//        if (media.type == MediaType.TVSHOW) {
+//            //nextEpisode = media.episodes.firstOrNull{ !it.watched } ?: media.episodes.first()
+//            nextEpisodeId = media.playlist.firstOrNull { !it.watched }?.mediaId
+//                ?: media.playlist.first().mediaId
+//        }
+//    }
 
     /**
      * get the next episode based on episodeId
