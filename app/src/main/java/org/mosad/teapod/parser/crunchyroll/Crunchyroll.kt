@@ -134,18 +134,20 @@ object Crunchyroll {
         return browseResult
     }
 
-    // // TODO locale de-DE, type
-    suspend fun search(query: String, n: Int = 10) {
+    /**
+     * TODO
+     */
+    suspend fun search(query: String, n: Int = 10): SearchResult {
         val searchEndpoint = "/content/v1/search"
-        val parameters = listOf("q" to query, "n" to n)
+        val parameters = listOf("q" to query, "n" to n, "locale" to locale, "type" to "series")
 
         val result = request(searchEndpoint, parameters)
-        println("${result.component1()?.obj()?.get("total")}")
+        // TODO episodes have thumbnails as image, and not poster_tall/poster_tall,
+        // to work around this, for now only tv shows are supported
 
-        val test = json.decodeFromString<BrowseResult>(result.component1()?.obj()?.toString()!!)
-        println(test.items.size)
-
-        // TODO return
+        return result.component1()?.obj()?.let {
+            json.decodeFromString(it.toString())
+        } ?: NoneSearchResult
     }
 
     /**

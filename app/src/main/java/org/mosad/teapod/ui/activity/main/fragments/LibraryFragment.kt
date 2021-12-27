@@ -45,7 +45,7 @@ class LibraryFragment : Fragment() {
 
                 adapter = MediaItemAdapter(itemList)
                 adapter.onItemClick = { mediaIdStr, _ ->
-                    activity?.showFragment(MediaFragment(mediaIdStr = mediaIdStr))
+                    activity?.showFragment(MediaFragment(mediaIdStr))
                 }
 
                 binding.recyclerMediaLibrary.adapter = adapter
@@ -78,9 +78,7 @@ class LibraryFragment : Fragment() {
                         })
                         nextItemIndex += pageSize
 
-                        adapter.updateMediaList(itemList)
                         adapter.notifyItemRangeInserted(firstNewItemIndex, pageSize)
-
                         isLoading = false
                     }
                 }

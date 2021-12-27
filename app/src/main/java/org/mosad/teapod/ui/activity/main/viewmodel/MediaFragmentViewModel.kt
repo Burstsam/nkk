@@ -41,6 +41,7 @@ class MediaFragmentViewModel(application: Application) : AndroidViewModel(applic
         println("loading crunchyroll media $crunchyId")
 
         // TODO info also in browse result item
+        // TODO doesn't support search
         mediaCrunchy = Crunchyroll.browsingCache.find { it ->
             it.id == crunchyId
         } ?: NoneItem
@@ -61,7 +62,7 @@ class MediaFragmentViewModel(application: Application) : AndroidViewModel(applic
 
         // use tmdb search to get media info TODO media type is hardcoded, use type info from browse result once implemented
         mediaMeta = null // set mediaMeta to null, if metaDB doesn't know the media
-        val tmdbId = tmdbApiController.search(stripTitleInfo(mediaCrunchy.title), MediaType.TVSHOW)
+        val tmdbId = tmdbApiController.search(mediaCrunchy.title, MediaType.TVSHOW)
 
         tmdbResult = when (MediaType.TVSHOW) {
             MediaType.MOVIE -> tmdbApiController.getMovieDetails(tmdbId)

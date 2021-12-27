@@ -13,9 +13,29 @@ enum class SortBy(val str: String) {
     POPULARITY("popularity")
 }
 
+/**
+ * Search data type
+ */
+@Serializable
+data class SearchResult(
+    @SerialName("total") val total: Int,
+    @SerialName("items") val items: List<SearchCollection>
+)
+
+@Serializable
+data class SearchCollection(
+    @SerialName("type") val type: String,
+    @SerialName("items") val items: List<Item>
+)
+
+val NoneSearchResult = SearchResult(0, emptyList())
+
+
+
 @Serializable
 data class BrowseResult(val total: Int, val items: List<Item>)
 
+// the data class Item is used in browse and search
 @Serializable
 data class Item(
     val id: String,
@@ -38,7 +58,7 @@ data class Images(val poster_tall: List<List<Poster>>, val poster_wide: List<Lis
 data class Poster(val height: Int, val width: Int, val source: String, val type: String)
 
 /**
- * Series return type
+ * Series data type
  */
 @Serializable
 data class Series(

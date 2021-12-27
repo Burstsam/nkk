@@ -135,10 +135,10 @@ class MainActivity : AppCompatActivity(), NavigationBarView.OnItemSelectedListen
     private fun load() {
         val time = measureTimeMillis {
             // start the initial loading
-            val loadingJob = CoroutineScope(Dispatchers.IO + CoroutineName("InitialLoadingScope"))
-                .async {
-                    launch { MetaDBController.list() }
-                }
+//            val loadingJob = CoroutineScope(Dispatchers.IO + CoroutineName("InitialLoadingScope"))
+//                .async {
+//                    launch { MetaDBController.list() }
+//                }
 
             // load all saved stuff here
             Preferences.load(this)
@@ -152,8 +152,6 @@ class MainActivity : AppCompatActivity(), NavigationBarView.OnItemSelectedListen
                 Crunchyroll.login(EncryptedPreferences.login, EncryptedPreferences.password)
                 runBlocking { Crunchyroll.index() }
             }
-
-
 
 //            if (EncryptedPreferences.password.isEmpty()) {
 //                showOnboarding()
@@ -174,7 +172,7 @@ class MainActivity : AppCompatActivity(), NavigationBarView.OnItemSelectedListen
 //                }
 //            }
 
-            runBlocking { loadingJob.await() } // wait for initial loading to finish
+//            runBlocking { loadingJob.await() } // wait for initial loading to finish
         }
         Log.i(javaClass.name, "loading and login in $time ms")
 

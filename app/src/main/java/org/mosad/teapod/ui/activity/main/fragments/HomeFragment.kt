@@ -147,8 +147,8 @@ class HomeFragment : Fragment() {
      *  * only update actual change and not all data (performance)
      */
     fun updateMyListMedia() {
-        adapterMyList.updateMediaList(mapMyListToItemMedia())
-        adapterMyList.notifyDataSetChanged()
+        //adapterMyList.updateMediaList(mapMyListToItemMedia())
+        //adapterMyList.notifyDataSetChanged()
     }
 
     private fun mapMyListToItemMedia(): List<ItemMedia> {
