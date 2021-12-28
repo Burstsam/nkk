@@ -4,10 +4,13 @@ import android.content.Context
 import android.content.SharedPreferences
 import org.mosad.teapod.R
 import org.mosad.teapod.util.DataTypes
+import java.util.*
 
 object Preferences {
 
     var preferSecondary = false
+        internal set
+    var preferredLocal = Locale.GERMANY
         internal set
     var autoplay = true
         internal set

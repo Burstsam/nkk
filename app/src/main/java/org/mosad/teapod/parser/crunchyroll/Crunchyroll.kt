@@ -8,9 +8,9 @@ import com.github.kittinunf.fuel.json.FuelJson
 import com.github.kittinunf.fuel.json.responseJson
 import com.github.kittinunf.result.Result
 import kotlinx.coroutines.*
-import kotlinx.serialization.Serializable
 import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.json.Json
+import org.mosad.teapod.preferences.Preferences
 import java.util.*
 
 private val json = Json { ignoreUnknownKeys = true }
@@ -27,10 +27,10 @@ object Crunchyroll {
     private var keyPairID = ""
 
     // TODO temp helper vary
-    var locale = "${Locale.GERMANY.language}-${Locale.GERMANY.country}"
-    var country = Locale.GERMANY.country
+    private var locale: String = Preferences.preferredLocal.toLanguageTag()
+    private var country: String = Preferences.preferredLocal.country
 
-    val browsingCache = arrayListOf<Item>()
+    private val browsingCache = arrayListOf<Item>()
 
     fun login(username: String, password: String): Boolean = runBlocking {
         val tokenEndpoint = "/auth/v1/token"

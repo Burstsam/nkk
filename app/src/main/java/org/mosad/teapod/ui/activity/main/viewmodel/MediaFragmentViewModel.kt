@@ -3,9 +3,16 @@ package org.mosad.teapod.ui.activity.main.viewmodel
 import android.app.Application
 import android.util.Log
 import androidx.lifecycle.AndroidViewModel
-import org.mosad.teapod.parser.crunchyroll.*
-import org.mosad.teapod.util.*
+import androidx.lifecycle.viewModelScope
+import kotlinx.coroutines.joinAll
+import kotlinx.coroutines.launch
+import org.mosad.teapod.parser.crunchyroll.Crunchyroll
+import org.mosad.teapod.parser.crunchyroll.NoneEpisodes
+import org.mosad.teapod.parser.crunchyroll.NoneSeasons
+import org.mosad.teapod.parser.crunchyroll.NoneSeries
+import org.mosad.teapod.preferences.Preferences
 import org.mosad.teapod.util.DataTypes.MediaType
+import org.mosad.teapod.util.Meta
 import org.mosad.teapod.util.tmdb.TMDBApiController
 import org.mosad.teapod.util.tmdb.TMDBResult
 import org.mosad.teapod.util.tmdb.TMDBTVSeason
@@ -16,12 +23,9 @@ import org.mosad.teapod.util.tmdb.TMDBTVSeason
  */
 class MediaFragmentViewModel(application: Application) : AndroidViewModel(application) {
 
-    var media = AoDMediaNone
-        internal set
-    var nextEpisodeId = -1
-        internal set
-
-    var mediaCrunchy = NoneItem
+//    var mediaCrunchy = NoneItem
+//        internal set
+    var seriesCrunchy = NoneSeries // TODO it seems movies also series?
         internal set
     var seasonsCrunchy = NoneSeasons
         internal set
@@ -35,34 +39,31 @@ class MediaFragmentViewModel(application: Application) : AndroidViewModel(applic
     var mediaMeta: Meta? = null
         internal set
 
+    /**
+     * @param crunchyId the crunchyroll series id
+     */
     suspend fun loadCrunchy(crunchyId: String) {
         val tmdbApiController = TMDBApiController()
 
-        println("loading crunchyroll media $crunchyId")
+        // load series and seasons info in parallel
+        listOf(
+            viewModelScope.launch { seriesCrunchy = Crunchyroll.series(crunchyId) },
+            viewModelScope.launch { seasonsCrunchy = Crunchyroll.seasons(crunchyId) }
+        ).joinAll()
 
-        // TODO info also in browse result item
-        // TODO doesn't support search
-        mediaCrunchy = Crunchyroll.browsingCache.find { it ->
-            it.id == crunchyId
-        } ?: NoneItem
-        println("media: $mediaCrunchy")
-
-        // load seasons
-        seasonsCrunchy = Crunchyroll.seasons(crunchyId)
+        println("series: $seriesCrunchy")
         println("seasons: $seasonsCrunchy")
 
-        // load first season
-        // TODO make sure to load the preferred season (language), language is set per season, not per stream
-        episodesCrunchy = Crunchyroll.episodes(seasonsCrunchy.items.first().id)
+        // load the preferred season (preferred language, language per season, not per stream)
+        val preferredSeasonId = seasonsCrunchy.getPreferredSeasonId(Preferences.preferredLocal)
+        episodesCrunchy = Crunchyroll.episodes(preferredSeasonId)
         println("episodes: $episodesCrunchy")
-
-
 
         // TODO check if metaDB knows the title
 
-        // use tmdb search to get media info TODO media type is hardcoded, use type info from browse result once implemented
+        // use tmdb search to get media info TODO media type is hardcoded, use episodeNumber? (if null it should be a movie)
         mediaMeta = null // set mediaMeta to null, if metaDB doesn't know the media
-        val tmdbId = tmdbApiController.search(mediaCrunchy.title, MediaType.TVSHOW)
+        val tmdbId = tmdbApiController.search(seriesCrunchy.title, MediaType.TVSHOW)
 
         tmdbResult = when (MediaType.TVSHOW) {
             MediaType.MOVIE -> tmdbApiController.getMovieDetails(tmdbId)
@@ -122,10 +123,11 @@ class MediaFragmentViewModel(application: Application) : AndroidViewModel(applic
      * if no matching is found, use first episode
      */
     fun updateNextEpisode(episodeId: Int) {
-        if (media.type == MediaType.MOVIE) return // return if movie
-
-        nextEpisodeId = media.playlist.firstOrNull { it.index > media.getEpisodeById(episodeId).index }?.mediaId
-            ?: media.playlist.first().mediaId
+        // TODO reimplement if needed
+//        if (media.type == MediaType.MOVIE) return // return if movie
+//
+//        nextEpisodeId = media.playlist.firstOrNull { it.index > media.getEpisodeById(episodeId).index }?.mediaId
+//            ?: media.playlist.first().mediaId
     }
 
     // remove unneeded info from the media title before searching

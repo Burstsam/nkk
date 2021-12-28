@@ -2,6 +2,7 @@ package org.mosad.teapod.parser.crunchyroll
 
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
+import java.util.*
 
 /**
  * data classes for browse
@@ -36,6 +37,7 @@ val NoneSearchResult = SearchResult(0, emptyList())
 data class BrowseResult(val total: Int, val items: List<Item>)
 
 // the data class Item is used in browse and search
+// TODO rename to MediaPanel
 @Serializable
 data class Item(
     val id: String,
@@ -74,14 +76,38 @@ val NoneSeries = Series("", "", "", Images(listOf(), listOf()))
  * Seasons data type
  */
 @Serializable
-data class Seasons(val total: Int, val items: List<Season>)
+data class Seasons(
+    val total: Int,
+    val items: List<Season>
+) {
+    fun getPreferredSeasonId(local: Locale): String {
+        // try to get the the first seasons which matches the preferred local
+        items.forEach { season ->
+            if (season.title.startsWith("(${local.language})", true)) {
+                return season.id
+            }
+        }
+
+        // if there is no season with the preferred local, try to find a subbed season
+        items.forEach { season ->
+            if (season.isSubbed) {
+                return season.id
+            }
+        }
+
+        // if there is no preferred language season and no sub, use the first season
+        return items.first().id
+    }
+}
 
 @Serializable
 data class Season(
-    val id: String,
-    val title: String,
-    val series_id: String,
-    val season_number: Int
+    @SerialName("id") val id: String,
+    @SerialName("title") val title: String,
+    @SerialName("series_id") val seriesId: String,
+    @SerialName("season_number") val seasonNumber: Int,
+    @SerialName("is_subbed") val isSubbed: Boolean,
+    @SerialName("is_dubbed") val isDubbed: Boolean,
 )
 
 val NoneSeasons = Seasons(0, listOf())
@@ -101,7 +127,7 @@ data class Episode(
     @SerialName("season_id") val seasonId: String,
     @SerialName("season_number") val seasonNumber: Int,
     @SerialName("episode") val episode: String,
-    @SerialName("episode_number") val episodeNumber: Int,
+    @SerialName("episode_number") val episodeNumber: Int? = null,
     @SerialName("description") val description: String,
     @SerialName("next_episode_id") val nextEpisodeId: String? = null, // default/nullable value since optional
     @SerialName("next_episode_title") val nextEpisodeTitle: String? = null, // default/nullable value since optional

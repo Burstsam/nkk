@@ -44,10 +44,11 @@ class MediaFragmentEpisodes : Fragment() {
 
         // if adapterRecEpisodes is initialized, update the watched state for the episodes
         if (this::adapterRecEpisodes.isInitialized) {
-            model.media.playlist.forEachIndexed { index, episodeInfo ->
-                adapterRecEpisodes.updateWatchedState(episodeInfo.watched, index)
-            }
-            adapterRecEpisodes.notifyDataSetChanged()
+            // TODO reimplement, if needed
+//            model.media.playlist.forEachIndexed { index, episodeInfo ->
+//                adapterRecEpisodes.updateWatchedState(episodeInfo.watched, index)
+//            }
+//            adapterRecEpisodes.notifyDataSetChanged()
         }
     }
 

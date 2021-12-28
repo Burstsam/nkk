@@ -168,7 +168,9 @@ class PlayerViewModel(application: Application) : AndroidViewModel(application) 
         currentEpisodeChangedListener.forEach { it() }
 
         // get preferred stream url TODO implement
-        val url = currentPlayback.streams.adaptive_hls["en-US"]?.url ?: ""
+        val localeKey = Preferences.preferredLocal.toLanguageTag()
+        val url = currentPlayback.streams.adaptive_hls[localeKey]?.url
+            ?: currentPlayback.streams.adaptive_hls[""]?.url ?: ""
         println("stream url: $url")
 
         // create the media source object

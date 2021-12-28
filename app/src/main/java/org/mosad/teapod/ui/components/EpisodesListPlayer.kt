@@ -34,7 +34,7 @@ class EpisodesListPlayer @JvmOverloads constructor(
                 model.setCurrentEpisode(episodeId, startPlayback = true)
             }
             // episodeNumber starts at 1, we need the episode index -> - 1
-            adapterRecEpisodes.currentSelected = (model.currentEpisode.episodeNumber - 1)
+            adapterRecEpisodes.currentSelected = model.currentEpisode.episodeNumber?.minus(1) ?: 0
 
             binding.recyclerEpisodesPlayer.adapter = adapterRecEpisodes
             binding.recyclerEpisodesPlayer.scrollToPosition(adapterRecEpisodes.currentSelected)
