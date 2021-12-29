@@ -4,6 +4,7 @@
         <item name="colorPrimary">@color/colorPrimary</item>
         <item name="colorPrimaryDark">@color/colorPrimaryDark</item>
         <item name="colorAccent">@color/colorAccent</item>
+        <item name="popupMenuStyle">@style/Widget.App.PopupMenu</item>
     </style>
 
     <style name="AppTheme.Light" parent="AppTheme">
@@ -63,6 +64,11 @@
     <style name="ShapeAppearance.Teapod.RoundedPoster" parent="ShapeAppearance.MaterialComponents.LargeComponent">
         <item name="cornerFamily">rounded</item>
         <item name="cornerSize">5dp</item>
+    </style>
+
+    <!-- popup menus -->
+    <style name="Widget.App.PopupMenu" parent="Widget.MaterialComponents.PopupMenu">
+        <item name="android:popupBackground">?themeSecondary</item>
     </style>
 
 </resources>

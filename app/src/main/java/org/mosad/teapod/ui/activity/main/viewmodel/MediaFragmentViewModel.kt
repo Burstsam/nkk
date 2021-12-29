@@ -6,10 +6,7 @@ import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.joinAll
 import kotlinx.coroutines.launch
-import org.mosad.teapod.parser.crunchyroll.Crunchyroll
-import org.mosad.teapod.parser.crunchyroll.NoneEpisodes
-import org.mosad.teapod.parser.crunchyroll.NoneSeasons
-import org.mosad.teapod.parser.crunchyroll.NoneSeries
+import org.mosad.teapod.parser.crunchyroll.*
 import org.mosad.teapod.preferences.Preferences
 import org.mosad.teapod.util.DataTypes.MediaType
 import org.mosad.teapod.util.Meta
@@ -29,8 +26,11 @@ class MediaFragmentViewModel(application: Application) : AndroidViewModel(applic
         internal set
     var seasonsCrunchy = NoneSeasons
         internal set
+    var currentSeasonCrunchy = NoneSeason
+        internal set
     var episodesCrunchy = NoneEpisodes
         internal set
+    val currentEpisodesCrunchy = arrayListOf<Episode>()
 
     var tmdbResult: TMDBResult? = null // TODO rename
         internal set
@@ -55,8 +55,9 @@ class MediaFragmentViewModel(application: Application) : AndroidViewModel(applic
         println("seasons: $seasonsCrunchy")
 
         // load the preferred season (preferred language, language per season, not per stream)
-        val preferredSeasonId = seasonsCrunchy.getPreferredSeasonId(Preferences.preferredLocal)
-        episodesCrunchy = Crunchyroll.episodes(preferredSeasonId)
+        currentSeasonCrunchy = seasonsCrunchy.getPreferredSeason(Preferences.preferredLocal)
+        episodesCrunchy = Crunchyroll.episodes(currentSeasonCrunchy.id)
+        currentEpisodesCrunchy.addAll(episodesCrunchy.items)
         println("episodes: $episodesCrunchy")
 
         // TODO check if metaDB knows the title
@@ -70,6 +71,21 @@ class MediaFragmentViewModel(application: Application) : AndroidViewModel(applic
             MediaType.TVSHOW -> tmdbApiController.getTVShowDetails(tmdbId)
             else -> null
         }
+    }
+
+    suspend fun setCurrentSeason(seasonId: String) {
+        // return if the id hasn't changed (performance)
+        if (currentSeasonCrunchy.id == seasonId) return
+
+        // set currentSeasonCrunchy to the new season with id == seasonId, if the id isn't found,
+        // don't change the current season (this should/can never happen)
+        currentSeasonCrunchy = seasonsCrunchy.items.firstOrNull {
+            it.id == seasonId
+        } ?: currentSeasonCrunchy
+
+        episodesCrunchy = Crunchyroll.episodes(currentSeasonCrunchy.id)
+        currentEpisodesCrunchy.clear()
+        currentEpisodesCrunchy.addAll(episodesCrunchy.items)
     }
 
     /**

@@ -10,10 +10,10 @@ import com.bumptech.glide.request.RequestOptions
 import jp.wasabeef.glide.transformations.RoundedCornersTransformation
 import org.mosad.teapod.R
 import org.mosad.teapod.databinding.ItemEpisodeBinding
-import org.mosad.teapod.parser.crunchyroll.Episodes
+import org.mosad.teapod.parser.crunchyroll.Episode
 import org.mosad.teapod.util.tmdb.TMDBTVEpisode
 
-class EpisodeItemAdapter(private val episodes: Episodes, private val tmdbEpisodes: List<TMDBTVEpisode>?) : RecyclerView.Adapter<EpisodeItemAdapter.EpisodeViewHolder>() {
+class EpisodeItemAdapter(private val episodes: List<Episode>, private val tmdbEpisodes: List<TMDBTVEpisode>?) : RecyclerView.Adapter<EpisodeItemAdapter.EpisodeViewHolder>() {
 
     var onImageClick: ((seasonId: String, episodeId: String) -> Unit)? = null
 
@@ -23,7 +23,7 @@ class EpisodeItemAdapter(private val episodes: Episodes, private val tmdbEpisode
 
     override fun onBindViewHolder(holder: EpisodeViewHolder, position: Int) {
         val context = holder.binding.root.context
-        val ep = episodes.items[position]
+        val ep = episodes[position]
 
         val titleText = if (ep.isDubbed) {
             context.getString(R.string.component_episode_title, ep.episode, ep.title)
@@ -61,7 +61,7 @@ class EpisodeItemAdapter(private val episodes: Episodes, private val tmdbEpisode
     }
 
     override fun getItemCount(): Int {
-        return episodes.items.size
+        return episodes.size
     }
 
     fun updateWatchedState(watched: Boolean, position: Int) {
@@ -77,8 +77,8 @@ class EpisodeItemAdapter(private val episodes: Episodes, private val tmdbEpisode
             // on image click return the episode id and index (within the adapter)
             binding.imageEpisode.setOnClickListener {
                 onImageClick?.invoke(
-                    episodes.items[bindingAdapterPosition].seasonId,
-                    episodes.items[bindingAdapterPosition].id
+                    episodes[bindingAdapterPosition].seasonId,
+                    episodes[bindingAdapterPosition].id
                 )
             }
         }

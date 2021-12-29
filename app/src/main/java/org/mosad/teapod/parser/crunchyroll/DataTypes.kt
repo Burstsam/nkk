@@ -80,23 +80,23 @@ data class Seasons(
     val total: Int,
     val items: List<Season>
 ) {
-    fun getPreferredSeasonId(local: Locale): String {
+    fun getPreferredSeason(local: Locale): Season {
         // try to get the the first seasons which matches the preferred local
         items.forEach { season ->
             if (season.title.startsWith("(${local.language})", true)) {
-                return season.id
+                return season
             }
         }
 
         // if there is no season with the preferred local, try to find a subbed season
         items.forEach { season ->
             if (season.isSubbed) {
-                return season.id
+                return season
             }
         }
 
         // if there is no preferred language season and no sub, use the first season
-        return items.first().id
+        return items.first()
     }
 }
 
@@ -111,6 +111,8 @@ data class Season(
 )
 
 val NoneSeasons = Seasons(0, listOf())
+val NoneSeason = Season("", "", "", 0, false, false)
+
 
 /**
  * Episodes data type

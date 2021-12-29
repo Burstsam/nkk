@@ -1,15 +1,19 @@
 package org.mosad.teapod.ui.activity.main.fragments
 
+import android.annotation.SuppressLint
 import android.os.Bundle
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.appcompat.widget.PopupMenu
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
+import androidx.lifecycle.lifecycleScope
+import kotlinx.coroutines.launch
+import org.mosad.teapod.databinding.FragmentMediaEpisodesBinding
 import org.mosad.teapod.ui.activity.main.MainActivity
 import org.mosad.teapod.ui.activity.main.viewmodel.MediaFragmentViewModel
-import org.mosad.teapod.databinding.FragmentMediaEpisodesBinding
 import org.mosad.teapod.util.adapter.EpisodeItemAdapter
 
 class MediaFragmentEpisodes : Fragment() {
@@ -27,15 +31,17 @@ class MediaFragmentEpisodes : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        adapterRecEpisodes = EpisodeItemAdapter(model.episodesCrunchy, model.tmdbTVSeason?.episodes)
+        adapterRecEpisodes = EpisodeItemAdapter(model.currentEpisodesCrunchy, model.tmdbTVSeason?.episodes)
         binding.recyclerEpisodes.adapter = adapterRecEpisodes
 
-        // set onItemClick only in adapter is initialized
-        if (this::adapterRecEpisodes.isInitialized) {
-            adapterRecEpisodes.onImageClick = { seasonId, episodeId ->
-                println("TODO playback episode $episodeId (season: $seasonId)")
-                playEpisode(seasonId, episodeId)
-            }
+        // set onItemClick, adapter is initialized
+        adapterRecEpisodes.onImageClick = { seasonId, episodeId ->
+            playEpisode(seasonId, episodeId)
+        }
+
+        binding.buttonSeasonSelection.text = model.currentSeasonCrunchy.title
+        binding.buttonSeasonSelection.setOnClickListener { v ->
+            showSeasonSelection(v)
         }
     }
 
@@ -49,6 +55,37 @@ class MediaFragmentEpisodes : Fragment() {
 //                adapterRecEpisodes.updateWatchedState(episodeInfo.watched, index)
 //            }
 //            adapterRecEpisodes.notifyDataSetChanged()
+        }
+    }
+
+    private fun showSeasonSelection(v: View) {
+        // TODO replace with Exposed dropdown menu: https://material.io/components/menus/android#exposed-dropdown-menus
+        val popup = PopupMenu(requireContext(), v)
+        model.seasonsCrunchy.items.forEach { season ->
+            popup.menu.add(season.title).also {
+                it.setOnMenuItemClickListener {
+                    onSeasonSelected(season.id)
+                    false
+                }
+            }
+        }
+
+        popup.show()
+    }
+
+    /**
+     * Call model to load a new season.
+     * Once loaded update buttonSeasonSelection text and adapterRecEpisodes.
+     *
+     * Suppress waring since invalid.
+     */
+    @SuppressLint("NotifyDataSetChanged")
+    private fun onSeasonSelected(seasonId: String) {
+        // load the new season
+        lifecycleScope.launch {
+            model.setCurrentSeason(seasonId)
+            binding.buttonSeasonSelection.text = model.currentSeasonCrunchy.title
+            adapterRecEpisodes.notifyDataSetChanged()
         }
     }
 
