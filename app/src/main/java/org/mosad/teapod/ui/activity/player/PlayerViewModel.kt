@@ -52,10 +52,10 @@ class PlayerViewModel(application: Application) : AndroidViewModel(application) 
         internal set
     var currentEpisode = NoneEpisode
         internal set
-    private var currentPlayback = NonePlayback
+    var currentPlayback = NonePlayback
 
     // current playback settings
-    var currentLanguage: Locale = Locale.ROOT
+    var currentLanguage: Locale = Preferences.preferredLocal
         internal set
 
     init {
@@ -113,11 +113,6 @@ class PlayerViewModel(application: Application) : AndroidViewModel(application) 
     fun setLanguage(language: Locale) {
         currentLanguage = language
         playCurrentMedia(player.currentPosition)
-
-//        val mediaSource = HlsMediaSource.Factory(dataSourceFactory).createMediaSource(
-//            MediaItem.fromUri(Uri.parse(currentEpisodeAoD.getPreferredStream(language).url))
-//        )
-//        playMedia(mediaSource, seekTime)
     }
 
     // player actions
@@ -167,10 +162,24 @@ class PlayerViewModel(application: Application) : AndroidViewModel(application) 
         // update player gui (title, next ep button) after nextEpisodeId has been set
         currentEpisodeChangedListener.forEach { it() }
 
-        // get preferred stream url TODO implement
-        val localeKey = Preferences.preferredLocal.toLanguageTag()
-        val url = currentPlayback.streams.adaptive_hls[localeKey]?.url
-            ?: currentPlayback.streams.adaptive_hls[""]?.url ?: ""
+        // get preferred stream url, set current language if it differs from the preferred one
+        val preferredLocale = currentLanguage
+        val fallbackLocal = Locale.US
+        val url = when {
+            currentPlayback.streams.adaptive_hls.containsKey(preferredLocale.toLanguageTag()) -> {
+                currentPlayback.streams.adaptive_hls[preferredLocale.toLanguageTag()]?.url
+            }
+            currentPlayback.streams.adaptive_hls.containsKey(fallbackLocal.toLanguageTag()) -> {
+                currentLanguage = fallbackLocal
+                currentPlayback.streams.adaptive_hls[fallbackLocal.toLanguageTag()]?.url
+            }
+            else -> {
+                currentLanguage = Locale.ROOT
+                currentPlayback.streams.adaptive_hls[Locale.ROOT.toLanguageTag()]?.url ?: ""
+            }
+        }
+
+
         println("stream url: $url")
 
         // create the media source object
@@ -187,17 +196,18 @@ class PlayerViewModel(application: Application) : AndroidViewModel(application) 
         // TODO reimplement mark as watched for cr, if needed
     }
 
+    /**
+     * Returns the current episode title (with episode number, if it's a tv show)
+     */
     fun getMediaTitle(): String {
-        // TODO add tvshow/movie diff
-        val isTVShow = true
-        return if(isTVShow) {
+        // currentEpisode.episodeNumber defines the media type (tv show = none null, movie = null)
+        return if (currentEpisode.episodeNumber != null) {
             getApplication<Application>().getString(
                 R.string.component_episode_title,
                 currentEpisode.episode,
                 currentEpisode.title
             )
         } else {
-            // TODO movie
             currentEpisode.title
         }
     }

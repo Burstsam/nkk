@@ -30,7 +30,7 @@ class MediaFragmentViewModel(application: Application) : AndroidViewModel(applic
         internal set
     var episodesCrunchy = NoneEpisodes
         internal set
-    val currentEpisodesCrunchy = arrayListOf<Episode>()
+    val currentEpisodesCrunchy = arrayListOf<Episode>() // used for EpisodeItemAdapter (easier updates)
 
     var tmdbResult: TMDBResult? = null // TODO rename
         internal set
@@ -57,6 +57,7 @@ class MediaFragmentViewModel(application: Application) : AndroidViewModel(applic
         // load the preferred season (preferred language, language per season, not per stream)
         currentSeasonCrunchy = seasonsCrunchy.getPreferredSeason(Preferences.preferredLocal)
         episodesCrunchy = Crunchyroll.episodes(currentSeasonCrunchy.id)
+        currentEpisodesCrunchy.clear()
         currentEpisodesCrunchy.addAll(episodesCrunchy.items)
         println("episodes: $episodesCrunchy")
 
@@ -90,7 +91,6 @@ class MediaFragmentViewModel(application: Application) : AndroidViewModel(applic
 
     /**
      * set media, tmdb and nextEpisode
-     * TODO run aod and tmdb load parallel
      */
 //    suspend fun loadAoD(aodId: Int) {
 //        val tmdbApiController = TMDBApiController()
@@ -144,32 +144,6 @@ class MediaFragmentViewModel(application: Application) : AndroidViewModel(applic
 //
 //        nextEpisodeId = media.playlist.firstOrNull { it.index > media.getEpisodeById(episodeId).index }?.mediaId
 //            ?: media.playlist.first().mediaId
-    }
-
-    // remove unneeded info from the media title before searching
-    private fun stripTitleInfo(title: String): String {
-        return title.replace("(Sub)", "")
-            .replace(Regex("-?\\s?[0-9]+.\\s?(Staffel|Season)"), "")
-            .replace(Regex("(Staffel|Season)\\s?[0-9]+"), "")
-            .trim()
-    }
-
-    /** guess Season from title
-     * if the title ends with a number, that could be the season
-     * if the title ends with Regex("-?\\s?[0-9]+.\\s?(Staffel|Season)") or
-     * Regex("(Staffel|Season)\\s?[0-9]+"), that is the season information
-     */
-    private fun guessSeasonFromTitle(title: String): Int {
-        val helpTitle = title.replace("(Sub)", "").trim()
-        Log.d("test", "helpTitle: $helpTitle")
-
-        return if (helpTitle.last().isDigit()) {
-            helpTitle.last().digitToInt()
-        } else {
-            Regex("([0-9]+.\\s?(Staffel|Season))|((Staffel|Season)\\s?[0-9]+)")
-                .find(helpTitle)
-                ?.value?.filter { it.isDigit() }?.toInt() ?: 1
-        }
     }
 
 }

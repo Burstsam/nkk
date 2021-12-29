@@ -71,8 +71,10 @@
     <string name="next_episode">Nächste Folge</string>
     <string name="skip_opening">Intro überspringen</string>
     <string name="language">Sprache</string>
+    <string name="subtitles">Untertitel</string>
     <string name="episodes">Folgen</string>
     <string name="episode">Folge</string>
+    <string name="no_subtitles">Aus</string>
 
     <!-- Onboarding -->
     <string name="skip">Überspringen</string>

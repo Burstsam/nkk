@@ -125,7 +125,7 @@
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_marginEnd="7dp"
-            android:text="@string/language"
+            android:text="@string/subtitles"
             android:textAllCaps="false"
             app:icon="@drawable/ic_baseline_subtitles_24"
             app:layout_constraintBottom_toBottomOf="parent"

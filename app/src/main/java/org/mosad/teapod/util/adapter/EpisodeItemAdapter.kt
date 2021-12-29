@@ -25,10 +25,15 @@ class EpisodeItemAdapter(private val episodes: List<Episode>, private val tmdbEp
         val context = holder.binding.root.context
         val ep = episodes[position]
 
-        val titleText = if (ep.isDubbed) {
-            context.getString(R.string.component_episode_title, ep.episode, ep.title)
+        val titleText = if (ep.episodeNumber != null) {
+            // for tv shows add ep prefix and episode number
+            if (ep.isDubbed) {
+                context.getString(R.string.component_episode_title, ep.episode, ep.title)
+            } else {
+                context.getString(R.string.component_episode_title_sub, ep.episode, ep.title)
+            }
         } else {
-            context.getString(R.string.component_episode_title_sub, ep.episode, ep.title)
+            ep.title
         }
 
         holder.binding.textEpisodeTitle.text = titleText

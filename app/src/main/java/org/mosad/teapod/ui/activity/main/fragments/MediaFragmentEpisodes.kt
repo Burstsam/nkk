@@ -39,6 +39,7 @@ class MediaFragmentEpisodes : Fragment() {
             playEpisode(seasonId, episodeId)
         }
 
+        // TODO don't show selection if only one season is present
         binding.buttonSeasonSelection.text = model.currentSeasonCrunchy.title
         binding.buttonSeasonSelection.setOnClickListener { v ->
             showSeasonSelection(v)

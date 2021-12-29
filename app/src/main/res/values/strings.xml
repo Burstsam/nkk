@@ -92,8 +92,10 @@
     <string name="time_min_sec" translatable="false">%1$02d:%2$02d</string>
     <string name="time_hour_min_sec" translatable="false">%1$d:%2$02d:%3$02d</string>
     <string name="language">Language</string>
+    <string name="subtitles">Subtitles</string>
     <string name="episodes">Episodes</string>
     <string name="episode">Episode</string>
+    <string name="no_subtitles">None</string>
 
     <!-- Onboarding -->
     <string name="skip">Skip</string>
