@@ -24,10 +24,9 @@ import org.mosad.teapod.parser.crunchyroll.Item
 import org.mosad.teapod.parser.crunchyroll.NoneItem
 import org.mosad.teapod.ui.activity.main.MainActivity
 import org.mosad.teapod.ui.activity.main.viewmodel.MediaFragmentViewModel
-import org.mosad.teapod.util.DataTypes.MediaType
-import org.mosad.teapod.util.StorageController
-import org.mosad.teapod.util.tmdb.TMDBMovie
 import org.mosad.teapod.util.tmdb.TMDBApiController
+import org.mosad.teapod.util.tmdb.TMDBMovie
+import org.mosad.teapod.util.tmdb.TMDBTVShow
 
 /**
  * The media detail fragment.
@@ -47,6 +46,7 @@ class MediaFragment(private val mediaIdStr: String, mediaCr: Item = NoneItem) : 
         binding = FragmentMediaBinding.inflate(inflater, container, false)
         return binding.root
     }
+
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
@@ -89,9 +89,9 @@ class MediaFragment(private val mediaIdStr: String, mediaCr: Item = NoneItem) : 
      */
     private fun updateGUI() = with(model) {
         // generic gui
-        val backdropUrl = tmdbResult?.backdropPath?.let { TMDBApiController.imageUrl + it }
+        val backdropUrl = tmdbResult.backdropPath?.let { TMDBApiController.imageUrl + it }
             ?: seriesCrunchy.images.poster_wide[0][2].source
-        val posterUrl = tmdbResult?.posterPath?.let { TMDBApiController.imageUrl + it }
+        val posterUrl = tmdbResult.posterPath?.let { TMDBApiController.imageUrl + it }
             ?: seriesCrunchy.images.poster_tall[0][2].source
 
         // load poster and backdrop
@@ -103,9 +103,14 @@ class MediaFragment(private val mediaIdStr: String, mediaCr: Item = NoneItem) : 
             .into(binding.imageBackdrop)
 
         binding.textTitle.text = seriesCrunchy.title
-        //binding.textYear.text = media.year.toString() // TODO get from tmdb
-        //binding.textAge.text = media.age.toString() // TODO get from tmdb
         binding.textOverview.text = seriesCrunchy.description
+        binding.textAge.text = seriesCrunchy.maturityRatings.firstOrNull()
+
+        binding.textYear.text = when(tmdbResult) {
+            is TMDBTVShow -> (tmdbResult as TMDBTVShow).firstAirDate.substring(0, 4)
+            is TMDBMovie -> (tmdbResult as TMDBMovie).releaseDate.substring(0, 4)
+            else -> ""
+        }
 
         // TODO set "my list" indicator
 //        if (StorageController.myList.contains(media.aodId)) {
@@ -119,8 +124,7 @@ class MediaFragment(private val mediaIdStr: String, mediaCr: Item = NoneItem) : 
         fragments.clear()
         pagerAdapter.notifyItemRangeRemoved(0, fragmentsSize)
 
-
-        // add the episodes fragment (as tab)
+        // add the episodes fragment (as tab). Note: Movies are tv shows!
         MediaFragmentEpisodes().also {
             fragments.add(it)
             pagerAdapter.notifyItemInserted(fragments.indexOf(it))
@@ -128,6 +132,33 @@ class MediaFragment(private val mediaIdStr: String, mediaCr: Item = NoneItem) : 
 
         // TODO reimplement via tmdb/metaDB
         // specific gui
+        when (tmdbResult) {
+            is TMDBTVShow -> {
+                // episodes count
+                binding.textEpisodesOrRuntime.text = resources.getQuantityString(
+                    R.plurals.text_episodes_count,
+                    episodesCrunchy.total,
+                    episodesCrunchy.total
+                )
+            }
+            is TMDBMovie -> {
+                val tmdbMovie = (tmdbResult as TMDBMovie?)
+
+                if (tmdbMovie?.runtime != null) {
+                    binding.textEpisodesOrRuntime.text = resources.getQuantityString(
+                        R.plurals.text_runtime,
+                        tmdbMovie.runtime,
+                        tmdbMovie.runtime
+                    )
+                } else {
+                    binding.textEpisodesOrRuntime.visibility = View.GONE
+                }
+            }
+            else -> {
+                println("else")
+            }
+        }
+
 //        if (mediaCrunchy.type == MediaType.TVSHOW.str) {
 //            // TODO get next episode
 ////            nextEpisodeId = media.playlist.firstOrNull{ !it.watched }?.mediaId

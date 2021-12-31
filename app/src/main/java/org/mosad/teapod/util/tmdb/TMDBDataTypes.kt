@@ -22,71 +22,110 @@
 
 package org.mosad.teapod.util.tmdb
 
-import com.google.gson.annotations.SerializedName
+import android.os.Build
+import androidx.annotation.RequiresApi
+import kotlinx.serialization.*
+import kotlinx.serialization.json.JsonNames
+import java.text.DateFormat
+import java.time.LocalDate
+import java.util.*
+
+/**
+ * New TMDB API data classes
+ */
+
+@ExperimentalSerializationApi
+@Serializable
+data class TMDBSearch(
+    val page: Int,
+    val results: List<TMDBSearchResult>
+)
+
+@ExperimentalSerializationApi
+@Serializable
+data class TMDBSearchResult(
+    @SerialName("id") val id: Int,
+    @SerialName("media_type") val mediaType: String,
+    @JsonNames("name", "title") val name: String, // tv show = name, movie = title
+    @SerialName("overview") val overview: String?,
+    @SerialName("poster_path") val posterPath: String?,
+    @SerialName("backdrop_path") val backdropPath: String?,
+)
+
+@ExperimentalSerializationApi
+val NoneTMDBSearch = TMDBSearch(0, emptyList())
 
 /**
  * These data classes represent the tmdb api json objects.
  * Fields which are nullable in the tmdb api are also nullable here.
  */
 
-abstract class TMDBResult{
-    abstract val id: Int
-    abstract val name: String
-    abstract val overview: String? // for movies tmdb return string or null
-    abstract val posterPath: String?
-    abstract val backdropPath: String?
+interface TMDBResult {
+    val id: Int
+    val name: String
+    val overview: String? // for movies tmdb return string or null
+    val posterPath: String?
+    val backdropPath: String?
 }
 
-data class TMDBMovie(
+data class TMDBBase(
     override val id: Int,
     override val name: String,
     override val overview: String?,
-    @SerializedName("poster_path")
     override val posterPath: String?,
-    @SerializedName("backdrop_path")
-    override val backdropPath: String?,
-    @SerializedName("release_date")
-    val releaseDate: String,
-    @SerializedName("runtime")
-    val runtime: Int?,
-    // TODO generes
-): TMDBResult()
+    override val backdropPath: String?
+) : TMDBResult
 
+@Serializable
+data class TMDBMovie(
+    @SerialName("id") override val id: Int,
+    @SerialName("title") override val name: String, // for movies the name is in the field title
+    @SerialName("overview") override val overview: String?,
+    @SerialName("poster_path") override val posterPath: String?,
+    @SerialName("backdrop_path") override val backdropPath: String?,
+    @SerialName("release_date") val releaseDate: String,
+    @SerialName("runtime") val runtime: Int?,
+    @SerialName("status") val status: String,
+    // TODO generes
+) : TMDBResult
+
+@Serializable
 data class TMDBTVShow(
-    override val id: Int,
-    override val name: String,
-    override val overview: String,
-    @SerializedName("poster_path")
-    override val posterPath: String?,
-    @SerializedName("backdrop_path")
-    override val backdropPath: String?,
-    @SerializedName("first_air_date")
-    val firstAirDate: String,
-    @SerializedName("status")
-    val status: String,
+    @SerialName("id")override val id: Int,
+    @SerialName("name")override val name: String,
+    @SerialName("overview")override val overview: String,
+    @SerialName("poster_path") override val posterPath: String?,
+    @SerialName("backdrop_path") override val backdropPath: String?,
+    @SerialName("first_air_date") val firstAirDate: String,
+    @SerialName("last_air_date") val lastAirDate: String,
+    @SerialName("status") val status: String,
     // TODO generes
-): TMDBResult()
+) : TMDBResult
 
+// use null for nullable types, the gui needs to handle/implement a fallback for null values
+val NoneTMDB = TMDBBase(0, "", "", null, null)
+val NoneTMDBMovie = TMDBMovie(0, "", "", null, null, "", null, "")
+val NoneTMDBTVShow = TMDBTVShow(0, "", "", null, null, "", "", "")
+
+@Serializable
 data class TMDBTVSeason(
-    val id: Int,
-    val name: String,
-    val overview: String,
-    @SerializedName("poster_path")
-    val posterPath: String?,
-    @SerializedName("air_date")
-    val airDate: String,
-    @SerializedName("episodes")
-    val episodes: List<TMDBTVEpisode>,
-    @SerializedName("season_number")
-    val seasonNumber: Int
+    @SerialName("id") val id: Int,
+    @SerialName("name") val name: String,
+    @SerialName("overview") val overview: String,
+    @SerialName("poster_path") val posterPath: String?,
+    @SerialName("air_date") val airDate: String,
+    @SerialName("episodes") val episodes: List<TMDBTVEpisode>,
+    @SerialName("season_number") val seasonNumber: Int
 )
 
+@Serializable
 data class TMDBTVEpisode(
-    val id: Int,
-    val name: String,
-    val overview: String,
-    @SerializedName("air_date")
-    val airDate: String,
-    @SerializedName("episode_number")
-    val episodeNumber: Int
+    @SerialName("id") val id: Int,
+    @SerialName("name") val name: String,
+    @SerialName("overview") val overview: String,
+    @SerialName("air_date") val airDate: String,
+    @SerialName("episode_number") val episodeNumber: Int
 )
+
+// use null for nullable types, the gui needs to handle/implement a fallback for null values
+val NoneTMDBTVSeason = TMDBTVSeason(0, "", "", null, "", emptyList(), 0)

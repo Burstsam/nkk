@@ -64,12 +64,13 @@ data class Poster(val height: Int, val width: Int, val source: String, val type:
  */
 @Serializable
 data class Series(
-    val id: String,
-    val title: String,
-    val description: String,
-    val images: Images
+    @SerialName("id") val id: String,
+    @SerialName("title") val title: String,
+    @SerialName("description") val description: String,
+    @SerialName("images") val images: Images,
+    @SerialName("maturity_ratings") val maturityRatings: List<String>
 )
-val NoneSeries = Series("", "", "", Images(listOf(), listOf()))
+val NoneSeries = Series("", "", "", Images(emptyList(), emptyList()), emptyList())
 
 
 /**
@@ -77,8 +78,8 @@ val NoneSeries = Series("", "", "", Images(listOf(), listOf()))
  */
 @Serializable
 data class Seasons(
-    val total: Int,
-    val items: List<Season>
+    @SerialName("total") val total: Int,
+    @SerialName("items") val items: List<Season>
 ) {
     fun getPreferredSeason(local: Locale): Season {
         // try to get the the first seasons which matches the preferred local
@@ -111,14 +112,17 @@ data class Season(
 )
 
 val NoneSeasons = Seasons(0, listOf())
-val NoneSeason = Season("", "", "", 0, false, false)
+val NoneSeason = Season("", "", "", 0, isSubbed = false, isDubbed = false)
 
 
 /**
  * Episodes data type
  */
 @Serializable
-data class Episodes(val total: Int, val items: List<Episode>)
+data class Episodes(
+    @SerialName("total") val total: Int,
+    @SerialName("items") val items: List<Episode>
+)
 
 @Serializable
 data class Episode(

@@ -31,7 +31,7 @@ class MediaFragmentEpisodes : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        adapterRecEpisodes = EpisodeItemAdapter(model.currentEpisodesCrunchy, model.tmdbTVSeason?.episodes)
+        adapterRecEpisodes = EpisodeItemAdapter(model.currentEpisodesCrunchy, model.tmdbTVSeason.episodes)
         binding.recyclerEpisodes.adapter = adapterRecEpisodes
 
         // set onItemClick, adapter is initialized
@@ -39,10 +39,14 @@ class MediaFragmentEpisodes : Fragment() {
             playEpisode(seasonId, episodeId)
         }
 
-        // TODO don't show selection if only one season is present
-        binding.buttonSeasonSelection.text = model.currentSeasonCrunchy.title
-        binding.buttonSeasonSelection.setOnClickListener { v ->
-            showSeasonSelection(v)
+        // don't show season selection if only one season is present
+        if (model.seasonsCrunchy.total < 2) {
+            binding.buttonSeasonSelection.visibility = View.GONE
+        } else {
+            binding.buttonSeasonSelection.text = model.currentSeasonCrunchy.title
+            binding.buttonSeasonSelection.setOnClickListener { v ->
+                showSeasonSelection(v)
+            }
         }
     }
 

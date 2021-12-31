@@ -76,6 +76,8 @@ object Crunchyroll {
     ): Result<FuelJson, FuelError> = coroutineScope {
         val path = if (url.isEmpty()) "$baseUrl$endpoint" else url
 
+        // TODO before sending a request, make sure the accessToken is not expired
+
         return@coroutineScope (Dispatchers.IO) {
             val (request, response, result) = Fuel.get(path, params)
                 .header("Authorization", "$tokenType $accessToken")
@@ -182,7 +184,6 @@ object Crunchyroll {
         val result = request(episodesEndpoint, parameters)
 
         return result.component1()?.obj()?.let {
-            println(it)
             json.decodeFromString(it.toString())
         } ?: NoneSeasons
     }
@@ -200,7 +201,6 @@ object Crunchyroll {
         val result = request(episodesEndpoint, parameters)
 
         return result.component1()?.obj()?.let {
-            println(it)
             json.decodeFromString(it.toString())
         } ?: NoneEpisodes
     }
@@ -209,7 +209,6 @@ object Crunchyroll {
         val result = request("", url = url)
 
         return result.component1()?.obj()?.let {
-            println(it)
             json.decodeFromString(it.toString())
         } ?: NonePlayback
     }
