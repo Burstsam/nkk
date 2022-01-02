@@ -155,7 +155,7 @@ class MediaFragment(private val mediaIdStr: String, mediaCr: Item = NoneItem) : 
                 }
             }
             else -> {
-                println("else")
+                binding.textEpisodesOrRuntime.visibility = View.GONE
             }
         }
 

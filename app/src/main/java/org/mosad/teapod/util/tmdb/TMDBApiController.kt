@@ -69,19 +69,35 @@ class TMDBApiController {
     }
 
     /**
-     * Search for a media(movie or tv show) in tmdb
-     * @param query The query text
-     * @return A TMDBSearch object, or NoneTMDBSearch if nothing was found
+     * Search for a movie in tmdb
+     * @param query The query text (movie title)
+     * @return A TMDBSearch<TMDBSearchResultMovie> object, or
+     * NoneTMDBSearchMovie if nothing was found
      */
-    @ExperimentalSerializationApi
-    suspend fun searchMulti(query: String): TMDBSearch {
+    suspend fun searchMovie(query: String): TMDBSearch<TMDBSearchResultMovie> {
         val searchEndpoint = "/search/multi"
         val parameters = listOf("query" to query, "include_adult" to false)
 
         val result = request(searchEndpoint, parameters)
         return result.component1()?.obj()?.let {
             json.decodeFromString(it.toString())
-        } ?: NoneTMDBSearch
+        } ?: NoneTMDBSearchMovie
+    }
+
+    /**
+     * Search for a tv show in tmdb
+     * @param query The query text (tv show title)
+     * @return A TMDBSearch<TMDBSearchResultTVShow> object, or
+     * NoneTMDBSearchTVShow if nothing was found
+     */
+    suspend fun searchTVShow(query: String): TMDBSearch<TMDBSearchResultTVShow> {
+        val searchEndpoint = "/search/tv"
+        val parameters = listOf("query" to query, "include_adult" to false)
+
+        val result = request(searchEndpoint, parameters)
+        return result.component1()?.obj()?.let {
+            json.decodeFromString(it.toString())
+        } ?: NoneTMDBSearchTVShow
     }
 
     /**

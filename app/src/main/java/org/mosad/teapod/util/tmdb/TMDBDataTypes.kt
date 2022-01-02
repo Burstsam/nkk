@@ -22,38 +22,8 @@
 
 package org.mosad.teapod.util.tmdb
 
-import android.os.Build
-import androidx.annotation.RequiresApi
-import kotlinx.serialization.*
-import kotlinx.serialization.json.JsonNames
-import java.text.DateFormat
-import java.time.LocalDate
-import java.util.*
-
-/**
- * New TMDB API data classes
- */
-
-@ExperimentalSerializationApi
-@Serializable
-data class TMDBSearch(
-    val page: Int,
-    val results: List<TMDBSearchResult>
-)
-
-@ExperimentalSerializationApi
-@Serializable
-data class TMDBSearchResult(
-    @SerialName("id") val id: Int,
-    @SerialName("media_type") val mediaType: String,
-    @JsonNames("name", "title") val name: String, // tv show = name, movie = title
-    @SerialName("overview") val overview: String?,
-    @SerialName("poster_path") val posterPath: String?,
-    @SerialName("backdrop_path") val backdropPath: String?,
-)
-
-@ExperimentalSerializationApi
-val NoneTMDBSearch = TMDBSearch(0, emptyList())
+import kotlinx.serialization.SerialName
+import kotlinx.serialization.Serializable
 
 /**
  * These data classes represent the tmdb api json objects.
@@ -75,6 +45,42 @@ data class TMDBBase(
     override val posterPath: String?,
     override val backdropPath: String?
 ) : TMDBResult
+
+/**
+ * search results for movie and tv show
+ */
+
+@Serializable
+data class TMDBSearch<T>(
+    val page: Int,
+    val results: List<T>
+)
+
+@Serializable
+data class TMDBSearchResultMovie(
+    @SerialName("id") override val id: Int,
+    @SerialName("title") override val name: String,
+    @SerialName("overview") override val overview: String?,
+    @SerialName("poster_path") override val posterPath: String?,
+    @SerialName("backdrop_path") override val backdropPath: String?,
+) : TMDBResult
+
+@Serializable
+data class TMDBSearchResultTVShow(
+    @SerialName("id") override val id: Int,
+    @SerialName("name") override val name: String,
+    @SerialName("overview") override val overview: String?,
+    @SerialName("poster_path") override val posterPath: String?,
+    @SerialName("backdrop_path") override val backdropPath: String?,
+) : TMDBResult
+
+val NoneTMDBSearch = TMDBSearch<TMDBBase>(0, emptyList())
+val NoneTMDBSearchMovie = TMDBSearch<TMDBSearchResultMovie>(0, emptyList())
+val NoneTMDBSearchTVShow = TMDBSearch<TMDBSearchResultTVShow>(0, emptyList())
+
+/**
+ * detail return data types
+ */
 
 @Serializable
 data class TMDBMovie(

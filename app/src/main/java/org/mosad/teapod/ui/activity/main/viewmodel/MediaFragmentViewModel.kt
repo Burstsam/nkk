@@ -8,6 +8,7 @@ import kotlinx.coroutines.launch
 import kotlinx.serialization.ExperimentalSerializationApi
 import org.mosad.teapod.parser.crunchyroll.*
 import org.mosad.teapod.preferences.Preferences
+import org.mosad.teapod.util.DataTypes.MediaType
 import org.mosad.teapod.util.Meta
 import org.mosad.teapod.util.tmdb.*
 
@@ -29,6 +30,8 @@ class MediaFragmentViewModel(application: Application) : AndroidViewModel(applic
         internal set
     val currentEpisodesCrunchy = arrayListOf<Episode>() // used for EpisodeItemAdapter (easier updates)
 
+    var mediaType = MediaType.OTHER
+        internal set
     var tmdbResult: TMDBResult = NoneTMDB // TODO rename
         internal set
     var tmdbTVSeason: TMDBTVSeason = NoneTMDBTVSeason
@@ -58,6 +61,11 @@ class MediaFragmentViewModel(application: Application) : AndroidViewModel(applic
         currentEpisodesCrunchy.clear()
         currentEpisodesCrunchy.addAll(episodesCrunchy.items)
         println("episodes: $episodesCrunchy")
+
+        // set media type
+        mediaType = episodesCrunchy.items.firstOrNull()?.let {
+            if (it.episodeNumber != null) MediaType.TVSHOW else MediaType.MOVIE
+        } ?: MediaType.OTHER
 
         // TODO check if metaDB knows the title
         mediaMeta = null // set mediaMeta to null, if metaDB doesn't know the media
@@ -94,15 +102,17 @@ class MediaFragmentViewModel(application: Application) : AndroidViewModel(applic
     suspend fun loadTmdbInfo() {
         val tmdbApiController = TMDBApiController()
 
-        val tmdbSearchResult = tmdbApiController.searchMulti(seriesCrunchy.title)
+        val tmdbSearchResult = when(mediaType) {
+            MediaType.MOVIE -> tmdbApiController.searchMovie(seriesCrunchy.title)
+            MediaType.TVSHOW -> tmdbApiController.searchTVShow(seriesCrunchy.title)
+            else -> NoneTMDBSearch
+        }
         println(tmdbSearchResult)
 
         tmdbResult = if (tmdbSearchResult.results.isNotEmpty()) {
-            val result = tmdbSearchResult.results.first()
-
-            when (result.mediaType) {
-                "movie" -> tmdbApiController.getMovieDetails(result.id)
-                "tv" -> tmdbApiController.getTVShowDetails(result.id)
+            when (val result = tmdbSearchResult.results.first()) {
+                is TMDBSearchResultMovie -> tmdbApiController.getMovieDetails(result.id)
+                is TMDBSearchResultTVShow -> tmdbApiController.getTVShowDetails(result.id)
                 else -> NoneTMDB
             }
         } else NoneTMDB
