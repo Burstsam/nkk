@@ -29,7 +29,10 @@ class MediaFragmentViewModel(application: Application) : AndroidViewModel(applic
     var episodesCrunchy = NoneEpisodes
         internal set
     val currentEpisodesCrunchy = arrayListOf<Episode>() // used for EpisodeItemAdapter (easier updates)
+    var isWatchlist = false
+        internal set
 
+    // TMDB stuff
     var mediaType = MediaType.OTHER
         internal set
     var tmdbResult: TMDBResult = NoneTMDB // TODO rename
@@ -47,7 +50,8 @@ class MediaFragmentViewModel(application: Application) : AndroidViewModel(applic
         // load series and seasons info in parallel
         listOf(
             viewModelScope.launch { seriesCrunchy = Crunchyroll.series(crunchyId) },
-            viewModelScope.launch { seasonsCrunchy = Crunchyroll.seasons(crunchyId) }
+            viewModelScope.launch { seasonsCrunchy = Crunchyroll.seasons(crunchyId) },
+            viewModelScope.launch { isWatchlist = Crunchyroll.isWatchlist(crunchyId) }
         ).joinAll()
 
         println("series: $seriesCrunchy")
@@ -75,30 +79,10 @@ class MediaFragmentViewModel(application: Application) : AndroidViewModel(applic
     }
 
     /**
-     * Set currentSeasonCrunchy based on the season id. Also set the new seasons episodes.
-     *
-     * @param seasonId the id of the season to set
-     */
-    suspend fun setCurrentSeason(seasonId: String) {
-        // return if the id hasn't changed (performance)
-        if (currentSeasonCrunchy.id == seasonId) return
-
-        // set currentSeasonCrunchy to the new season with id == seasonId, if the id isn't found,
-        // don't change the current season (this should/can never happen)
-        currentSeasonCrunchy = seasonsCrunchy.items.firstOrNull {
-            it.id == seasonId
-        } ?: currentSeasonCrunchy
-
-        episodesCrunchy = Crunchyroll.episodes(currentSeasonCrunchy.id)
-        currentEpisodesCrunchy.clear()
-        currentEpisodesCrunchy.addAll(episodesCrunchy.items)
-    }
-
-    /**
      * Load the tmdb info for the selected media.
      * The TMDB search return a media type, use this to get the details (movie/tv show and season)
      */
-    suspend fun loadTmdbInfo() {
+    private suspend fun loadTmdbInfo() {
         val tmdbApiController = TMDBApiController()
 
         val tmdbSearchResult = when(mediaType) {
@@ -122,6 +106,36 @@ class MediaFragmentViewModel(application: Application) : AndroidViewModel(applic
 //        tmdbTVSeason = if (tmdbResult is TMDBTVShow) {
 //            tmdbApiController.getTVSeasonDetails(tmdbResult.id, 0)
 //        } else NoneTMDBTVSeason
+    }
+
+    /**
+     * Set currentSeasonCrunchy based on the season id. Also set the new seasons episodes.
+     *
+     * @param seasonId the id of the season to set
+     */
+    suspend fun setCurrentSeason(seasonId: String) {
+        // return if the id hasn't changed (performance)
+        if (currentSeasonCrunchy.id == seasonId) return
+
+        // set currentSeasonCrunchy to the new season with id == seasonId, if the id isn't found,
+        // don't change the current season (this should/can never happen)
+        currentSeasonCrunchy = seasonsCrunchy.items.firstOrNull {
+            it.id == seasonId
+        } ?: currentSeasonCrunchy
+
+        episodesCrunchy = Crunchyroll.episodes(currentSeasonCrunchy.id)
+        currentEpisodesCrunchy.clear()
+        currentEpisodesCrunchy.addAll(episodesCrunchy.items)
+    }
+
+    suspend fun setWatchlist() {
+        isWatchlist = if (isWatchlist) {
+            Crunchyroll.deleteWatchlist(seriesCrunchy.id)
+            false
+        } else {
+            Crunchyroll.postWatchlist(seriesCrunchy.id)
+            true
+        }
     }
 
     /**

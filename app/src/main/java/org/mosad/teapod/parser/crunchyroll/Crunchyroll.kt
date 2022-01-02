@@ -4,12 +4,15 @@ import android.util.Log
 import com.github.kittinunf.fuel.Fuel
 import com.github.kittinunf.fuel.core.FuelError
 import com.github.kittinunf.fuel.core.Parameters
+import com.github.kittinunf.fuel.core.extensions.jsonBody
 import com.github.kittinunf.fuel.json.FuelJson
 import com.github.kittinunf.fuel.json.responseJson
 import com.github.kittinunf.result.Result
 import kotlinx.coroutines.*
 import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.json.Json
+import kotlinx.serialization.json.buildJsonObject
+import kotlinx.serialization.json.put
 import org.mosad.teapod.preferences.Preferences
 import java.util.*
 
@@ -21,6 +24,8 @@ object Crunchyroll {
 
     private var accessToken = ""
     private var tokenType = ""
+
+    private var accountID = ""
 
     private var policy = ""
     private var signature = ""
@@ -91,6 +96,42 @@ object Crunchyroll {
         }
     }
 
+    private suspend fun requestPost(
+        endpoint: String,
+        params: Parameters = listOf(),
+        body: String
+    ) = coroutineScope {
+        val path = "$baseUrl$endpoint"
+
+        // TODO before sending a request, make sure the accessToken is not expired
+        withContext(Dispatchers.IO) {
+            Fuel.post(path, params)
+                .header("Authorization", "$tokenType $accessToken")
+                .jsonBody(body)
+                .response() // without a response, crunchy doesn't accept the request
+        }
+    }
+
+    private suspend fun requestDelete(
+        endpoint: String,
+        params: Parameters = listOf(),
+        url: String = ""
+    ) = coroutineScope {
+        val path = if (url.isEmpty()) "$baseUrl$endpoint" else url
+
+        // TODO before sending a request, make sure the accessToken is not expired
+        withContext(Dispatchers.IO) {
+            Fuel.delete(path, params)
+                .header("Authorization", "$tokenType $accessToken")
+                .response() // without a response, crunchy doesn't accept the request
+        }
+    }
+
+    /**
+     * Basic functions: index, account
+     * Needed for other functions to work properly!
+     */
+
     /**
      * Retrieve the identifiers necessary for streaming. If the identifiers are
      * retrieved, set the corresponding global var. The identifiers are valid for 24h.
@@ -110,6 +151,24 @@ object Crunchyroll {
         println("keyPairID: $keyPairID")
     }
 
+    /**
+     * Retrieve the account id and set the corresponding global var.
+     * The account id is needed for other calls.
+     *
+     * This must be execute on every start for teapod to work properly!
+     */
+    suspend fun account() {
+        val indexEndpoint = "/accounts/v1/me"
+        val result = request(indexEndpoint)
+
+        result.component1()?.obj()?.let {
+            accountID = it.get("account_id").toString()
+        }
+    }
+
+    /**
+     * Main media functions: browse, search, series, season, episodes, playback
+     */
 
     // TODO locale de-DE, categories
     /**
@@ -211,6 +270,61 @@ object Crunchyroll {
         return result.component1()?.obj()?.let {
             json.decodeFromString(it.toString())
         } ?: NonePlayback
+    }
+
+    /**
+     * Additional media functions: watchlist, playhead
+     */
+
+    /**
+     * Check if a media is in the user's watchlist.
+     *
+     * @param seriesId The crunchyroll series id of the media to check
+     * @return Boolean: ture if it was found, else false
+     */
+    suspend fun isWatchlist(seriesId: String): Boolean {
+        val watchlistEndpoint = "/content/v1/watchlist/$accountID/$seriesId"
+        val parameters = listOf("locale" to locale)
+
+        val result = request(watchlistEndpoint, parameters)
+        // if needed implement parsing
+
+        return result.component1()?.obj()?.has(seriesId) ?: false
+    }
+
+    /**
+     * Add a media to the user's watchlist.
+     *
+     * @param seriesId The crunchyroll series id of the media to check
+     */
+    suspend fun postWatchlist(seriesId: String) {
+        val watchlistEndpoint = "/content/v1/watchlist/$accountID"
+        val parameters = listOf("locale" to locale)
+
+        val json = buildJsonObject {
+            put("content_id", seriesId)
+        }
+
+        requestPost(watchlistEndpoint, parameters, json.toString())
+    }
+
+    /**
+     * Remove a media from the user's watchlist.
+     *
+     * @param seriesId The crunchyroll series id of the media to check
+     */
+    suspend fun deleteWatchlist(seriesId: String) {
+        val watchlistEndpoint = "/content/v1/watchlist/$accountID/$seriesId"
+        val parameters = listOf("locale" to locale)
+
+        requestDelete(watchlistEndpoint, parameters)
+    }
+
+    /**
+     * TODO
+     */
+    suspend fun playhead() {
+        // implement
     }
 
 }

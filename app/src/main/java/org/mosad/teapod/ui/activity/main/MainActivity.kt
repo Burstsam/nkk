@@ -135,10 +135,6 @@ class MainActivity : AppCompatActivity(), NavigationBarView.OnItemSelectedListen
     private fun load() {
         val time = measureTimeMillis {
             // start the initial loading
-//            val loadingJob = CoroutineScope(Dispatchers.IO + CoroutineName("InitialLoadingScope"))
-//                .async {
-//                    launch { MetaDBController.list() }
-//                }
 
             // load all saved stuff here
             Preferences.load(this)
@@ -150,7 +146,7 @@ class MainActivity : AppCompatActivity(), NavigationBarView.OnItemSelectedListen
                 showOnboarding()
             } else {
                 Crunchyroll.login(EncryptedPreferences.login, EncryptedPreferences.password)
-                runBlocking { Crunchyroll.index() }
+                runBlocking { initCrunchyroll().joinAll() }
             }
 
 //            if (EncryptedPreferences.password.isEmpty()) {
@@ -177,6 +173,14 @@ class MainActivity : AppCompatActivity(), NavigationBarView.OnItemSelectedListen
         Log.i(javaClass.name, "loading and login in $time ms")
 
         wasInitialized = true
+    }
+
+    private fun initCrunchyroll(): List<Job> {
+        val scope = CoroutineScope(Dispatchers.IO + CoroutineName("InitialLoadingScope"))
+        return listOf(
+            scope.launch { Crunchyroll.index() },
+            scope.launch { Crunchyroll.account() }
+        )
     }
 
     private fun showLoginDialog() {

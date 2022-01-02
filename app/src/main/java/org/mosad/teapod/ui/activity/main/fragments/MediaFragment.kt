@@ -17,11 +17,10 @@ import com.bumptech.glide.request.RequestOptions
 import com.google.android.material.appbar.AppBarLayout
 import com.google.android.material.tabs.TabLayoutMediator
 import jp.wasabeef.glide.transformations.BlurTransformation
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 import org.mosad.teapod.R
 import org.mosad.teapod.databinding.FragmentMediaBinding
-import org.mosad.teapod.parser.crunchyroll.Item
-import org.mosad.teapod.parser.crunchyroll.NoneItem
 import org.mosad.teapod.ui.activity.main.MainActivity
 import org.mosad.teapod.ui.activity.main.viewmodel.MediaFragmentViewModel
 import org.mosad.teapod.util.tmdb.TMDBApiController
@@ -33,12 +32,13 @@ import org.mosad.teapod.util.tmdb.TMDBTVShow
  * Note: the fragment is created only once, when selecting a similar title etc.
  * therefore fragments may be not empty and model may be the old one
  */
-class MediaFragment(private val mediaIdStr: String, mediaCr: Item = NoneItem) : Fragment() {
+class MediaFragment(private val mediaIdStr: String) : Fragment() {
 
     private lateinit var binding: FragmentMediaBinding
     private lateinit var pagerAdapter: FragmentStateAdapter
 
     private val fragments = arrayListOf<Fragment>()
+    private var watchlistJobRunning = false
 
     private val model: MediaFragmentViewModel by activityViewModels()
 
@@ -112,12 +112,9 @@ class MediaFragment(private val mediaIdStr: String, mediaCr: Item = NoneItem) : 
             else -> ""
         }
 
-        // TODO set "my list" indicator
-//        if (StorageController.myList.contains(media.aodId)) {
-//            Glide.with(requireContext()).load(R.drawable.ic_baseline_check_24).into(binding.imageMyListAction)
-//        } else {
-//            Glide.with(requireContext()).load(R.drawable.ic_baseline_add_24).into(binding.imageMyListAction)
-//        }
+        // set "watchlist" indicator
+        val watchlistIcon = if (isWatchlist) R.drawable.ic_baseline_check_24 else R.drawable.ic_baseline_add_24
+        Glide.with(requireContext()).load(watchlistIcon).into(binding.imageMyListAction)
 
         // clear fragments, since it lives in onCreate scope (don't do this in onPause/onStop -> FragmentManager transaction)
         val fragmentsSize = if (fragments.lastIndex < 0) 0 else fragments.lastIndex
@@ -223,20 +220,18 @@ class MediaFragment(private val mediaIdStr: String, mediaCr: Item = NoneItem) : 
 
         // add or remove media from myList
         binding.linearMyListAction.setOnClickListener {
-            // TODO reimplement
-//            if (StorageController.myList.contains(media.aodId)) {
-//                StorageController.myList.remove(media.aodId)
-//                Glide.with(requireContext()).load(R.drawable.ic_baseline_add_24).into(binding.imageMyListAction)
-//            } else {
-//                StorageController.myList.add(media.aodId)
-//                Glide.with(requireContext()).load(R.drawable.ic_baseline_check_24).into(binding.imageMyListAction)
-//            }
-//            StorageController.saveMyList(requireContext())
-//
-//            // notify home fragment on change
-//            parentFragmentManager.findFragmentByTag("HomeFragment")?.let {
-//                (it as HomeFragment).updateMyListMedia()
-//            }
+            // don't allow parallel execution
+            if (!watchlistJobRunning) {
+                watchlistJobRunning = true
+                lifecycleScope.launch {
+                    setWatchlist()
+
+                    // update "watchlist" indicator
+                    val watchlistIcon = if (isWatchlist) R.drawable.ic_baseline_check_24 else R.drawable.ic_baseline_add_24
+                    Glide.with(requireContext()).load(watchlistIcon).into(binding.imageMyListAction)
+                    watchlistJobRunning = false
+                }
+            }
         }
     }
 
