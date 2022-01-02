@@ -22,6 +22,8 @@
 #-renamesourcefileattribute SourceFile
 -keep class org.mosad.teapod.util.** { <fields>; }
 
+-keep class org.json.** { *; }
+
 #Gson
 -keepattributes Signature
 -dontwarn sun.misc.**
