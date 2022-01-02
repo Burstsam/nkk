@@ -1,7 +1,7 @@
 /**
  * Teapod
  *
- * Copyright 2020-2021  <seil0@mosad.xyz>
+ * Copyright 2020-2022  <seil0@mosad.xyz>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by

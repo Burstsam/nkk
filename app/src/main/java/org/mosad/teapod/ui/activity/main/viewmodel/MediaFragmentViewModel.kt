@@ -98,7 +98,6 @@ class MediaFragmentViewModel(application: Application) : AndroidViewModel(applic
      * Load the tmdb info for the selected media.
      * The TMDB search return a media type, use this to get the details (movie/tv show and season)
      */
-    @ExperimentalSerializationApi
     suspend fun loadTmdbInfo() {
         val tmdbApiController = TMDBApiController()
 

@@ -20,11 +20,11 @@ Teapod is a unofficial App for Anime on Demand (AoD). It allows you to watch all
 Teapod is licensed under the terms and conditions of GPL 3. This Project is not associated with Anime on Demand in any way. But they allow open source apps for their service.
 
 ### Contributing
-Currentl you need to have an AoD account to contrtibut to Teapod. Contributing without on is kind of impossible.If you want to contribute to Teapod and need an account on this gitea instance, please write me an email.
+Currently you need to have an AoD account to contribute to Teapod. Contributing without on is kind of impossible.If you want to contribute to Teapod and need an account on this gitea instance, please write me an email.
 
 ### [FAQ](https://git.mosad.xyz/Seil0/teapod/wiki#hilfe)
 
 #### Why is it called Teapod?
 Teapod is a Acronym for "The ultimate anime app on demand", hence this project is called Teapod and not Teapot.
 
-Teapod © 2020-2021 [@Seil0](https://git.mosad.xyz/Seil0)
+Teapod © 2020-2022 [@Seil0](https://git.mosad.xyz/Seil0)
