@@ -15,8 +15,18 @@ enum class SortBy(val str: String) {
 }
 
 /**
- * Search data type
+ * search, browse, watchlist data types (all collections)
  */
+@Serializable
+data class Collection(
+    @SerialName("total") val total: Int,
+    @SerialName("items") val items: List<Item>
+)
+
+typealias SearchCollection = Collection
+typealias BrowseResult = Collection
+typealias Watchlist = Collection
+
 @Serializable
 data class SearchResult(
     @SerialName("total") val total: Int,
@@ -24,17 +34,21 @@ data class SearchResult(
 )
 
 @Serializable
-data class SearchCollection(
-    @SerialName("type") val type: String,
-    @SerialName("items") val items: List<Item>
+data class ContinueWatchingList(
+    @SerialName("total") val total: Int,
+    @SerialName("items") val items: List<ContinueWatchingItem>
 )
 
-val NoneSearchResult = SearchResult(0, emptyList())
-
-
-
 @Serializable
-data class BrowseResult(val total: Int, val items: List<Item>)
+data class ContinueWatchingItem(
+    @SerialName("panel") val panel: EpisodePanel,
+    @SerialName("new") val new: Boolean,
+    @SerialName("new_content") val newContent: Boolean,
+    @SerialName("is_favorite") val isFavorite: Boolean,
+    @SerialName("never_watched") val neverWatched: Boolean,
+    @SerialName("completion_status") val completionStatus: Boolean,
+    @SerialName("playhead") val playhead: Int,
+)
 
 // the data class Item is used in browse and search
 // TODO rename to MediaPanel
@@ -49,8 +63,17 @@ data class Item(
     // TODO metadata etc.
 )
 
-val NoneItem = Item("", "", "", "", "", Images(listOf(), listOf()))
-val NoneBrowseResult = BrowseResult(0, listOf())
+// EpisodePanel is used in ContinueWatchingItem
+@Serializable
+data class EpisodePanel(
+    @SerialName("id") val id: String,
+    @SerialName("title") val title: String,
+    @SerialName("type") val type: String,
+    @SerialName("channel_id") val channelId: String,
+    @SerialName("description") val description: String,
+    @SerialName("images") val images: Thumbnail,
+    @SerialName("episode_metadata") val episodeMetadata: EpisodeMetadata,
+)
 
 @Serializable
 data class Images(val poster_tall: List<List<Poster>>, val poster_wide: List<List<Poster>>)
@@ -58,6 +81,18 @@ data class Images(val poster_tall: List<List<Poster>>, val poster_wide: List<Lis
 
 @Serializable
 data class Poster(val height: Int, val width: Int, val source: String, val type: String)
+
+@Serializable
+data class EpisodeMetadata(
+    @SerialName("series_id") val seriesId: String,
+    @SerialName("series_title") val seriesTitle: String,
+)
+
+val NoneItem = Item("", "", "", "", "", Images(emptyList(), emptyList()))
+val NoneCollection = Collection(0, emptyList())
+val NoneSearchResult = SearchResult(0, emptyList())
+val NoneBrowseResult = BrowseResult(0, emptyList())
+val NoneContinueWatchingList = ContinueWatchingList(0, emptyList())
 
 /**
  * Series data type

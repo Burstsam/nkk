@@ -22,7 +22,6 @@ import org.mosad.teapod.preferences.Preferences
 import org.mosad.teapod.ui.activity.main.MainActivity
 import org.mosad.teapod.ui.components.LoginDialog
 import org.mosad.teapod.util.DataTypes.Theme
-import org.mosad.teapod.util.StorageController
 import org.mosad.teapod.util.showFragment
 
 class AccountFragment : Fragment() {
@@ -32,7 +31,7 @@ class AccountFragment : Fragment() {
     private val getUriExport = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
         if (result.resultCode == Activity.RESULT_OK) {
             result.data?.data?.also { uri ->
-                StorageController.exportMyList(requireContext(), uri)
+                //StorageController.exportMyList(requireContext(), uri)
             }
         }
     }
@@ -40,13 +39,13 @@ class AccountFragment : Fragment() {
     private val getUriImport = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
         if (result.resultCode == Activity.RESULT_OK) {
             result.data?.data?.also { uri ->
-                val success = StorageController.importMyList(requireContext(), uri)
-                if (success == 0) {
-                    Toast.makeText(
-                        context, getString(R.string.import_data_success),
-                        Toast.LENGTH_SHORT
-                    ).show()
-                }
+//                val success = StorageController.importMyList(requireContext(), uri)
+//                if (success == 0) {
+//                    Toast.makeText(
+//                        context, getString(R.string.import_data_success),
+//                        Toast.LENGTH_SHORT
+//                    ).show()
+//                }
             }
         }
     }

@@ -44,8 +44,6 @@ import org.mosad.teapod.ui.activity.onboarding.OnboardingActivity
 import org.mosad.teapod.ui.activity.player.PlayerActivity
 import org.mosad.teapod.ui.components.LoginDialog
 import org.mosad.teapod.util.DataTypes
-import org.mosad.teapod.util.MetaDBController
-import org.mosad.teapod.util.StorageController
 import kotlin.system.measureTimeMillis
 
 class MainActivity : AppCompatActivity(), NavigationBarView.OnItemSelectedListener {
@@ -139,7 +137,6 @@ class MainActivity : AppCompatActivity(), NavigationBarView.OnItemSelectedListen
             // load all saved stuff here
             Preferences.load(this)
             EncryptedPreferences.readCredentials(this)
-            StorageController.load(this)
 
             // show onboarding TODO rework
             if (EncryptedPreferences.password.isEmpty()) {

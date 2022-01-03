@@ -212,6 +212,30 @@ object Crunchyroll {
     }
 
     /**
+     * Get a collection of series objects.
+     * Note: episode objects are currently not supported
+     *
+     * @param objects The object IDs as list of Strings
+     * @return A Collection of Panels
+     */
+    suspend fun objects(objects: List<String>): Collection {
+        val episodesEndpoint = "/cms/v2/DE/M3/crunchyroll/objects/${objects.joinToString(",")}"
+        val parameters = listOf(
+            "locale" to locale,
+            "Signature" to signature,
+            "Policy" to policy,
+            "Key-Pair-Id" to keyPairID
+        )
+
+        val result = request(episodesEndpoint, parameters)
+        println(result.component1()?.obj()?.toString())
+
+        return result.component1()?.obj()?.let {
+            json.decodeFromString(it.toString())
+        } ?: NoneCollection
+    }
+
+    /**
      * series id == crunchyroll id?
      */
     suspend fun series(seriesId: String): Series {
@@ -273,7 +297,7 @@ object Crunchyroll {
     }
 
     /**
-     * Additional media functions: watchlist, playhead
+     * Additional media functions: watchlist (series), playhead
      */
 
     /**
@@ -283,10 +307,10 @@ object Crunchyroll {
      * @return Boolean: ture if it was found, else false
      */
     suspend fun isWatchlist(seriesId: String): Boolean {
-        val watchlistEndpoint = "/content/v1/watchlist/$accountID/$seriesId"
+        val watchlistSeriesEndpoint = "/content/v1/watchlist/$accountID/$seriesId"
         val parameters = listOf("locale" to locale)
 
-        val result = request(watchlistEndpoint, parameters)
+        val result = request(watchlistSeriesEndpoint, parameters)
         // if needed implement parsing
 
         return result.component1()?.obj()?.has(seriesId) ?: false
@@ -298,14 +322,14 @@ object Crunchyroll {
      * @param seriesId The crunchyroll series id of the media to check
      */
     suspend fun postWatchlist(seriesId: String) {
-        val watchlistEndpoint = "/content/v1/watchlist/$accountID"
+        val watchlistPostEndpoint = "/content/v1/watchlist/$accountID"
         val parameters = listOf("locale" to locale)
 
         val json = buildJsonObject {
             put("content_id", seriesId)
         }
 
-        requestPost(watchlistEndpoint, parameters, json.toString())
+        requestPost(watchlistPostEndpoint, parameters, json.toString())
     }
 
     /**
@@ -314,10 +338,10 @@ object Crunchyroll {
      * @param seriesId The crunchyroll series id of the media to check
      */
     suspend fun deleteWatchlist(seriesId: String) {
-        val watchlistEndpoint = "/content/v1/watchlist/$accountID/$seriesId"
+        val watchlistDeleteEndpoint = "/content/v1/watchlist/$accountID/$seriesId"
         val parameters = listOf("locale" to locale)
 
-        requestDelete(watchlistEndpoint, parameters)
+        requestDelete(watchlistDeleteEndpoint, parameters)
     }
 
     /**
@@ -325,6 +349,23 @@ object Crunchyroll {
      */
     suspend fun playhead() {
         // implement
+    }
+
+    /**
+     * Listing functions: watchlist (list), up_next_account
+     */
+
+    suspend fun watchlist(n: Int = 20): Watchlist {
+        val watchlistEndpoint = "/content/v1/$accountID/watchlist"
+        val parameters = listOf("locale" to locale, "n" to n)
+
+        val watchlistResult = request(watchlistEndpoint, parameters)
+        val list: ContinueWatchingList = watchlistResult.component1()?.obj()?.let {
+            json.decodeFromString(it.toString())
+        } ?: NoneContinueWatchingList
+
+        val objects = list.items.map{ it.panel.episodeMetadata.seriesId }
+        return objects(objects)
     }
 
 }

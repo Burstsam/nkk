@@ -29,6 +29,9 @@ import kotlinx.coroutines.*
 import java.io.FileNotFoundException
 import java.net.URL
 
+/**
+ * TODO remove gson usage
+ */
 class MetaDBController {
 
     companion object {

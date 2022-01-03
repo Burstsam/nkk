@@ -6,22 +6,21 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.joinAll
 import kotlinx.coroutines.launch
-import org.mosad.teapod.R
 import org.mosad.teapod.databinding.FragmentHomeBinding
+import org.mosad.teapod.parser.crunchyroll.Crunchyroll
 import org.mosad.teapod.util.ItemMedia
-import org.mosad.teapod.util.StorageController
 import org.mosad.teapod.util.adapter.MediaItemAdapter
 import org.mosad.teapod.util.decoration.MediaItemDecoration
-import org.mosad.teapod.util.setDrawableTop
 import org.mosad.teapod.util.showFragment
 
 class HomeFragment : Fragment() {
 
     private lateinit var binding: FragmentHomeBinding
-    private lateinit var adapterMyList: MediaItemAdapter
+    private lateinit var adapterWatchlist: MediaItemAdapter
     private lateinit var adapterNewEpisodes: MediaItemAdapter
-    private lateinit var adapterNewSimulcasts: MediaItemAdapter
     private lateinit var adapterNewTitles: MediaItemAdapter
     private lateinit var adapterTopTen: MediaItemAdapter
 
@@ -61,33 +60,37 @@ class HomeFragment : Fragment() {
 //        }
     }
 
-    private fun initRecyclerViews() {
-        binding.recyclerMyList.addItemDecoration(MediaItemDecoration(9))
+    /**
+     * Suspend, since adapters need to be initialized before we can initialize the actions.
+     */
+    private suspend fun initRecyclerViews() {
+        binding.recyclerWatchlist.addItemDecoration(MediaItemDecoration(9))
         binding.recyclerNewEpisodes.addItemDecoration(MediaItemDecoration(9))
-        binding.recyclerNewSimulcasts.addItemDecoration(MediaItemDecoration(9))
         binding.recyclerNewTitles.addItemDecoration(MediaItemDecoration(9))
         binding.recyclerTopTen.addItemDecoration(MediaItemDecoration(9))
 
-        // my list
-        adapterMyList = MediaItemAdapter(mapMyListToItemMedia())
-        binding.recyclerMyList.adapter = adapterMyList
+        val asyncJobList = arrayListOf<Job>()
 
-        // TODO
-        // new episodes
+        // watchlist
+        val watchlistJob = lifecycleScope.launch {
+            adapterWatchlist = MediaItemAdapter(mapMyListToItemMedia())
+            binding.recyclerWatchlist.adapter = adapterWatchlist
+        }
+        asyncJobList.add(watchlistJob)
+
+        // new episodes TODO replace with continue watching
 //        adapterNewEpisodes = MediaItemAdapter(AoDParser.newEpisodesList)
 //        binding.recyclerNewEpisodes.adapter = adapterNewEpisodes
 
-        // new simulcasts
-//        adapterNewSimulcasts = MediaItemAdapter(AoDParser.newSimulcastsList)
-//        binding.recyclerNewSimulcasts.adapter = adapterNewSimulcasts
-
-        // new titles
+        // new titles TODO
 //        adapterNewTitles = MediaItemAdapter(AoDParser.newTitlesList)
 //        binding.recyclerNewTitles.adapter = adapterNewTitles
 
-        // top ten
+        // top ten TODO
 //        adapterTopTen = MediaItemAdapter(AoDParser.topTenList)
 //        binding.recyclerTopTen.adapter = adapterTopTen
+
+        asyncJobList.joinAll()
     }
 
     private fun initActions() {
@@ -103,23 +106,23 @@ class HomeFragment : Fragment() {
         }
 
         binding.textHighlightMyList.setOnClickListener {
-            if (StorageController.myList.contains(0)) {
-                StorageController.myList.remove(0)
-                binding.textHighlightMyList.setDrawableTop(R.drawable.ic_baseline_add_24)
-            } else {
-                StorageController.myList.add(0)
-                binding.textHighlightMyList.setDrawableTop(R.drawable.ic_baseline_check_24)
-            }
-            StorageController.saveMyList(requireContext())
+            // TODO implement if needed
 
-            updateMyListMedia() // update my list, since it has changed
+//            if (StorageController.myList.contains(0)) {
+//                StorageController.myList.remove(0)
+//                binding.textHighlightMyList.setDrawableTop(R.drawable.ic_baseline_add_24)
+//            } else {
+//                StorageController.myList.add(0)
+//                binding.textHighlightMyList.setDrawableTop(R.drawable.ic_baseline_check_24)
+//            }
+//            StorageController.saveMyList(requireContext())
         }
 
         binding.textHighlightInfo.setOnClickListener {
             activity?.showFragment(MediaFragment(""))
         }
 
-        adapterMyList.onItemClick = { id, _ ->
+        adapterWatchlist.onItemClick = { id, _ ->
             activity?.showFragment(MediaFragment("")) //(mediaId))
         }
 
@@ -140,27 +143,10 @@ class HomeFragment : Fragment() {
 //        }
     }
 
-    /**
-     * update my media list
-     * TODO
-     *  * auto call when StorageController.myList is changed
-     *  * only update actual change and not all data (performance)
-     */
-    fun updateMyListMedia() {
-        //adapterMyList.updateMediaList(mapMyListToItemMedia())
-        //adapterMyList.notifyDataSetChanged()
-    }
-
-    private fun mapMyListToItemMedia(): List<ItemMedia> {
-        return emptyList()
-//        return StorageController.myList.mapNotNull { elementId ->
-//            AoDParser.guiMediaList.firstOrNull { it.id == elementId.toString() }.also {
-//                // it the my list entry wasn't found in itemMediaList Log it
-//                if (it == null) {
-//                    Log.w(javaClass.name, "The element with the id $elementId was not found.")
-//                }
-//            }
-//        }
+    private suspend fun mapMyListToItemMedia(): List<ItemMedia> {
+        return Crunchyroll.watchlist(50).items.map {
+            ItemMedia(it.id, it.title, it.images.poster_wide[0][0].source)
+        }
     }
 
 }
