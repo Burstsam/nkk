@@ -15,12 +15,13 @@ import org.mosad.teapod.util.ItemMedia
 import org.mosad.teapod.util.adapter.MediaItemAdapter
 import org.mosad.teapod.util.decoration.MediaItemDecoration
 import org.mosad.teapod.util.showFragment
+import org.mosad.teapod.util.toItemMediaList
 
 class HomeFragment : Fragment() {
 
     private lateinit var binding: FragmentHomeBinding
+    private lateinit var adapterUpNext: MediaItemAdapter
     private lateinit var adapterWatchlist: MediaItemAdapter
-    private lateinit var adapterNewEpisodes: MediaItemAdapter
     private lateinit var adapterNewTitles: MediaItemAdapter
     private lateinit var adapterTopTen: MediaItemAdapter
 
@@ -71,16 +72,20 @@ class HomeFragment : Fragment() {
 
         val asyncJobList = arrayListOf<Job>()
 
+        // continue watching
+        val upNextJob = lifecycleScope.launch {
+            // TODO create EpisodeItemAdapter, which will start the playback of the selected episode immediately
+            adapterUpNext = MediaItemAdapter(Crunchyroll.upNextAccount().toItemMediaList())
+            binding.recyclerNewEpisodes.adapter = adapterUpNext
+        }
+        asyncJobList.add(upNextJob)
+
         // watchlist
         val watchlistJob = lifecycleScope.launch {
-            adapterWatchlist = MediaItemAdapter(mapMyListToItemMedia())
+            adapterWatchlist = MediaItemAdapter(Crunchyroll.watchlist(50).toItemMediaList())
             binding.recyclerWatchlist.adapter = adapterWatchlist
         }
         asyncJobList.add(watchlistJob)
-
-        // new episodes TODO replace with continue watching
-//        adapterNewEpisodes = MediaItemAdapter(AoDParser.newEpisodesList)
-//        binding.recyclerNewEpisodes.adapter = adapterNewEpisodes
 
         // new titles TODO
 //        adapterNewTitles = MediaItemAdapter(AoDParser.newTitlesList)
@@ -122,18 +127,14 @@ class HomeFragment : Fragment() {
             activity?.showFragment(MediaFragment(""))
         }
 
-        adapterWatchlist.onItemClick = { id, _ ->
-            activity?.showFragment(MediaFragment("")) //(mediaId))
+        adapterUpNext.onItemClick = { id, _ ->
+            activity?.showFragment(MediaFragment(id))
         }
 
-//        adapterNewEpisodes.onItemClick = { id, _ ->
-//            activity?.showFragment(MediaFragment("")) //(mediaId))
-//        }
-//
-//        adapterNewSimulcasts.onItemClick = { id, _ ->
-//            activity?.showFragment(MediaFragment("")) //(mediaId))
-//        }
-//
+        adapterWatchlist.onItemClick = { id, _ ->
+            activity?.showFragment(MediaFragment(id))
+        }
+
 //        adapterNewTitles.onItemClick = { id, _ ->
 //            activity?.showFragment(MediaFragment("")) //(mediaId))
 //        }
@@ -141,12 +142,6 @@ class HomeFragment : Fragment() {
 //        adapterTopTen.onItemClick = { id, _ ->
 //            activity?.showFragment(MediaFragment("")) //(mediaId))
 //        }
-    }
-
-    private suspend fun mapMyListToItemMedia(): List<ItemMedia> {
-        return Crunchyroll.watchlist(50).items.map {
-            ItemMedia(it.id, it.title, it.images.poster_wide[0][0].source)
-        }
     }
 
 }

@@ -7,6 +7,7 @@
 
     <!-- home fragment -->
     <string name="highlight_media">Highlight</string>
+    <string name="up_next">Up next</string>
     <string name="my_list">My list</string>
     <string name="new_episodes">New episodes</string>
     <string name="new_simulcasts">New simulcasts</string>

@@ -17,15 +17,19 @@ enum class SortBy(val str: String) {
 /**
  * search, browse, watchlist data types (all collections)
  */
+
+// TODO make generic
 @Serializable
 data class Collection(
     @SerialName("total") val total: Int,
     @SerialName("items") val items: List<Item>
 )
 
+// TODO don't use aliases
 typealias SearchCollection = Collection
 typealias BrowseResult = Collection
 typealias Watchlist = Collection
+typealias UpNextAccount = Collection
 
 @Serializable
 data class SearchResult(
@@ -44,9 +48,10 @@ data class ContinueWatchingItem(
     @SerialName("panel") val panel: EpisodePanel,
     @SerialName("new") val new: Boolean,
     @SerialName("new_content") val newContent: Boolean,
-    @SerialName("is_favorite") val isFavorite: Boolean,
-    @SerialName("never_watched") val neverWatched: Boolean,
-    @SerialName("completion_status") val completionStatus: Boolean,
+    // not present in up_next_account's continue_watching_item
+//    @SerialName("is_favorite") val isFavorite: Boolean,
+//    @SerialName("never_watched") val neverWatched: Boolean,
+//    @SerialName("completion_status") val completionStatus: Boolean,
     @SerialName("playhead") val playhead: Int,
 )
 

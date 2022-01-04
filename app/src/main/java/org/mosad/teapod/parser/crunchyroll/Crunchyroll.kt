@@ -368,4 +368,21 @@ object Crunchyroll {
         return objects(objects)
     }
 
+    /**
+     * TODO
+     */
+    suspend fun upNextAccount(n: Int = 20): ContinueWatchingList {
+        val watchlistEndpoint = "/content/v1/$accountID/up_next_account"
+        val parameters = listOf("locale" to locale, "n" to n)
+
+        val resultUpNextAccount = request(watchlistEndpoint, parameters)
+        val list: ContinueWatchingList = resultUpNextAccount.component1()?.obj()?.let {
+            json.decodeFromString(it.toString())
+        } ?: NoneContinueWatchingList
+
+//        val objects = list.items.map{ it.panel.episodeMetadata.seriesId }
+//        return objects(objects)
+        return list
+    }
+
 }
