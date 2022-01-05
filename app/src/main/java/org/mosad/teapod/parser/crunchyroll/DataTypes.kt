@@ -29,7 +29,6 @@ data class Collection(
 typealias SearchCollection = Collection
 typealias BrowseResult = Collection
 typealias Watchlist = Collection
-typealias UpNextAccount = Collection
 
 @Serializable
 data class SearchResult(
@@ -111,7 +110,6 @@ data class Series(
     @SerialName("maturity_ratings") val maturityRatings: List<String>
 )
 val NoneSeries = Series("", "", "", Images(emptyList(), emptyList()), emptyList())
-
 
 /**
  * Seasons data type
@@ -207,6 +205,16 @@ val NoneEpisode = Episode(
     images = Thumbnail(listOf()),
     durationMs = 0,
     playback = ""
+)
+
+typealias PlayheadsMap = Map<String, PlayheadObject>
+
+@Serializable
+data class PlayheadObject(
+    @SerialName("playhead") val playhead: Int,
+    @SerialName("content_id") val contentId: String,
+    @SerialName("fully_watched") val fullyWatched: Boolean,
+    @SerialName("last_modified") val lastModified: String,
 )
 
 /**

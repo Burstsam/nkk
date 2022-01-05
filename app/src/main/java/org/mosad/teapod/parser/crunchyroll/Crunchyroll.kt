@@ -14,6 +14,7 @@ import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.buildJsonObject
 import kotlinx.serialization.json.put
 import org.mosad.teapod.preferences.Preferences
+import org.mosad.teapod.util.concatenate
 import java.util.*
 
 private val json = Json { ignoreUnknownKeys = true }
@@ -179,9 +180,21 @@ object Crunchyroll {
      *
      * @return A **[BrowseResult]** object is returned.
      */
-    suspend fun browse(sortBy: SortBy = SortBy.ALPHABETICAL, start: Int = 0, n: Int = 10): BrowseResult {
+    suspend fun browse(
+        sortBy: SortBy = SortBy.ALPHABETICAL,
+        seasonTag: String = "",
+        start: Int = 0,
+        n: Int = 10
+    ): BrowseResult {
         val browseEndpoint = "/content/v1/browse"
-        val parameters = listOf("sort_by" to sortBy.str, "start" to start, "n" to n)
+        val noneOptParams = listOf("sort_by" to sortBy.str, "start" to start, "n" to n)
+
+        // if a season tag is present add it to the parameters
+        val parameters = if (seasonTag.isEmpty()) {
+            concatenate(noneOptParams, listOf("season_tag" to seasonTag))
+        } else {
+            noneOptParams
+        }
 
         val result = request(browseEndpoint, parameters)
         val browseResult = result.component1()?.obj()?.let {
@@ -216,7 +229,7 @@ object Crunchyroll {
      * Note: episode objects are currently not supported
      *
      * @param objects The object IDs as list of Strings
-     * @return A Collection of Panels
+     * @return A **[Collection]** of Panels
      */
     suspend fun objects(objects: List<String>): Collection {
         val episodesEndpoint = "/cms/v2/DE/M3/crunchyroll/objects/${objects.joinToString(",")}"
@@ -228,7 +241,6 @@ object Crunchyroll {
         )
 
         val result = request(episodesEndpoint, parameters)
-        println(result.component1()?.obj()?.toString())
 
         return result.component1()?.obj()?.let {
             json.decodeFromString(it.toString())
@@ -304,7 +316,7 @@ object Crunchyroll {
      * Check if a media is in the user's watchlist.
      *
      * @param seriesId The crunchyroll series id of the media to check
-     * @return Boolean: ture if it was found, else false
+     * @return **[Boolean]**: ture if it was found, else false
      */
     suspend fun isWatchlist(seriesId: String): Boolean {
         val watchlistSeriesEndpoint = "/content/v1/watchlist/$accountID/$seriesId"
@@ -345,16 +357,34 @@ object Crunchyroll {
     }
 
     /**
-     * TODO
+     * Get playhead information for all episodes in episodeIDs.
+     * The Information returned contains the playhead position, watched state
+     * and last modified date.
+     *
+     * @param episodeIDs A **[List]** of episodes IDs as strings.
+     * @return A **[Map]**<String, **[PlayheadObject]**> containing playback info.
      */
-    suspend fun playhead() {
-        // implement
+    suspend fun playheads(episodeIDs: List<String>): PlayheadsMap {
+        val playheadsEndpoint = "/content/v1/playheads/$accountID/${episodeIDs.joinToString(",")}"
+        val parameters = listOf("locale" to locale)
+
+        val result = request(playheadsEndpoint, parameters)
+
+        return result.component1()?.obj()?.let {
+            json.decodeFromString(it.toString())
+        } ?: emptyMap()
     }
 
     /**
      * Listing functions: watchlist (list), up_next_account
      */
 
+    /**
+     * List items present in the watchlist.
+     *
+     * @param n Number of items to return, defaults to 20.
+     * @return A **[Watchlist]** containing up to n **[Item]**.
+     */
     suspend fun watchlist(n: Int = 20): Watchlist {
         val watchlistEndpoint = "/content/v1/$accountID/watchlist"
         val parameters = listOf("locale" to locale, "n" to n)
@@ -369,20 +399,19 @@ object Crunchyroll {
     }
 
     /**
-     * TODO
+     * List the next up episodes for the logged in account.
+     *
+     * @param n Number of items to return, defaults to 20.
+     * @return A **[ContinueWatchingList]** containing up to n **[ContinueWatchingItem]**.
      */
     suspend fun upNextAccount(n: Int = 20): ContinueWatchingList {
         val watchlistEndpoint = "/content/v1/$accountID/up_next_account"
         val parameters = listOf("locale" to locale, "n" to n)
 
         val resultUpNextAccount = request(watchlistEndpoint, parameters)
-        val list: ContinueWatchingList = resultUpNextAccount.component1()?.obj()?.let {
+        return resultUpNextAccount.component1()?.obj()?.let {
             json.decodeFromString(it.toString())
         } ?: NoneContinueWatchingList
-
-//        val objects = list.items.map{ it.panel.episodeMetadata.seriesId }
-//        return objects(objects)
-        return list
     }
 
 }

@@ -2,8 +2,10 @@ package org.mosad.teapod.util.adapter
 
 import android.graphics.Color
 import android.graphics.drawable.ColorDrawable
+import android.graphics.drawable.Drawable
 import android.view.LayoutInflater
 import android.view.ViewGroup
+import androidx.core.content.ContextCompat
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
 import com.bumptech.glide.request.RequestOptions
@@ -11,9 +13,14 @@ import jp.wasabeef.glide.transformations.RoundedCornersTransformation
 import org.mosad.teapod.R
 import org.mosad.teapod.databinding.ItemEpisodeBinding
 import org.mosad.teapod.parser.crunchyroll.Episode
+import org.mosad.teapod.parser.crunchyroll.PlayheadsMap
 import org.mosad.teapod.util.tmdb.TMDBTVEpisode
 
-class EpisodeItemAdapter(private val episodes: List<Episode>, private val tmdbEpisodes: List<TMDBTVEpisode>?) : RecyclerView.Adapter<EpisodeItemAdapter.EpisodeViewHolder>() {
+class EpisodeItemAdapter(
+    private val episodes: List<Episode>,
+    private val tmdbEpisodes: List<TMDBTVEpisode>?,
+    private val playheads: PlayheadsMap
+) : RecyclerView.Adapter<EpisodeItemAdapter.EpisodeViewHolder>() {
 
     var onImageClick: ((seasonId: String, episodeId: String) -> Unit)? = null
 
@@ -53,16 +60,13 @@ class EpisodeItemAdapter(private val episodes: List<Episode>, private val tmdbEp
                 .into(holder.binding.imageEpisode)
         }
 
-        // TODO
-//        if (ep.watched) {
-//            holder.binding.imageWatched.setImageDrawable(
-//                ContextCompat.getDrawable(context, R.drawable.ic_baseline_check_circle_24)
-//            )
-//        } else {
-//            holder.binding.imageWatched.setImageDrawable(null)
-//        }
-        // disable watched icon until implemented
-        holder.binding.imageWatched.setImageDrawable(null)
+        // add watched icon to episode, if the episode id is present in playheads and fullyWatched
+        val watchedImage: Drawable? = if (playheads[ep.id]?.fullyWatched == true) {
+            ContextCompat.getDrawable(context, R.drawable.ic_baseline_check_circle_24)
+        } else {
+            null
+        }
+        holder.binding.imageWatched.setImageDrawable(watchedImage)
     }
 
     override fun getItemCount(): Int {

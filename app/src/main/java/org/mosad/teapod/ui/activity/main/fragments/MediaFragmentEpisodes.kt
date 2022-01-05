@@ -31,7 +31,11 @@ class MediaFragmentEpisodes : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        adapterRecEpisodes = EpisodeItemAdapter(model.currentEpisodesCrunchy, model.tmdbTVSeason.episodes)
+        adapterRecEpisodes = EpisodeItemAdapter(
+            model.currentEpisodesCrunchy,
+            model.tmdbTVSeason.episodes,
+            model.currentPlayheads
+        )
         binding.recyclerEpisodes.adapter = adapterRecEpisodes
 
         // set onItemClick, adapter is initialized

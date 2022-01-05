@@ -29,6 +29,7 @@ class MediaFragmentViewModel(application: Application) : AndroidViewModel(applic
     var episodesCrunchy = NoneEpisodes
         internal set
     val currentEpisodesCrunchy = arrayListOf<Episode>() // used for EpisodeItemAdapter (easier updates)
+    var currentPlayheads: PlayheadsMap = emptyMap()
     var isWatchlist = false
         internal set
 
@@ -65,6 +66,10 @@ class MediaFragmentViewModel(application: Application) : AndroidViewModel(applic
         currentEpisodesCrunchy.clear()
         currentEpisodesCrunchy.addAll(episodesCrunchy.items)
         println("episodes: $episodesCrunchy")
+
+        // get playheads (including fully watched state)
+        val episodeIDs = episodesCrunchy.items.map { it.id }
+        currentPlayheads = Crunchyroll.playheads(episodeIDs)
 
         // set media type
         mediaType = episodesCrunchy.items.firstOrNull()?.let {
