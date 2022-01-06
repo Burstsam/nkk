@@ -74,7 +74,10 @@ object Crunchyroll {
         return@runBlocking false
     }
 
-    // TODO get/post difference
+    /**
+     * Requests: get, post, delete
+     */
+
     private suspend fun request(
         endpoint: String,
         params: Parameters = listOf(),
@@ -83,7 +86,6 @@ object Crunchyroll {
         val path = if (url.isEmpty()) "$baseUrl$endpoint" else url
 
         // TODO before sending a request, make sure the accessToken is not expired
-
         return@coroutineScope (Dispatchers.IO) {
             val (request, response, result) = Fuel.get(path, params)
                 .header("Authorization", "$tokenType $accessToken")
@@ -168,7 +170,7 @@ object Crunchyroll {
     }
 
     /**
-     * Main media functions: browse, search, series, season, episodes, playback
+     * General element/media functions: browse, search, objects, season_list
      */
 
     // TODO locale de-DE, categories
@@ -190,7 +192,7 @@ object Crunchyroll {
         val noneOptParams = listOf("sort_by" to sortBy.str, "start" to start, "n" to n)
 
         // if a season tag is present add it to the parameters
-        val parameters = if (seasonTag.isEmpty()) {
+        val parameters = if (seasonTag.isNotEmpty()) {
             concatenate(noneOptParams, listOf("season_tag" to seasonTag))
         } else {
             noneOptParams
@@ -231,7 +233,7 @@ object Crunchyroll {
      * @param objects The object IDs as list of Strings
      * @return A **[Collection]** of Panels
      */
-    suspend fun objects(objects: List<String>): Collection {
+    suspend fun objects(objects: List<String>): Collection<Item> {
         val episodesEndpoint = "/cms/v2/DE/M3/crunchyroll/objects/${objects.joinToString(",")}"
         val parameters = listOf(
             "locale" to locale,
@@ -246,6 +248,25 @@ object Crunchyroll {
             json.decodeFromString(it.toString())
         } ?: NoneCollection
     }
+
+    /**
+     * List all available seasons as **[SeasonListItem]**.
+     */
+    @Suppress("unused")
+    suspend fun seasonList(): DiscSeasonList {
+        val seasonListEndpoint = "/content/v1/season_list"
+        val parameters = listOf("locale" to locale)
+
+        val result = request(seasonListEndpoint, parameters)
+
+        return result.component1()?.obj()?.let {
+            json.decodeFromString(it.toString())
+        } ?: NoneDiscSeasonList
+    }
+
+    /**
+     * Main media functions: series, season, episodes, playback
+     */
 
     /**
      * series id == crunchyroll id?

@@ -11,6 +11,7 @@ import kotlinx.coroutines.joinAll
 import kotlinx.coroutines.launch
 import org.mosad.teapod.databinding.FragmentHomeBinding
 import org.mosad.teapod.parser.crunchyroll.Crunchyroll
+import org.mosad.teapod.parser.crunchyroll.SortBy
 import org.mosad.teapod.util.ItemMedia
 import org.mosad.teapod.util.adapter.MediaItemAdapter
 import org.mosad.teapod.util.decoration.MediaItemDecoration
@@ -87,9 +88,17 @@ class HomeFragment : Fragment() {
         }
         asyncJobList.add(watchlistJob)
 
-        // new titles TODO
-//        adapterNewTitles = MediaItemAdapter(AoDParser.newTitlesList)
-//        binding.recyclerNewTitles.adapter = adapterNewTitles
+        // new simulcasts TODO replace with new titles? browse(sortBy = SortBy.NEWLY_ADDED, n = 50)
+        val simulcastsJob = lifecycleScope.launch {
+//            val latestSeasonTag = Crunchyroll.seasonList().items.first().id
+//            val newSimulcasts = Crunchyroll.browse(seasonTag = latestSeasonTag, n = 50)
+
+            val newSimulcasts = Crunchyroll.browse(sortBy = SortBy.NEWLY_ADDED, n = 50)
+
+            adapterNewTitles = MediaItemAdapter(newSimulcasts.toItemMediaList())
+            binding.recyclerNewTitles.adapter = adapterNewTitles
+        }
+        asyncJobList.add(simulcastsJob)
 
         // top ten TODO
 //        adapterTopTen = MediaItemAdapter(AoDParser.topTenList)
@@ -135,10 +144,10 @@ class HomeFragment : Fragment() {
             activity?.showFragment(MediaFragment(id))
         }
 
-//        adapterNewTitles.onItemClick = { id, _ ->
-//            activity?.showFragment(MediaFragment("")) //(mediaId))
-//        }
-//
+        adapterNewTitles.onItemClick = { id, _ ->
+            activity?.showFragment(MediaFragment(id))
+        }
+
 //        adapterTopTen.onItemClick = { id, _ ->
 //            activity?.showFragment(MediaFragment("")) //(mediaId))
 //        }

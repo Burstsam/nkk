@@ -15,44 +15,25 @@ enum class SortBy(val str: String) {
 }
 
 /**
- * search, browse, watchlist data types (all collections)
+ * search, browse, DiscSeasonList, Watchlist, ContinueWatchingList data types all use Collection
  */
 
-// TODO make generic
 @Serializable
-data class Collection(
+data class Collection<T>(
     @SerialName("total") val total: Int,
-    @SerialName("items") val items: List<Item>
+    @SerialName("items") val items: List<T>
 )
 
-// TODO don't use aliases
-typealias SearchCollection = Collection
-typealias BrowseResult = Collection
-typealias Watchlist = Collection
+typealias SearchResult = Collection<SearchCollection>
+typealias SearchCollection = Collection<Item>
+typealias BrowseResult = Collection<Item>
+typealias DiscSeasonList = Collection<SeasonListItem>
+typealias Watchlist = Collection<Item>
+typealias ContinueWatchingList = Collection<ContinueWatchingItem>
 
-@Serializable
-data class SearchResult(
-    @SerialName("total") val total: Int,
-    @SerialName("items") val items: List<SearchCollection>
-)
-
-@Serializable
-data class ContinueWatchingList(
-    @SerialName("total") val total: Int,
-    @SerialName("items") val items: List<ContinueWatchingItem>
-)
-
-@Serializable
-data class ContinueWatchingItem(
-    @SerialName("panel") val panel: EpisodePanel,
-    @SerialName("new") val new: Boolean,
-    @SerialName("new_content") val newContent: Boolean,
-    // not present in up_next_account's continue_watching_item
-//    @SerialName("is_favorite") val isFavorite: Boolean,
-//    @SerialName("never_watched") val neverWatched: Boolean,
-//    @SerialName("completion_status") val completionStatus: Boolean,
-    @SerialName("playhead") val playhead: Int,
-)
+/**
+ * panel data classes
+ */
 
 // the data class Item is used in browse and search
 // TODO rename to MediaPanel
@@ -64,7 +45,45 @@ data class Item(
     val channel_id: String,
     val description: String,
     val images: Images
-    // TODO metadata etc.
+    // TODO series_metadata etc.
+)
+
+@Serializable
+data class Images(val poster_tall: List<List<Poster>>, val poster_wide: List<List<Poster>>)
+// crunchyroll why?
+
+@Serializable
+data class Poster(val height: Int, val width: Int, val source: String, val type: String)
+
+/**
+ * season list data classes
+ */
+@Serializable
+data class SeasonListItem(
+    @SerialName("id") val id: String,
+    @SerialName("localization") val localization: SeasonListLocalization
+)
+
+@Serializable
+data class SeasonListLocalization(
+    @SerialName("title") val title: String,
+    @SerialName("description") val description: String,
+)
+
+/**
+ * continue_watching_item data classes
+ */
+
+@Serializable
+data class ContinueWatchingItem(
+    @SerialName("panel") val panel: EpisodePanel,
+    @SerialName("new") val new: Boolean,
+    @SerialName("new_content") val newContent: Boolean,
+    // not present in up_next_account's continue_watching_item
+//    @SerialName("is_favorite") val isFavorite: Boolean,
+//    @SerialName("never_watched") val neverWatched: Boolean,
+//    @SerialName("completion_status") val completionStatus: Boolean,
+    @SerialName("playhead") val playhead: Int,
 )
 
 // EpisodePanel is used in ContinueWatchingItem
@@ -80,22 +99,17 @@ data class EpisodePanel(
 )
 
 @Serializable
-data class Images(val poster_tall: List<List<Poster>>, val poster_wide: List<List<Poster>>)
-// crunchyroll why?
-
-@Serializable
-data class Poster(val height: Int, val width: Int, val source: String, val type: String)
-
-@Serializable
 data class EpisodeMetadata(
     @SerialName("series_id") val seriesId: String,
     @SerialName("series_title") val seriesTitle: String,
 )
 
 val NoneItem = Item("", "", "", "", "", Images(emptyList(), emptyList()))
-val NoneCollection = Collection(0, emptyList())
+val NoneCollection = Collection<Item>(0, emptyList())
 val NoneSearchResult = SearchResult(0, emptyList())
 val NoneBrowseResult = BrowseResult(0, emptyList())
+val NoneDiscSeasonList = DiscSeasonList(0, emptyList())
+val NoneWatchlist = Watchlist(0, emptyList())
 val NoneContinueWatchingList = ContinueWatchingList(0, emptyList())
 
 /**
