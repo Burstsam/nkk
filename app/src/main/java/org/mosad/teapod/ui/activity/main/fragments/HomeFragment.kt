@@ -6,17 +6,19 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
+import com.bumptech.glide.Glide
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.joinAll
 import kotlinx.coroutines.launch
 import org.mosad.teapod.databinding.FragmentHomeBinding
 import org.mosad.teapod.parser.crunchyroll.Crunchyroll
+import org.mosad.teapod.parser.crunchyroll.Item
 import org.mosad.teapod.parser.crunchyroll.SortBy
-import org.mosad.teapod.util.ItemMedia
 import org.mosad.teapod.util.adapter.MediaItemAdapter
 import org.mosad.teapod.util.decoration.MediaItemDecoration
 import org.mosad.teapod.util.showFragment
 import org.mosad.teapod.util.toItemMediaList
+import kotlin.random.Random
 
 class HomeFragment : Fragment() {
 
@@ -26,7 +28,7 @@ class HomeFragment : Fragment() {
     private lateinit var adapterNewTitles: MediaItemAdapter
     private lateinit var adapterTopTen: MediaItemAdapter
 
-    private lateinit var highlightMedia: ItemMedia
+    private lateinit var highlightMedia: Item
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
         binding = FragmentHomeBinding.inflate(inflater, container, false)
@@ -46,20 +48,22 @@ class HomeFragment : Fragment() {
     }
 
     private fun initHighlight() {
-        // TODO
-//        if (AoDParser.highlightsList.isNotEmpty()) {
-//            highlightMedia =  AoDParser.highlightsList[0]
-//
-//            binding.textHighlightTitle.text = highlightMedia.title
-//            Glide.with(requireContext()).load(highlightMedia.posterUrl)
-//                .into(binding.imageHighlight)
-//
+        lifecycleScope.launch {
+            val newTitles = Crunchyroll.browse(sortBy = SortBy.NEWLY_ADDED, n = 10)
+            highlightMedia =  newTitles.items[Random.nextInt(newTitles.items.size)]
+
+            // add media item to gui
+            binding.textHighlightTitle.text = highlightMedia.title
+            Glide.with(requireContext()).load(highlightMedia.images.poster_wide[0][3].source)
+                .into(binding.imageHighlight)
+
+            // TODO watchlist indicator
 //            if (StorageController.myList.contains(0)) {
 //                binding.textHighlightMyList.setDrawableTop(R.drawable.ic_baseline_check_24)
 //            } else {
 //                binding.textHighlightMyList.setDrawableTop(R.drawable.ic_baseline_add_24)
 //            }
-//        }
+        }
     }
 
     /**
@@ -88,11 +92,10 @@ class HomeFragment : Fragment() {
         }
         asyncJobList.add(watchlistJob)
 
-        // new simulcasts TODO replace with new titles? browse(sortBy = SortBy.NEWLY_ADDED, n = 50)
+        // new simulcasts
         val simulcastsJob = lifecycleScope.launch {
-//            val latestSeasonTag = Crunchyroll.seasonList().items.first().id
-//            val newSimulcasts = Crunchyroll.browse(seasonTag = latestSeasonTag, n = 50)
-
+            // val latestSeasonTag = Crunchyroll.seasonList().items.first().id
+            // val newSimulcasts = Crunchyroll.browse(seasonTag = latestSeasonTag, n = 50)
             val newSimulcasts = Crunchyroll.browse(sortBy = SortBy.NEWLY_ADDED, n = 50)
 
             adapterNewTitles = MediaItemAdapter(newSimulcasts.toItemMediaList())
@@ -100,18 +103,20 @@ class HomeFragment : Fragment() {
         }
         asyncJobList.add(simulcastsJob)
 
-        // top ten TODO
-//        adapterTopTen = MediaItemAdapter(AoDParser.topTenList)
-//        binding.recyclerTopTen.adapter = adapterTopTen
+        // newly added / top ten
+        val newlyAddedJob = lifecycleScope.launch {
+            adapterTopTen = MediaItemAdapter(Crunchyroll.browse(sortBy = SortBy.POPULARITY, n = 10).toItemMediaList())
+            binding.recyclerTopTen.adapter = adapterTopTen
+        }
+        asyncJobList.add(newlyAddedJob)
 
         asyncJobList.joinAll()
     }
 
     private fun initActions() {
         binding.buttonPlayHighlight.setOnClickListener {
-            // TODO get next episode
+            // TODO implement
             lifecycleScope.launch {
-                // TODO
                 //val media = AoDParser.getMediaById(0)
 
                 // Log.d(javaClass.name, "Starting Player with  mediaId: ${media.aodId}")
@@ -120,8 +125,7 @@ class HomeFragment : Fragment() {
         }
 
         binding.textHighlightMyList.setOnClickListener {
-            // TODO implement if needed
-
+            // TODO implement
 //            if (StorageController.myList.contains(0)) {
 //                StorageController.myList.remove(0)
 //                binding.textHighlightMyList.setDrawableTop(R.drawable.ic_baseline_add_24)
@@ -133,7 +137,7 @@ class HomeFragment : Fragment() {
         }
 
         binding.textHighlightInfo.setOnClickListener {
-            activity?.showFragment(MediaFragment(""))
+            activity?.showFragment(MediaFragment(highlightMedia.id))
         }
 
         adapterUpNext.onItemClick = { id, _ ->
@@ -148,9 +152,9 @@ class HomeFragment : Fragment() {
             activity?.showFragment(MediaFragment(id))
         }
 
-//        adapterTopTen.onItemClick = { id, _ ->
-//            activity?.showFragment(MediaFragment("")) //(mediaId))
-//        }
+        adapterTopTen.onItemClick = { id, _ ->
+            activity?.showFragment(MediaFragment(id)) //(mediaId))
+        }
     }
 
 }
