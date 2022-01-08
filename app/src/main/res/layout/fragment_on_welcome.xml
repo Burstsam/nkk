@@ -38,7 +38,7 @@
                 android:id="@+id/text_app_name"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="@string/app_name"
+                android:text="@string/on_welcome_heading"
                 android:textAlignment="center"
                 android:textSize="26sp"
                 android:textStyle="bold" />

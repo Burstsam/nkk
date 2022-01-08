@@ -52,7 +52,6 @@ class MainActivity : AppCompatActivity(), NavigationBarView.OnItemSelectedListen
     private var activeBaseFragment: Fragment = HomeFragment() // the currently active fragment, home at the start
 
     companion object {
-        var wasInitialized = false
         lateinit var instance: MainActivity
     }
 
@@ -63,7 +62,7 @@ class MainActivity : AppCompatActivity(), NavigationBarView.OnItemSelectedListen
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        if (!wasInitialized) { load() }
+        load() // start the initial loading
         theme.applyStyle(getThemeResource(), true)
 
         binding = ActivityMainBinding.inflate(layoutInflater)
@@ -132,47 +131,27 @@ class MainActivity : AppCompatActivity(), NavigationBarView.OnItemSelectedListen
      */
     private fun load() {
         val time = measureTimeMillis {
-            // start the initial loading
-
             // load all saved stuff here
             Preferences.load(this)
             EncryptedPreferences.readCredentials(this)
 
-            // show onboarding TODO rework
-            if (EncryptedPreferences.password.isEmpty()) {
+            // show onboarding if no password is set, or login fails
+            if (EncryptedPreferences.password.isEmpty() || !Crunchyroll.login(
+                    EncryptedPreferences.login,
+                    EncryptedPreferences.password
+                )
+            ) {
                 showOnboarding()
             } else {
-                Crunchyroll.login(EncryptedPreferences.login, EncryptedPreferences.password)
                 runBlocking { initCrunchyroll().joinAll() }
             }
-
-//            if (EncryptedPreferences.password.isEmpty()) {
-//                showOnboarding()
-//            } else {
-//                try {
-//                    if (!AoDParser.login()) {
-//                        showLoginDialog()
-//                    }
-//                } catch (ex: SocketTimeoutException) {
-//                    Log.w(javaClass.name, "Timeout during login!")
-//
-//                    // show waring dialog before finishing
-//                    MaterialDialog(this).show {
-//                        title(R.string.dialog_timeout_head)
-//                        message(R.string.dialog_timeout_desc)
-//                        onDismiss { exitAndRemoveTask() }
-//                    }
-//                }
-//            }
-
-//            runBlocking { loadingJob.await() } // wait for initial loading to finish
         }
-        Log.i(javaClass.name, "loading and login in $time ms")
-
-        wasInitialized = true
+        Log.i(javaClass.name, "loading in $time ms")
     }
 
     private fun initCrunchyroll(): List<Job> {
+        println("init")
+
         val scope = CoroutineScope(Dispatchers.IO + CoroutineName("InitialLoadingScope"))
         return listOf(
             scope.launch { Crunchyroll.index() },

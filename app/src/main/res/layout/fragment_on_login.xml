@@ -65,6 +65,7 @@
             android:layout_margin="7dp"
             android:ems="10"
             android:hint="@string/password"
+            android:imeOptions="actionDone"
             android:importantForAutofill="no"
             android:inputType="textPassword" />
 

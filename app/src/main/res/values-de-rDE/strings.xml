@@ -58,7 +58,7 @@
     <string name="authors">Autor</string>
     <string name="source">Quellcode</string>
     <string name="license">Lizenz</string>
-    <string name="about_info">Eine inoffizielle App für Anime on Demand.</string>
+    <string name="about_info">Eine inoffizielle App für Crunchyroll.</string>
     <string name="third_party_heading">Lizenzen von Drittanbietern</string>
     <string name="third_party_component_desc">© %1$s %2$s unter %3$s</string>
     <string name="dev_settings_enabled">Du bist jetzt ein Entwickler</string>
@@ -81,10 +81,11 @@
     <string name="skip">Überspringen</string>
     <string name="next">Weiter</string>
     <string name="start">Fertig</string>
-    <string name="on_welcome">Willkommen!\nTeapod ist eine inoffizielle App für AoD.</string>
+    <string name="on_welcome_heading">Willkommen</string>
+    <string name="on_welcome">Teapod ist eine inoffizielle App für Crunchyroll, die unter den Bedingungen der GPL 3 lizenziert ist.\n\nHinweis: Die Benutzung von Teapod kann gegen die Nutzungsbedingungen von Crunchyroll verstoßen.</string>
     <string name="on_get_started">Los geht\'s</string>
     <string name="on_login_heading">Login</string>
-    <string name="on_login_desc">Um Teapod verwenden zu können musst du dich mit deinem AoD Account anmelden. Deine Login-Daten werden verschlüsselt auf deinem Gerät gespeichert.</string>
+    <string name="on_login_desc">Um Teapod verwenden zu können musst du dich mit deinem Crunchyroll Account anmelden. Deine Login-Daten werden verschlüsselt auf deinem Gerät gespeichert.</string>
     <string name="on_login_failed">Login nicht erfolgreich! Stelle sicher das deine Login-Daten korrekt sind und versuche es erneut.</string>
 
     <!-- dialogs -->

@@ -38,6 +38,14 @@ object Crunchyroll {
 
     private val browsingCache = arrayListOf<Item>()
 
+    /**
+     * Login to the crunchyroll API.
+     *
+     * @param username The Username/Email of the user to log in
+     * @param password The Accounts Password
+     *
+     * @return Boolean: True if login was successful, else false
+     */
     fun login(username: String, password: String): Boolean = runBlocking {
         val tokenEndpoint = "/auth/v1/token"
         val formData = listOf(
@@ -47,6 +55,7 @@ object Crunchyroll {
             "scope" to "offline_access"
         )
 
+        var success: Boolean // is false
         withContext(Dispatchers.IO) {
             val (request, response, result) = Fuel.post("$baseUrl$tokenEndpoint", parameters = formData)
                 .header("Content-Type", "application/x-www-form-urlencoded")
@@ -67,11 +76,10 @@ object Crunchyroll {
 //            println("response: $result")
 
             Log.i(javaClass.name, "login complete with code ${response.statusCode}")
-
-            return@withContext response.statusCode == 200
+            success = (response.statusCode == 200)
         }
 
-        return@runBlocking false
+        return@runBlocking success
     }
 
     /**

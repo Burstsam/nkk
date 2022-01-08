@@ -74,7 +74,7 @@
     <string name="teapod_repo" translatable="false">git.mosad.xyz/Seil0/teapod</string>
     <string name="license">License</string>
     <string name="license_desc" translatable="false">GNU General Public License 3</string>
-    <string name="about_info">An unofficial app for anime on demand.</string>
+    <string name="about_info">An unofficial app for Crunchyroll.</string>
     <string name="tmdb_notice" translatable="false">This product uses the TMDb API but is not endorsed or certified by TMDb.</string>
     <string name="third_party_heading">Third Party Licenses</string>
     <string name="third_party_component_desc">© %1$s %2$s under %3$s</string>
@@ -102,10 +102,11 @@
     <string name="skip">Skip</string>
     <string name="next">Next</string>
     <string name="start">Start</string>
-    <string name="on_welcome">Welcome!\nTeapod is an unofficial App for AoD.</string>
+    <string name="on_welcome_heading">Welcome</string>
+    <string name="on_welcome">Teapod is an unofficial app for Crunchyroll, licensed under the terms and conditions of GPL 3.\n\nPlease note: Using Teapod may violate the ToS of Crunchyroll.</string>
     <string name="on_get_started">Get started</string>
     <string name="on_login_heading">Login</string>
-    <string name="on_login_desc">To use Teapod you need to log in with your AoD account. Your Login-Data will be stored encrypted on your device.</string>
+    <string name="on_login_desc">To use Teapod you have to log in with your Crunchyroll account. Your login data will be stored encrypted on your device.</string>
     <string name="on_login_failed">Could not login! Make sure Username and Password are correct and try again.</string>
 
     <!-- dialogs -->
