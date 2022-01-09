@@ -151,14 +151,14 @@ class MediaFragmentViewModel(application: Application) : AndroidViewModel(applic
         }
     }
 
-    suspend fun updateOnResume(): List<Job> {
-        return listOf(
+    suspend fun updateOnResume() {
+        listOf(
             viewModelScope.launch {
                 val episodeIDs = episodesCrunchy.items.map { it.id }
                 currentPlayheads = Crunchyroll.playheads(episodeIDs)
             },
             viewModelScope.launch { upNextSeries = Crunchyroll.upNextSeries(seriesCrunchy.id) }
-        )
+        ).joinAll()
     }
 
     /**

@@ -27,12 +27,16 @@ import android.net.Uri
 import android.support.v4.media.session.MediaSessionCompat
 import android.util.Log
 import androidx.lifecycle.AndroidViewModel
+import androidx.lifecycle.viewModelScope
+import com.google.android.exoplayer2.ExoPlayer
 import com.google.android.exoplayer2.MediaItem
+import com.google.android.exoplayer2.Player
 import com.google.android.exoplayer2.SimpleExoPlayer
 import com.google.android.exoplayer2.ext.mediasession.MediaSessionConnector
 import com.google.android.exoplayer2.source.hls.HlsMediaSource
 import com.google.android.exoplayer2.upstream.DefaultDataSourceFactory
 import com.google.android.exoplayer2.util.Util
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import org.mosad.teapod.R
 import org.mosad.teapod.parser.crunchyroll.Crunchyroll
@@ -82,6 +86,22 @@ class PlayerViewModel(application: Application) : AndroidViewModel(application) 
 
     init {
         initMediaSession()
+
+        player.addListener(object : Player.Listener {
+            override fun onPlaybackStateChanged(state: Int) {
+                super.onPlaybackStateChanged(state)
+
+                if (state == ExoPlayer.STATE_ENDED) updatePlayhead()
+            }
+
+            override fun onIsPlayingChanged(isPlaying: Boolean) {
+                super.onIsPlayingChanged(isPlaying)
+
+                if (!isPlaying) updatePlayhead()
+            }
+        })
+
+
     }
 
     override fun onCleared() {
@@ -200,8 +220,6 @@ class PlayerViewModel(application: Application) : AndroidViewModel(application) 
                 currentPlayback.streams.adaptive_hls[Locale.ROOT.toLanguageTag()]?.url ?: ""
             }
         }
-
-
         println("stream url: $url")
 
         // create the media source object
@@ -214,8 +232,6 @@ class PlayerViewModel(application: Application) : AndroidViewModel(application) 
         player.prepare()
         if (seekPosition > 0) player.seekTo(seekPosition)
         player.playWhenReady = true
-
-        // TODO reimplement mark as watched for cr, if needed
     }
 
     /**
@@ -252,6 +268,18 @@ class PlayerViewModel(application: Application) : AndroidViewModel(application) 
 //        }
 
         return null
+    }
+
+    /**
+     * Update the playhead of the current episode, if currentPosition > 1000ms.
+     */
+    private fun updatePlayhead() {
+        val playhead = (player.currentPosition / 1000)
+
+        if (playhead > 0) {
+            viewModelScope.launch { Crunchyroll.postPlayheads(currentEpisode.id, playhead.toInt()) }
+            Log.i(javaClass.name, "Set playhead for episode ${currentEpisode.id} to $playhead sec.")
+        }
     }
 
 }
