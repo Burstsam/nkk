@@ -364,14 +364,6 @@ class PlayerActivity : AppCompatActivity() {
         } else {
             View.VISIBLE
         }
-
-        // TODO reimplement for cr
-        // hide the episodes button, if the media type changed
-//        button_episodes.visibility = if (model.media.type == DataTypes.MediaType.MOVIE) {
-//            View.GONE
-//        } else {
-//            View.VISIBLE
-//        }
     }
 
     /**
