@@ -295,6 +295,23 @@ object Crunchyroll {
         } ?: NoneSeries
     }
 
+    /**
+     * TODO
+     */
+    suspend fun upNextSeries(seriesId: String): UpNextSeriesItem {
+        val upNextSeriesEndpoint = "/content/v1/up_next_series"
+        val parameters = listOf(
+            "series_id" to seriesId,
+            "locale" to locale
+        )
+
+        val result = request(upNextSeriesEndpoint, parameters)
+
+        return result.component1()?.obj()?.let {
+            json.decodeFromString(it.toString())
+        } ?: NoneUpNextSeriesItem
+    }
+
     suspend fun seasons(seriesId: String): Seasons {
         val episodesEndpoint = "/cms/v2/$country/M3/crunchyroll/seasons"
         val parameters = listOf(
@@ -402,6 +419,18 @@ object Crunchyroll {
         return result.component1()?.obj()?.let {
             json.decodeFromString(it.toString())
         } ?: emptyMap()
+    }
+
+    suspend fun postPlayheads(episodeId: String, playhead: Int) {
+        val playheadsEndpoint = "/content/v1/playheads/$accountID"
+        val parameters = listOf("locale" to locale)
+
+        val json = buildJsonObject {
+            put("content_id", episodeId)
+            put("playhead", playhead)
+        }
+
+        requestPost(playheadsEndpoint, parameters, json.toString())
     }
 
     /**

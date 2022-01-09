@@ -17,10 +17,10 @@ import com.bumptech.glide.request.RequestOptions
 import com.google.android.material.appbar.AppBarLayout
 import com.google.android.material.tabs.TabLayoutMediator
 import jp.wasabeef.glide.transformations.BlurTransformation
-import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 import org.mosad.teapod.R
 import org.mosad.teapod.databinding.FragmentMediaBinding
+import org.mosad.teapod.parser.crunchyroll.NoneUpNextSeriesItem
 import org.mosad.teapod.ui.activity.main.MainActivity
 import org.mosad.teapod.ui.activity.main.viewmodel.MediaFragmentViewModel
 import org.mosad.teapod.util.tmdb.TMDBApiController
@@ -37,19 +37,23 @@ class MediaFragment(private val mediaIdStr: String) : Fragment() {
     private lateinit var binding: FragmentMediaBinding
     private lateinit var pagerAdapter: FragmentStateAdapter
 
+    private val model: MediaFragmentViewModel by activityViewModels()
+
     private val fragments = arrayListOf<Fragment>()
     private var watchlistJobRunning = false
+    private var runOnResume = false
 
-    private val model: MediaFragmentViewModel by activityViewModels()
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
         binding = FragmentMediaBinding.inflate(inflater, container, false)
         return binding.root
     }
 
-
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+
+        println("onViewCreated")
+
         binding.frameLoading.visibility = View.VISIBLE
 
         // tab layout and pager
@@ -77,11 +81,21 @@ class MediaFragment(private val mediaIdStr: String) : Fragment() {
     override fun onResume() {
         super.onResume()
 
-        // update the next ep text if there is one, since it may have changed
-        // TODO reimplement
-//        if (model.media.getEpisodeById(model.nextEpisodeId).title.isNotEmpty()) {
-//            binding.textTitle.text = model.media.getEpisodeById(model.nextEpisodeId).title
-//        }
+        if (runOnResume) {
+            lifecycleScope.launch {
+                model.updateOnResume()
+
+                if (model.upNextSeries != NoneUpNextSeriesItem) {
+                    binding.textTitle.text = model.upNextSeries.panel.title
+                }
+
+                if (fragments.elementAtOrNull(0) is MediaFragmentEpisodes) {
+                    (fragments[0] as MediaFragmentEpisodes).updateWatchedState()
+                }
+            }
+        } else {
+            runOnResume = true
+        }
     }
 
     /**
@@ -102,15 +116,17 @@ class MediaFragment(private val mediaIdStr: String) : Fragment() {
             .apply(RequestOptions.bitmapTransform(BlurTransformation(20, 3)))
             .into(binding.imageBackdrop)
 
-        binding.textTitle.text = seriesCrunchy.title
-        binding.textOverview.text = seriesCrunchy.description
-        binding.textAge.text = seriesCrunchy.maturityRatings.firstOrNull()
-
         binding.textYear.text = when(tmdbResult) {
             is TMDBTVShow -> (tmdbResult as TMDBTVShow).firstAirDate.substring(0, 4)
             is TMDBMovie -> (tmdbResult as TMDBMovie).releaseDate.substring(0, 4)
             else -> ""
         }
+        binding.textAge.text = seriesCrunchy.maturityRatings.firstOrNull()
+
+        binding.textTitle.text = if (upNextSeries != NoneUpNextSeriesItem) {
+            upNextSeries.panel.title
+        } else seriesCrunchy.title
+        binding.textOverview.text = seriesCrunchy.description
 
         // set "watchlist" indicator
         val watchlistIcon = if (isWatchlist) R.drawable.ic_baseline_check_24 else R.drawable.ic_baseline_add_24
@@ -127,8 +143,7 @@ class MediaFragment(private val mediaIdStr: String) : Fragment() {
             pagerAdapter.notifyItemInserted(fragments.indexOf(it))
         }
 
-        // TODO reimplement via tmdb/metaDB
-        // specific gui
+        // specific gui (via tmdb)
         when (tmdbResult) {
             is TMDBTVShow -> {
                 // episodes count
@@ -156,40 +171,6 @@ class MediaFragment(private val mediaIdStr: String) : Fragment() {
             }
         }
 
-//        if (mediaCrunchy.type == MediaType.TVSHOW.str) {
-//            // TODO get next episode
-////            nextEpisodeId = media.playlist.firstOrNull{ !it.watched }?.mediaId
-////                ?: media.playlist.first().mediaId
-//
-//            // TODO title is the next episodes title
-////            binding.textTitle.text = media.getEpisodeById(nextEpisodeId).title
-//
-//            // episodes count
-//            binding.textEpisodesOrRuntime.text = resources.getQuantityString(
-//                R.plurals.text_episodes_count,
-//                episodesCrunchy.total,
-//                episodesCrunchy.total
-//            )
-//
-//            // episodes
-//            MediaFragmentEpisodes().also {
-//                fragments.add(it)
-//                pagerAdapter.notifyItemInserted(fragments.indexOf(it))
-//            }
-//        } else if (media.type == MediaType.MOVIE) {
-//            val tmdbMovie = (tmdbResult as TMDBMovie?)
-//
-//            if (tmdbMovie?.runtime != null) {
-//                binding.textEpisodesOrRuntime.text = resources.getQuantityString(
-//                    R.plurals.text_runtime,
-//                    tmdbMovie.runtime,
-//                    tmdbMovie.runtime
-//                )
-//            } else {
-//                binding.textEpisodesOrRuntime.visibility = View.GONE
-//            }
-//        }
-
         // if has similar titles
         // TODO reimplement
 //        if (media.similar.isNotEmpty()) {
@@ -210,12 +191,9 @@ class MediaFragment(private val mediaIdStr: String) : Fragment() {
 
     private fun initActions() = with(model) {
         binding.buttonPlay.setOnClickListener {
-            // TODO reimplement
-//            when (media.type) {
-//                MediaType.MOVIE -> playEpisode(media.playlist.first().mediaId)
-//                MediaType.TVSHOW -> playEpisode(nextEpisodeId)
-//                else -> Log.e(javaClass.name, "Wrong Type: ${media.type}")
-//            }
+            if (upNextSeries != NoneUpNextSeriesItem) {
+                playEpisode(upNextSeries.panel.episodeMetadata.seasonId, upNextSeries.panel.id)
+            }
         }
 
         // add or remove media from myList

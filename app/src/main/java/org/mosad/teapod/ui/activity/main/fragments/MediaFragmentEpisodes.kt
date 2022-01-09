@@ -60,11 +60,17 @@ class MediaFragmentEpisodes : Fragment() {
         // if adapterRecEpisodes is initialized, update the watched state for the episodes
         if (this::adapterRecEpisodes.isInitialized) {
             // TODO reimplement, if needed
+            // update via playheads?
 //            model.media.playlist.forEachIndexed { index, episodeInfo ->
 //                adapterRecEpisodes.updateWatchedState(episodeInfo.watched, index)
 //            }
 //            adapterRecEpisodes.notifyDataSetChanged()
         }
+    }
+
+    fun updateWatchedState() {
+        // TODO update watched state of all episodes
+        // use a mutable list for playheads and notify dataset changed
     }
 
     private fun showSeasonSelection(v: View) {

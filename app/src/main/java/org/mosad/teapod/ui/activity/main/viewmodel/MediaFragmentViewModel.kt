@@ -3,9 +3,9 @@ package org.mosad.teapod.ui.activity.main.viewmodel
 import android.app.Application
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.joinAll
 import kotlinx.coroutines.launch
-import kotlinx.serialization.ExperimentalSerializationApi
 import org.mosad.teapod.parser.crunchyroll.*
 import org.mosad.teapod.preferences.Preferences
 import org.mosad.teapod.util.DataTypes.MediaType
@@ -29,9 +29,12 @@ class MediaFragmentViewModel(application: Application) : AndroidViewModel(applic
     var episodesCrunchy = NoneEpisodes
         internal set
     val currentEpisodesCrunchy = arrayListOf<Episode>() // used for EpisodeItemAdapter (easier updates)
+
+    // additional media info
     var currentPlayheads: PlayheadsMap = emptyMap()
     var isWatchlist = false
         internal set
+    var upNextSeries = NoneUpNextSeriesItem
 
     // TMDB stuff
     var mediaType = MediaType.OTHER
@@ -52,35 +55,40 @@ class MediaFragmentViewModel(application: Application) : AndroidViewModel(applic
         listOf(
             viewModelScope.launch { seriesCrunchy = Crunchyroll.series(crunchyId) },
             viewModelScope.launch { seasonsCrunchy = Crunchyroll.seasons(crunchyId) },
-            viewModelScope.launch { isWatchlist = Crunchyroll.isWatchlist(crunchyId) }
+            viewModelScope.launch { isWatchlist = Crunchyroll.isWatchlist(crunchyId) },
+            viewModelScope.launch { upNextSeries = Crunchyroll.upNextSeries(crunchyId) }
         ).joinAll()
-
-        println("series: $seriesCrunchy")
-        println("seasons: $seasonsCrunchy")
-
-        // TODO load episodes, metaDB and tmdb in parallel
+//        println("series: $seriesCrunchy")
+//        println("seasons: $seasonsCrunchy")
+        println(upNextSeries)
 
         // load the preferred season (preferred language, language per season, not per stream)
         currentSeasonCrunchy = seasonsCrunchy.getPreferredSeason(Preferences.preferredLocal)
-        episodesCrunchy = Crunchyroll.episodes(currentSeasonCrunchy.id)
+
+        // load episodes and metaDB in parallel (tmdb needs mediaType, which is set via episodes)
+        listOf(
+            viewModelScope.launch { episodesCrunchy = Crunchyroll.episodes(currentSeasonCrunchy.id) },
+            viewModelScope.launch { mediaMeta = null }, // TODO metaDB
+        ).joinAll()
+//        println("episodes: $episodesCrunchy")
+
         currentEpisodesCrunchy.clear()
         currentEpisodesCrunchy.addAll(episodesCrunchy.items)
-        println("episodes: $episodesCrunchy")
-
-        // get playheads (including fully watched state)
-        val episodeIDs = episodesCrunchy.items.map { it.id }
-        currentPlayheads = Crunchyroll.playheads(episodeIDs)
 
         // set media type
         mediaType = episodesCrunchy.items.firstOrNull()?.let {
             if (it.episodeNumber != null) MediaType.TVSHOW else MediaType.MOVIE
         } ?: MediaType.OTHER
 
-        // TODO check if metaDB knows the title
-        mediaMeta = null // set mediaMeta to null, if metaDB doesn't know the media
-
-        // use tmdb search to get media info
-        loadTmdbInfo()
+        // load playheads and tmdb in parallel
+        listOf(
+            viewModelScope.launch {
+                // get playheads (including fully watched state)
+                val episodeIDs = episodesCrunchy.items.map { it.id }
+                currentPlayheads = Crunchyroll.playheads(episodeIDs)
+            },
+            viewModelScope.launch { loadTmdbInfo() } // use tmdb search to get media info
+        ).joinAll()
     }
 
     /**
@@ -141,6 +149,16 @@ class MediaFragmentViewModel(application: Application) : AndroidViewModel(applic
             Crunchyroll.postWatchlist(seriesCrunchy.id)
             true
         }
+    }
+
+    suspend fun updateOnResume(): List<Job> {
+        return listOf(
+            viewModelScope.launch {
+                val episodeIDs = episodesCrunchy.items.map { it.id }
+                currentPlayheads = Crunchyroll.playheads(episodeIDs)
+            },
+            viewModelScope.launch { upNextSeries = Crunchyroll.upNextSeries(seriesCrunchy.id) }
+        )
     }
 
     /**

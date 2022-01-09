@@ -31,6 +31,14 @@ typealias DiscSeasonList = Collection<SeasonListItem>
 typealias Watchlist = Collection<Item>
 typealias ContinueWatchingList = Collection<ContinueWatchingItem>
 
+@Serializable
+data class UpNextSeriesItem(
+    val playhead: Int,
+    val fully_watched: Boolean,
+    val never_watched: Boolean,
+    val panel: EpisodePanel,
+)
+
 /**
  * panel data classes
  */
@@ -73,17 +81,18 @@ data class SeasonListLocalization(
 /**
  * continue_watching_item data classes
  */
-
 @Serializable
 data class ContinueWatchingItem(
     @SerialName("panel") val panel: EpisodePanel,
     @SerialName("new") val new: Boolean,
     @SerialName("new_content") val newContent: Boolean,
-    // not present in up_next_account's continue_watching_item
+    // not present in up_next_account -> continue_watching_item
 //    @SerialName("is_favorite") val isFavorite: Boolean,
 //    @SerialName("never_watched") val neverWatched: Boolean,
 //    @SerialName("completion_status") val completionStatus: Boolean,
     @SerialName("playhead") val playhead: Int,
+    // not present in watchlist -> continue_watching_item
+//    @SerialName("fully_watched") val fullyWatched: Boolean,
 )
 
 // EpisodePanel is used in ContinueWatchingItem
@@ -94,23 +103,30 @@ data class EpisodePanel(
     @SerialName("type") val type: String,
     @SerialName("channel_id") val channelId: String,
     @SerialName("description") val description: String,
-    @SerialName("images") val images: Thumbnail,
     @SerialName("episode_metadata") val episodeMetadata: EpisodeMetadata,
+    @SerialName("images") val images: Thumbnail,
+    @SerialName("playback") val playback: String,
 )
 
 @Serializable
 data class EpisodeMetadata(
+    @SerialName("duration_ms") val durationMs: Int,
+    @SerialName("season_id") val seasonId: String,
     @SerialName("series_id") val seriesId: String,
     @SerialName("series_title") val seriesTitle: String,
 )
 
 val NoneItem = Item("", "", "", "", "", Images(emptyList(), emptyList()))
+val NoneEpisodeMetadata = EpisodeMetadata(0, "", "", "")
+val NoneEpisodePanel = EpisodePanel("", "", "", "", "", NoneEpisodeMetadata, Thumbnail(listOf()), "")
+
 val NoneCollection = Collection<Item>(0, emptyList())
 val NoneSearchResult = SearchResult(0, emptyList())
 val NoneBrowseResult = BrowseResult(0, emptyList())
 val NoneDiscSeasonList = DiscSeasonList(0, emptyList())
-val NoneWatchlist = Watchlist(0, emptyList())
 val NoneContinueWatchingList = ContinueWatchingList(0, emptyList())
+
+val NoneUpNextSeriesItem =UpNextSeriesItem(0, false, false, NoneEpisodePanel)
 
 /**
  * Series data type
@@ -163,7 +179,7 @@ data class Season(
     @SerialName("is_dubbed") val isDubbed: Boolean,
 )
 
-val NoneSeasons = Seasons(0, listOf())
+val NoneSeasons = Seasons(0, emptyList())
 val NoneSeason = Season("", "", "", 0, isSubbed = false, isDubbed = false)
 
 
