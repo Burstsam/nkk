@@ -250,6 +250,15 @@ class PlayerViewModel(application: Application) : AndroidViewModel(application) 
         }
     }
 
+    /**
+     * Check if the current episode is the last in the episodes list.
+     *
+     * @return Boolean: true if it is the last, else false.
+     */
+    fun currentEpisodeIsLastEpisode(): Boolean {
+        return episodes.items.lastOrNull()?.id == currentEpisode.id
+    }
+
     fun getEpisodeMetaByAoDMediaId(aodMediaId: Int): EpisodeMeta? {
         val meta = mediaMeta
         return if (meta is TVShowMeta) {

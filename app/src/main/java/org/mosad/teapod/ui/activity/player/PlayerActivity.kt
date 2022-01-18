@@ -229,7 +229,7 @@ class PlayerActivity : AppCompatActivity() {
                     else -> View.VISIBLE
                 }
 
-                if (state == ExoPlayer.STATE_ENDED && model.currentEpisode.nextEpisodeId != null && Preferences.autoplay) {
+                if (state == ExoPlayer.STATE_ENDED && hasNextEpisode() && Preferences.autoplay) {
                     playNextEpisode()
                 }
             }
@@ -301,7 +301,7 @@ class PlayerActivity : AppCompatActivity() {
                 // if remaining time < 20 sec, a next ep is set, autoplay is enabled and not in pip:
                 // show next ep button
                 if (remainingTime in 1..20000) {
-                    if (!btnNextEpIsVisible && model.currentEpisode.nextEpisodeId != null && Preferences.autoplay && !isInPiPMode()) {
+                    if (!btnNextEpIsVisible && hasNextEpisode() && Preferences.autoplay && !isInPiPMode()) {
                         showButtonNextEp()
                     }
                 } else if (btnNextEpIsVisible) {
@@ -358,12 +358,17 @@ class PlayerActivity : AppCompatActivity() {
     private fun onMediaChanged() {
         exo_text_title.text = model.getMediaTitle()
 
-        // hide the next ep button, if there is none
-        button_next_ep_c.visibility = if (model.currentEpisode.nextEpisodeId == null) {
-            View.GONE
-        } else {
-            View.VISIBLE
-        }
+        // hide the next episode button, if there is none
+        button_next_ep_c.visibility = if (hasNextEpisode()) View.VISIBLE else View.GONE
+    }
+
+    /**
+     * Check if the current episode has a next episode.
+     *
+     * @return Boolean: true if there is a next episode, else false.
+     */
+    private fun hasNextEpisode(): Boolean {
+        return (model.currentEpisode.nextEpisodeId != null && !model.currentEpisodeIsLastEpisode())
     }
 
     /**
