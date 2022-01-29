@@ -3,7 +3,6 @@ package org.mosad.teapod.ui.activity.main.viewmodel
 import android.app.Application
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
-import kotlinx.coroutines.Job
 import kotlinx.coroutines.joinAll
 import kotlinx.coroutines.launch
 import org.mosad.teapod.parser.crunchyroll.*
@@ -31,7 +30,7 @@ class MediaFragmentViewModel(application: Application) : AndroidViewModel(applic
     val currentEpisodesCrunchy = arrayListOf<Episode>() // used for EpisodeItemAdapter (easier updates)
 
     // additional media info
-    var currentPlayheads: PlayheadsMap = emptyMap()
+    val currentPlayheads: MutableMap<String, PlayheadObject> = mutableMapOf()
     var isWatchlist = false
         internal set
     var upNextSeries = NoneUpNextSeriesItem
@@ -85,7 +84,8 @@ class MediaFragmentViewModel(application: Application) : AndroidViewModel(applic
             viewModelScope.launch {
                 // get playheads (including fully watched state)
                 val episodeIDs = episodesCrunchy.items.map { it.id }
-                currentPlayheads = Crunchyroll.playheads(episodeIDs)
+                currentPlayheads.clear()
+                currentPlayheads.putAll(Crunchyroll.playheads(episodeIDs))
             },
             viewModelScope.launch { loadTmdbInfo() } // use tmdb search to get media info
         ).joinAll()
@@ -152,13 +152,14 @@ class MediaFragmentViewModel(application: Application) : AndroidViewModel(applic
     }
 
     suspend fun updateOnResume() {
-        listOf(
+        joinAll(
             viewModelScope.launch {
                 val episodeIDs = episodesCrunchy.items.map { it.id }
-                currentPlayheads = Crunchyroll.playheads(episodeIDs)
+                currentPlayheads.clear()
+                currentPlayheads.putAll(Crunchyroll.playheads(episodeIDs))
             },
             viewModelScope.launch { upNextSeries = Crunchyroll.upNextSeries(seriesCrunchy.id) }
-        ).joinAll()
+        )
     }
 
     /**

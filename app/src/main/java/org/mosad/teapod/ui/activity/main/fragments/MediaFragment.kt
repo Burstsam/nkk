@@ -89,6 +89,7 @@ class MediaFragment(private val mediaIdStr: String) : Fragment() {
                     binding.textTitle.text = model.upNextSeries.panel.title
                 }
 
+                // needs to be called after model.updateOnResume()
                 if (fragments.elementAtOrNull(0) is MediaFragmentEpisodes) {
                     (fragments[0] as MediaFragmentEpisodes).updateWatchedState()
                 }
