@@ -80,7 +80,7 @@ class PlayerActivity : AppCompatActivity() {
         setContentView(R.layout.activity_player)
         hideBars() // Initial hide the bars
 
-        model.loadMedia(
+        model.loadMediaAsync(
             intent.getStringExtra(getString(R.string.intent_season_id)) ?: "",
             intent.getStringExtra(getString(R.string.intent_episode_id)) ?: ""
         )
@@ -143,7 +143,7 @@ class PlayerActivity : AppCompatActivity() {
 
         // when the intent changed, load the new media and play it
         intent?.let {
-            model.loadMedia(
+            model.loadMediaAsync(
                 it.getStringExtra(getString(R.string.intent_season_id)) ?: "",
                 it.getStringExtra(getString(R.string.intent_episode_id)) ?: ""
             )
@@ -194,11 +194,6 @@ class PlayerActivity : AppCompatActivity() {
     }
 
     private fun initPlayer() {
-        if (model.currentEpisode == NoneEpisode) {
-            Log.e(javaClass.name, "No media was set.")
-            this.finish()
-        }
-
         initVideoView()
         initTimeUpdates()
 
@@ -234,9 +229,10 @@ class PlayerActivity : AppCompatActivity() {
                 }
             }
         })
-        
+
+        // revert back to the old behaviour (blocking init) in case there are any issues with async init
         // start playing the current episode, after all needed player components have been initialized
-        model.playCurrentMedia()
+        //model.playCurrentMedia(model.currentPlayhead)
     }
 
     @SuppressLint("ClickableViewAccessibility")
@@ -353,9 +349,16 @@ class PlayerActivity : AppCompatActivity() {
     }
 
     /**
-     * update title text and next ep button visibility, set ignoreNextStateEnded
+     * This methode is called, if the current episode has changed.
+     * Update title text and next ep button visibility.
+     * If the currentEpisode changed to NoneEpisode, exit the activity.
      */
     private fun onMediaChanged() {
+        if (model.currentEpisode == NoneEpisode) {
+            Log.e(javaClass.name, "No media was set.")
+            this.finish()
+        }
+
         exo_text_title.text = model.getMediaTitle()
 
         // hide the next episode button, if there is none

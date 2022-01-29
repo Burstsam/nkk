@@ -36,6 +36,8 @@ import com.google.android.exoplayer2.ext.mediasession.MediaSessionConnector
 import com.google.android.exoplayer2.source.hls.HlsMediaSource
 import com.google.android.exoplayer2.upstream.DefaultDataSourceFactory
 import com.google.android.exoplayer2.util.Util
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.joinAll
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import org.mosad.teapod.R
@@ -49,7 +51,6 @@ import org.mosad.teapod.util.Meta
 import org.mosad.teapod.util.TVShowMeta
 import org.mosad.teapod.util.tmdb.TMDBTVSeason
 import java.util.*
-import kotlin.collections.ArrayList
 
 /**
  * PlayerViewModel handles all stuff related to media/episodes.
@@ -64,6 +65,7 @@ class PlayerViewModel(application: Application) : AndroidViewModel(application) 
 
     val currentEpisodeChangedListener = ArrayList<() -> Unit>()
     private val preferredLanguage = if (Preferences.preferSecondary) Locale.JAPANESE else Locale.GERMAN
+    private var currentPlayhead: Long = 0
 
     // tmdb/meta data TODO currently not implemented for cr
     var mediaMeta: Meta? = null
@@ -124,19 +126,11 @@ class PlayerViewModel(application: Application) : AndroidViewModel(application) 
         mediaSession.isActive = true
     }
 
-    fun loadMedia(seasonId: String, episodeId: String) {
-        runBlocking {
-            episodes = Crunchyroll.episodes(seasonId)
-            //mediaMeta = loadMediaMeta(media.aodId) // can be done blocking, since it should be cached
+    fun loadMediaAsync(seasonId: String, episodeId: String) = viewModelScope.launch {
+        episodes = Crunchyroll.episodes(seasonId)
 
-            // TODO replace this with setCurrentEpisode
-            currentEpisode = episodes.items.find { episode ->
-                episode.id == episodeId
-            } ?: NoneEpisode
-            println("loading playback ${currentEpisode.playback}")
-
-            currentPlayback = Crunchyroll.playback(currentEpisode.playback)
-        }
+        setCurrentEpisode(episodeId)
+        playCurrentMedia(currentPlayhead)
 
         // TODO reimplement for cr
         // run async as it should be loaded by the time the episodes a
@@ -183,10 +177,23 @@ class PlayerViewModel(application: Application) : AndroidViewModel(application) 
             episode.id == episodeId
         } ?: NoneEpisode
 
-        // TODO don't run blocking
+        // update player gui (title, next ep button) after currentEpisode has changed
+        currentEpisodeChangedListener.forEach { it() }
+
+        // needs to be blocking, currentPlayback must be present when calling playCurrentMedia()
         runBlocking {
-            currentPlayback = Crunchyroll.playback(currentEpisode.playback)
+            joinAll(
+                viewModelScope.launch(Dispatchers.IO) {
+                    currentPlayback = Crunchyroll.playback(currentEpisode.playback)
+                },
+                viewModelScope.launch(Dispatchers.IO) {
+                    Crunchyroll.playheads(listOf(currentEpisode.id))[currentEpisode.id]?.let {
+                        currentPlayhead = (it.playhead.times(1000)).toLong()
+                    }
+                }
+            )
         }
+        println("loaded playback ${currentEpisode.playback}")
 
         // TODO update metadata and language (it should not be needed to update the language here!)
 
@@ -201,9 +208,6 @@ class PlayerViewModel(application: Application) : AndroidViewModel(application) 
      * @param seekPosition The seek position for the episode (default = 0).
      */
     fun playCurrentMedia(seekPosition: Long = 0) {
-        // update player gui (title, next ep button) after nextEpisodeId has been set
-        currentEpisodeChangedListener.forEach { it() }
-
         // get preferred stream url, set current language if it differs from the preferred one
         val preferredLocale = currentLanguage
         val fallbackLocal = Locale.US
