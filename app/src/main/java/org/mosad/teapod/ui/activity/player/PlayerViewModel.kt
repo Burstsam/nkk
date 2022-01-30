@@ -130,7 +130,7 @@ class PlayerViewModel(application: Application) : AndroidViewModel(application) 
         episodes = Crunchyroll.episodes(seasonId)
 
         setCurrentEpisode(episodeId)
-        playCurrentMedia(currentPlayhead)
+        playCurrentMedia(currentPlayhead) // TODO, if fully watched, start from 0
 
         // TODO reimplement for cr
         // run async as it should be loaded by the time the episodes a

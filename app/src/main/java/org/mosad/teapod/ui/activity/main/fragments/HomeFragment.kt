@@ -50,6 +50,7 @@ class HomeFragment : Fragment() {
     private fun initHighlight() {
         lifecycleScope.launch {
             val newTitles = Crunchyroll.browse(sortBy = SortBy.NEWLY_ADDED, n = 10)
+            // FIXME crashes on newTitles.items.size == 0
             highlightMedia =  newTitles.items[Random.nextInt(newTitles.items.size)]
 
             // add media item to gui

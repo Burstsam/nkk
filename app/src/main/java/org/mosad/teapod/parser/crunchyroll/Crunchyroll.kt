@@ -13,9 +13,9 @@ import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.buildJsonObject
 import kotlinx.serialization.json.put
+import org.mosad.teapod.preferences.EncryptedPreferences
 import org.mosad.teapod.preferences.Preferences
 import org.mosad.teapod.util.concatenate
-import java.util.*
 
 private val json = Json { ignoreUnknownKeys = true }
 
@@ -25,6 +25,7 @@ object Crunchyroll {
 
     private var accessToken = ""
     private var tokenType = ""
+    private var tokenValidUntil: Long = 0
 
     private var accountID = ""
 
@@ -69,6 +70,10 @@ object Crunchyroll {
             result.component1()?.obj()?.let {
                 accessToken = it.get("access_token").toString()
                 tokenType = it.get("token_type").toString()
+
+                // token will be invalid 1 sec
+                val expiresIn = (it.get("expires_in").toString().toLong() - 1)
+                tokenValidUntil = System.currentTimeMillis() + (expiresIn * 1000)
             }
 
 //            println("request: $request")
@@ -82,6 +87,10 @@ object Crunchyroll {
         return@runBlocking success
     }
 
+    private fun refreshToken() {
+        login(EncryptedPreferences.login, EncryptedPreferences.password)
+    }
+
     /**
      * Requests: get, post, delete
      */
@@ -91,9 +100,9 @@ object Crunchyroll {
         params: Parameters = listOf(),
         url: String = ""
     ): Result<FuelJson, FuelError> = coroutineScope {
-        val path = if (url.isEmpty()) "$baseUrl$endpoint" else url
+        val path = url.ifEmpty { "$baseUrl$endpoint" }
+        if (System.currentTimeMillis() > tokenValidUntil) refreshToken()
 
-        // TODO before sending a request, make sure the accessToken is not expired
         return@coroutineScope (Dispatchers.IO) {
             val (request, response, result) = Fuel.get(path, params)
                 .header("Authorization", "$tokenType $accessToken")
@@ -113,8 +122,8 @@ object Crunchyroll {
         body: String
     ) = coroutineScope {
         val path = "$baseUrl$endpoint"
+        if (System.currentTimeMillis() > tokenValidUntil) refreshToken()
 
-        // TODO before sending a request, make sure the accessToken is not expired
         withContext(Dispatchers.IO) {
             Fuel.post(path, params)
                 .header("Authorization", "$tokenType $accessToken")
@@ -128,9 +137,9 @@ object Crunchyroll {
         params: Parameters = listOf(),
         url: String = ""
     ) = coroutineScope {
-        val path = if (url.isEmpty()) "$baseUrl$endpoint" else url
+        val path = url.ifEmpty { "$baseUrl$endpoint" }
+        if (System.currentTimeMillis() > tokenValidUntil) refreshToken()
 
-        // TODO before sending a request, make sure the accessToken is not expired
         withContext(Dispatchers.IO) {
             Fuel.delete(path, params)
                 .header("Authorization", "$tokenType $accessToken")
