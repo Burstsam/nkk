@@ -102,8 +102,6 @@ class PlayerViewModel(application: Application) : AndroidViewModel(application) 
                 if (!isPlaying) updatePlayhead()
             }
         })
-
-
     }
 
     override fun onCleared() {
@@ -130,7 +128,7 @@ class PlayerViewModel(application: Application) : AndroidViewModel(application) 
         episodes = Crunchyroll.episodes(seasonId)
 
         setCurrentEpisode(episodeId)
-        playCurrentMedia(currentPlayhead) // TODO, if fully watched, start from 0
+        playCurrentMedia(currentPlayhead)
 
         // TODO reimplement for cr
         // run async as it should be loaded by the time the episodes a
@@ -165,6 +163,7 @@ class PlayerViewModel(application: Application) : AndroidViewModel(application) 
      * play the next episode, if nextEpisodeId is not null
      */
     fun playNextEpisode() = currentEpisode.nextEpisodeId?.let { nextEpisodeId ->
+        updatePlayhead() // update playhead before switching to new episode
         setCurrentEpisode(nextEpisodeId, startPlayback = true)
     }
 
@@ -188,7 +187,12 @@ class PlayerViewModel(application: Application) : AndroidViewModel(application) 
                 },
                 viewModelScope.launch(Dispatchers.IO) {
                     Crunchyroll.playheads(listOf(currentEpisode.id))[currentEpisode.id]?.let {
-                        currentPlayhead = (it.playhead.times(1000)).toLong()
+                        // if the episode was fully watched, start at the beginning
+                        currentPlayhead = if (it.fullyWatched) {
+                            0
+                        } else {
+                            (it.playhead.times(1000)).toLong()
+                        }
                     }
                 }
             )
