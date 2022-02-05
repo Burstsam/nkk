@@ -9,7 +9,7 @@ import android.view.ViewGroup
 import android.widget.Toast
 import androidx.annotation.RawRes
 import androidx.fragment.app.Fragment
-import com.afollestad.materialdialogs.MaterialDialog
+import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import org.mosad.teapod.BuildConfig
 import org.mosad.teapod.R
 import org.mosad.teapod.databinding.FragmentAboutBinding
@@ -68,9 +68,9 @@ class AboutFragment : Fragment() {
         }
 
         binding.linearLicense.setOnClickListener {
-            MaterialDialog(requireContext())
-                .title(text = License.GPL3.long)
-                .message(text = parseLicense(R.raw.gpl_3_full))
+            MaterialAlertDialogBuilder(requireContext())
+                .setTitle(License.GPL3.long)
+                .setMessage(parseLicense(R.raw.gpl_3_full))
                 .show()
         }
     }
@@ -132,9 +132,9 @@ class AboutFragment : Fragment() {
             License.MIT -> parseLicense(R.raw.mit_full)
         }
 
-        MaterialDialog(requireContext())
-            .title(text = license.long)
-            .message(text = licenseText)
+        MaterialAlertDialogBuilder(requireContext())
+            .setTitle(license.long)
+            .setMessage(licenseText)
             .show()
     }
 
