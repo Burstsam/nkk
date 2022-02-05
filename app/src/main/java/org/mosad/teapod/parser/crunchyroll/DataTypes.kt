@@ -4,6 +4,20 @@ import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import java.util.*
 
+val supportedLocals = listOf(
+    Locale.forLanguageTag("ar-SA"),
+    Locale.forLanguageTag("de-DE"),
+    Locale.forLanguageTag("en-US"),
+    Locale.forLanguageTag("es-419"),
+    Locale.forLanguageTag("es-ES"),
+    Locale.forLanguageTag("fr-FR"),
+    Locale.forLanguageTag("it-IT"),
+    Locale.forLanguageTag("pt-BR"),
+    Locale.forLanguageTag("pt-PT"),
+    Locale.forLanguageTag("ru-RU"),
+    Locale.ROOT
+)
+
 /**
  * data classes for browse
  * TODO make class names more clear/possibly overlapping for now
@@ -294,4 +308,20 @@ val NonePlayback = Playback(
         mapOf(), mapOf(), mapOf(), mapOf(), mapOf(), mapOf(),
         mapOf(), mapOf(), mapOf(), mapOf(), mapOf(), mapOf(),
     )
+)
+
+@Serializable
+data class Profile(
+    @SerialName("avatar") val avatar: String,
+    @SerialName("email") val email: String,
+    @SerialName("maturity_rating") val maturityRating: String,
+    @SerialName("preferred_content_subtitle_language") val preferredContentSubtitleLanguage: String,
+    @SerialName("username") val username: String,
+)
+val NoneProfile = Profile(
+    avatar = "",
+    email = "",
+    maturityRating = "",
+    preferredContentSubtitleLanguage = "",
+    username = ""
 )

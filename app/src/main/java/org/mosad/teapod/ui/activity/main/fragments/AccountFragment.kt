@@ -6,27 +6,34 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
-import com.afollestad.materialdialogs.MaterialDialog
-import com.afollestad.materialdialogs.list.listItemsSingleChoice
+import com.google.android.material.dialog.MaterialAlertDialogBuilder
+import kotlinx.coroutines.Deferred
+import kotlinx.coroutines.async
 import kotlinx.coroutines.launch
 import org.mosad.teapod.BuildConfig
 import org.mosad.teapod.R
 import org.mosad.teapod.databinding.FragmentAccountBinding
+import org.mosad.teapod.parser.crunchyroll.Crunchyroll
+import org.mosad.teapod.parser.crunchyroll.Profile
+import org.mosad.teapod.parser.crunchyroll.supportedLocals
 import org.mosad.teapod.preferences.EncryptedPreferences
 import org.mosad.teapod.preferences.Preferences
 import org.mosad.teapod.ui.activity.main.MainActivity
 import org.mosad.teapod.ui.components.LoginDialog
 import org.mosad.teapod.util.DataTypes.Theme
 import org.mosad.teapod.util.showFragment
+import java.util.*
 
 class AccountFragment : Fragment() {
 
     private lateinit var binding: FragmentAccountBinding
+    private val profile: Deferred<Profile> = lifecycleScope.async {
+        Crunchyroll.profile()
+    }
 
     private val getUriExport = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
         if (result.resultCode == Activity.RESULT_OK) {
@@ -58,7 +65,9 @@ class AccountFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        // TODO reimplement for ct, if possible (maybe account status would be better? (premium))
+        binding.textAccountLogin.text = EncryptedPreferences.login
+
+        // TODO reimplement for cr, if possible (maybe account status would be better? (premium))
         // load subscription (async) info before anything else
         binding.textAccountSubscription.text = getString(R.string.account_subscription, getString(R.string.loading))
         lifecycleScope.launch {
@@ -68,17 +77,22 @@ class AccountFragment : Fragment() {
             )
         }
 
-        binding.textAccountLogin.text = EncryptedPreferences.login
-        binding.textInfoAboutDesc.text = getString(R.string.info_about_desc, BuildConfig.VERSION_NAME, getString(R.string.build_time))
+        // add preferred subtitles
+        lifecycleScope.launch {
+            binding.textSettingsContentLanguageDesc.text = Locale.forLanguageTag(
+                profile.await().preferredContentSubtitleLanguage
+            ).displayLanguage
+        }
+        binding.switchSecondary.isChecked = Preferences.preferSecondary
+        binding.switchAutoplay.isChecked = Preferences.autoplay
         binding.textThemeSelected.text = when (Preferences.theme) {
             Theme.DARK -> getString(R.string.theme_dark)
             else -> getString(R.string.theme_light)
         }
 
-        binding.switchSecondary.isChecked = Preferences.preferSecondary
-        binding.switchAutoplay.isChecked = Preferences.autoplay
-
         binding.linearDevSettings.isVisible = Preferences.devSettings
+
+        binding.textInfoAboutDesc.text = getString(R.string.info_about_desc, BuildConfig.VERSION_NAME, getString(R.string.build_time))
 
         initActions()
     }
@@ -93,12 +107,8 @@ class AccountFragment : Fragment() {
             //startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(AoDParser.getSubscriptionUrl())))
         }
 
-        binding.linearTheme.setOnClickListener {
-            showThemeDialog()
-        }
-
-        binding.linearInfo.setOnClickListener {
-            activity?.showFragment(AboutFragment())
+        binding.linearSettingsContentLanguage.setOnClickListener {
+            showContentLanguageSelection()
         }
 
         binding.switchSecondary.setOnClickListener {
@@ -107,6 +117,14 @@ class AccountFragment : Fragment() {
 
         binding.switchAutoplay.setOnClickListener {
             Preferences.saveAutoplay(requireContext(), binding.switchAutoplay.isChecked)
+        }
+
+        binding.linearTheme.setOnClickListener {
+            showThemeDialog()
+        }
+
+        binding.linearInfo.setOnClickListener {
+            activity?.showFragment(AboutFragment())
         }
 
         binding.linearExportData.setOnClickListener {
@@ -142,24 +160,43 @@ class AccountFragment : Fragment() {
         }
     }
 
+    private fun showContentLanguageSelection() {
+        val items = supportedLocals.map {
+            if (it.displayLanguage.isNotEmpty() && it.displayCountry.isNotEmpty()) {
+                "${it.displayLanguage} (${it.displayCountry})"
+            } else if (it.displayCountry.isNotEmpty()) {
+                it.displayLanguage
+            } else {
+                getString(R.string.settings_content_language_none)
+            }
+        }.toTypedArray()
+
+        MaterialAlertDialogBuilder(requireContext())
+            .setTitle(R.string.settings_content_language)
+            .setSingleChoiceItems(items, 0){ _, which ->
+                // TODO
+            }
+            .show()
+    }
+
     private fun showThemeDialog() {
-        val themes = listOf(
+        val items = arrayOf(
             resources.getString(R.string.theme_light),
             resources.getString(R.string.theme_dark)
         )
 
-        MaterialDialog(requireContext()).show {
-            title(R.string.theme)
-            listItemsSingleChoice(items = themes, initialSelection = Preferences.theme.ordinal) { _, index, _ ->
-                when(index) {
-                    0 -> Preferences.saveTheme(context, Theme.LIGHT)
-                    1 -> Preferences.saveTheme(context, Theme.DARK)
-                    else -> Preferences.saveTheme(context, Theme.DARK)
+        MaterialAlertDialogBuilder(requireContext())
+            .setTitle(R.string.settings_content_language)
+            .setSingleChoiceItems(items, Preferences.theme.ordinal){ _, which ->
+                when(which) {
+                    0 -> Preferences.saveTheme(requireContext(), Theme.LIGHT)
+                    1 -> Preferences.saveTheme(requireContext(), Theme.DARK)
+                    else -> Preferences.saveTheme(requireContext(), Theme.DARK)
                 }
 
                 (activity as MainActivity).restart()
             }
-        }
+            .show()
     }
 
 }

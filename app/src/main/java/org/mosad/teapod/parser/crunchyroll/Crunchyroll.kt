@@ -456,8 +456,8 @@ object Crunchyroll {
         val watchlistEndpoint = "/content/v1/$accountID/watchlist"
         val parameters = listOf("locale" to locale, "n" to n)
 
-        val watchlistResult = request(watchlistEndpoint, parameters)
-        val list: ContinueWatchingList = watchlistResult.component1()?.obj()?.let {
+        val result = request(watchlistEndpoint, parameters)
+        val list: ContinueWatchingList = result.component1()?.obj()?.let {
             json.decodeFromString(it.toString())
         } ?: NoneContinueWatchingList
 
@@ -475,10 +475,23 @@ object Crunchyroll {
         val watchlistEndpoint = "/content/v1/$accountID/up_next_account"
         val parameters = listOf("locale" to locale, "n" to n)
 
-        val resultUpNextAccount = request(watchlistEndpoint, parameters)
-        return resultUpNextAccount.component1()?.obj()?.let {
+        val result = request(watchlistEndpoint, parameters)
+        return result.component1()?.obj()?.let {
             json.decodeFromString(it.toString())
         } ?: NoneContinueWatchingList
+    }
+
+    /**
+     * Account/Profile functions
+     */
+
+    suspend fun profile(): Profile {
+        val profileEndpoint = "/accounts/v1/me/profile"
+
+        val result = request(profileEndpoint)
+        return result.component1()?.obj()?.let {
+            json.decodeFromString(it.toString())
+        } ?: NoneProfile
     }
 
 }

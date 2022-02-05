@@ -46,12 +46,12 @@
     <string name="account_login_desc">Tap to edit</string>
     <string name="account_subscription">Subscription %1$s</string>
     <string name="account_subscription_desc">Tap to extend</string>
-    <string name="info">Info</string>
-    <string name="info_about" translatable="false">Teapod by @Seil0</string>
-    <string name="info_about_desc">Version %1$s (%2$s)</string>
     <string name="settings">Settings</string>
+    <string name="settings_content_language">Preferred content language</string>
+    <string name="settings_content_language_desc">English</string>
+    <string name="settings_content_language_none">None</string>
     <string name="settings_secondary">Prefer japanese (sub)</string>
-    <string name="settings_secondary_desc">Use the japanese, if present</string>
+    <string name="settings_secondary_desc">Use japanese, if present</string>
     <string name="settings_autoplay">Autoplay</string>
     <string name="settings_autoplay_desc">Play next episode automatically</string>
     <string name="theme">Theme</string>
@@ -63,6 +63,9 @@
     <string name="import_data">import data</string>
     <string name="import_data_desc">import "My list" from a file</string>
     <string name="import_data_success">imported "My list" successfully</string>
+    <string name="info">Info</string>
+    <string name="info_about" translatable="false">Teapod by @Seil0</string>
+    <string name="info_about_desc">Version %1$s (%2$s)</string>
 
 
     <!-- about fragment -->

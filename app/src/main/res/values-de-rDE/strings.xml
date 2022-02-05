@@ -39,6 +39,9 @@
     <string name="info">Info</string>
     <string name="info_about_desc">Version %1$s (%2$s)</string>
     <string name="settings">Einstellungen</string>
+    <string name="settings_content_language">Bevorzuge Inhaltssprache</string>
+    <string name="settings_content_language_desc">Englisch</string>
+    <string name="settings_content_language_none">Keine</string>
     <string name="settings_secondary">Bevorzuge Japanisch (OmU)</string>
     <string name="settings_secondary_desc">Japanisch verwenden, sofern vorhanden</string>
     <string name="settings_autoplay">Autoplay</string>
