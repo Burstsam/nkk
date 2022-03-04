@@ -81,7 +81,8 @@ class HomeFragment : Fragment() {
         // continue watching
         val upNextJob = lifecycleScope.launch {
             // TODO create EpisodeItemAdapter, which will start the playback of the selected episode immediately
-            adapterUpNext = MediaItemAdapter(Crunchyroll.upNextAccount().toItemMediaList())
+            adapterUpNext = MediaItemAdapter(Crunchyroll.upNextAccount().items
+                .filter { !it.fullyWatched }.toItemMediaList())
             binding.recyclerNewEpisodes.adapter = adapterUpNext
         }
         asyncJobList.add(upNextJob)

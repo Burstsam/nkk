@@ -23,7 +23,13 @@ fun Collection<Item>.toItemMediaList(): List<ItemMedia> {
 
 @JvmName("toItemMediaListContinueWatchingItem")
 fun Collection<ContinueWatchingItem>.toItemMediaList(): List<ItemMedia> {
-    return this.items.map {
+    return items.map {
+        ItemMedia(it.panel.episodeMetadata.seriesId, it.panel.title, it.panel.images.thumbnail[0][0].source)
+    }
+}
+
+fun List<ContinueWatchingItem>.toItemMediaList(): List<ItemMedia> {
+    return this.map {
         ItemMedia(it.panel.episodeMetadata.seriesId, it.panel.title, it.panel.images.thumbnail[0][0].source)
     }
 }

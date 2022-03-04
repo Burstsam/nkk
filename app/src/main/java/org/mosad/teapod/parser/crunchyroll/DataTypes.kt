@@ -106,7 +106,7 @@ data class ContinueWatchingItem(
 //    @SerialName("completion_status") val completionStatus: Boolean,
     @SerialName("playhead") val playhead: Int,
     // not present in watchlist -> continue_watching_item
-//    @SerialName("fully_watched") val fullyWatched: Boolean,
+    @SerialName("fully_watched") val fullyWatched: Boolean = false,
 )
 
 // EpisodePanel is used in ContinueWatchingItem
