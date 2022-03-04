@@ -14,6 +14,7 @@ import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import kotlinx.coroutines.Deferred
 import kotlinx.coroutines.async
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
 import org.mosad.teapod.BuildConfig
 import org.mosad.teapod.R
 import org.mosad.teapod.databinding.FragmentAccountBinding
@@ -26,12 +27,13 @@ import org.mosad.teapod.ui.activity.main.MainActivity
 import org.mosad.teapod.ui.components.LoginDialog
 import org.mosad.teapod.util.DataTypes.Theme
 import org.mosad.teapod.util.showFragment
+import org.mosad.teapod.util.toDisplayString
 import java.util.*
 
 class AccountFragment : Fragment() {
 
     private lateinit var binding: FragmentAccountBinding
-    private val profile: Deferred<Profile> = lifecycleScope.async {
+    private var profile: Deferred<Profile> = lifecycleScope.async {
         Crunchyroll.profile()
     }
 
@@ -107,6 +109,7 @@ class AccountFragment : Fragment() {
             //startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(AoDParser.getSubscriptionUrl())))
         }
 
+
         binding.linearSettingsContentLanguage.setOnClickListener {
             showContentLanguageSelection()
         }
@@ -161,22 +164,43 @@ class AccountFragment : Fragment() {
     }
 
     private fun showContentLanguageSelection() {
+        // we should be able to use the index of supportedLocals for language selection, items is GUI only
         val items = supportedLocals.map {
-            if (it.displayLanguage.isNotEmpty() && it.displayCountry.isNotEmpty()) {
-                "${it.displayLanguage} (${it.displayCountry})"
-            } else if (it.displayCountry.isNotEmpty()) {
-                it.displayLanguage
-            } else {
-                getString(R.string.settings_content_language_none)
-            }
+            it.toDisplayString(getString(R.string.settings_content_language_none))
         }.toTypedArray()
+
+        var initialSelection: Int
+        // profile should be completed here, therefore blocking
+        runBlocking {
+            initialSelection = supportedLocals.indexOf(Locale.forLanguageTag(
+                profile.await().preferredContentSubtitleLanguage))
+            if (initialSelection < 0) initialSelection = supportedLocals.lastIndex
+        }
 
         MaterialAlertDialogBuilder(requireContext())
             .setTitle(R.string.settings_content_language)
-            .setSingleChoiceItems(items, 0){ _, which ->
-                // TODO
+            .setSingleChoiceItems(items, initialSelection){ dialog, which ->
+                updatePrefContentLanguage(supportedLocals[which].toLanguageTag())
+                dialog.dismiss()
             }
             .show()
+    }
+
+    @kotlinx.coroutines.ExperimentalCoroutinesApi
+    private fun updatePrefContentLanguage(languageTag: String) {
+        lifecycleScope.launch {
+            Crunchyroll.postPrefSubLanguage(languageTag)
+
+        }.invokeOnCompletion {
+            // update profile since the language selection might have changed
+            profile = lifecycleScope.async { Crunchyroll.profile() }
+            profile.invokeOnCompletion {
+                // update language once loading profile is completed
+                binding.textSettingsContentLanguageDesc.text = Locale.forLanguageTag(
+                    profile.getCompleted().preferredContentSubtitleLanguage
+                ).displayLanguage
+            }
+        }
     }
 
     private fun showThemeDialog() {

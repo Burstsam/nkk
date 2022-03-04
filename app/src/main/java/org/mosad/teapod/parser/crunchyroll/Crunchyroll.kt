@@ -4,10 +4,13 @@ import android.util.Log
 import com.github.kittinunf.fuel.Fuel
 import com.github.kittinunf.fuel.core.FuelError
 import com.github.kittinunf.fuel.core.Parameters
-import com.github.kittinunf.fuel.core.extensions.jsonBody
 import com.github.kittinunf.fuel.json.FuelJson
 import com.github.kittinunf.fuel.json.responseJson
 import com.github.kittinunf.result.Result
+import io.ktor.client.*
+import io.ktor.client.request.*
+import io.ktor.client.statement.*
+import io.ktor.http.*
 import kotlinx.coroutines.*
 import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.json.Json
@@ -20,7 +23,9 @@ import org.mosad.teapod.util.concatenate
 private val json = Json { ignoreUnknownKeys = true }
 
 object Crunchyroll {
+    private val TAG = javaClass.name
 
+    private val client = HttpClient()
     private const val baseUrl = "https://beta-api.crunchyroll.com"
 
     private var accessToken = ""
@@ -80,7 +85,7 @@ object Crunchyroll {
 //            println("response: $response")
 //            println("response: $result")
 
-            Log.i(javaClass.name, "login complete with code ${response.statusCode}")
+            Log.i(TAG, "login complete with code ${response.statusCode}")
             success = (response.statusCode == 200)
         }
 
@@ -119,16 +124,46 @@ object Crunchyroll {
     private suspend fun requestPost(
         endpoint: String,
         params: Parameters = listOf(),
-        body: String
+        requestBody: String
     ) = coroutineScope {
         val path = "$baseUrl$endpoint"
         if (System.currentTimeMillis() > tokenValidUntil) refreshToken()
 
         withContext(Dispatchers.IO) {
-            Fuel.post(path, params)
-                .header("Authorization", "$tokenType $accessToken")
-                .jsonBody(body)
-                .response() // without a response, crunchy doesn't accept the request
+            val response: HttpResponse = client.request(path) {
+                method = HttpMethod.Post
+                body = requestBody
+                header("Authorization", "$tokenType $accessToken")
+                contentType(ContentType.Application.Json)
+                params.forEach {
+                    parameter(it.first, it.second)
+                }
+            }
+
+            Log.i(TAG, "Response status: ${response.status}")
+        }
+    }
+
+    private suspend fun requestPatch(
+        endpoint: String,
+        params: Parameters = listOf(),
+        requestBody: String
+    ) = coroutineScope {
+        val path = "$baseUrl$endpoint"
+        if (System.currentTimeMillis() > tokenValidUntil) refreshToken()
+
+        withContext(Dispatchers.IO) {
+            val response: HttpResponse = client.request(path) {
+                method = HttpMethod.Patch
+                body = requestBody
+                header("Authorization", "$tokenType $accessToken")
+                contentType(ContentType.Application.Json)
+                params.forEach {
+                    parameter(it.first, it.second)
+                }
+            }
+
+            Log.i(TAG, "Response status: ${response.status}")
         }
     }
 
@@ -492,6 +527,15 @@ object Crunchyroll {
         return result.component1()?.obj()?.let {
             json.decodeFromString(it.toString())
         } ?: NoneProfile
+    }
+
+    suspend fun postPrefSubLanguage(languageTag: String) {
+        val profileEndpoint = "/accounts/v1/me/profile"
+        val json = buildJsonObject {
+            put("preferred_content_subtitle_language", languageTag)
+        }
+
+        requestPatch(profileEndpoint, requestBody = json.toString())
     }
 
 }
