@@ -8,12 +8,15 @@ import com.github.kittinunf.fuel.json.FuelJson
 import com.github.kittinunf.fuel.json.responseJson
 import com.github.kittinunf.result.Result
 import io.ktor.client.*
+import io.ktor.client.features.json.*
+import io.ktor.client.features.json.serializer.*
 import io.ktor.client.request.*
 import io.ktor.client.statement.*
 import io.ktor.http.*
 import kotlinx.coroutines.*
-import kotlinx.serialization.decodeFromString
+import kotlinx.serialization.SerializationException
 import kotlinx.serialization.json.Json
+import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.buildJsonObject
 import kotlinx.serialization.json.put
 import org.mosad.teapod.preferences.EncryptedPreferences
@@ -25,7 +28,11 @@ private val json = Json { ignoreUnknownKeys = true }
 object Crunchyroll {
     private val TAG = javaClass.name
 
-    private val client = HttpClient()
+    private val client = HttpClient {
+        install(JsonFeature) {
+            serializer = KotlinxSerializer(json)
+        }
+    }
     private const val baseUrl = "https://beta-api.crunchyroll.com"
 
     private var accessToken = ""
@@ -100,31 +107,56 @@ object Crunchyroll {
      * Requests: get, post, delete
      */
 
-    private suspend fun request(
+    private suspend inline fun <reified T> request(
+        url: String,
+        httpMethod: HttpMethod,
+        params: Parameters = listOf(),
+        bodyA: Any = Any()
+    ): T = coroutineScope {
+        if (System.currentTimeMillis() > tokenValidUntil) refreshToken()
+
+        return@coroutineScope (Dispatchers.IO) {
+            val response: T = client.request(url) {
+                method = httpMethod
+                body = bodyA
+                header("Authorization", "$tokenType $accessToken")
+                params.forEach {
+                    parameter(it.first, it.second)
+                }
+
+                // for json body set content type
+                if (bodyA is JsonObject) {
+                    contentType(ContentType.Application.Json)
+                }
+            }
+
+            response
+        }
+    }
+
+    private suspend inline fun <reified T> requestGet(
         endpoint: String,
         params: Parameters = listOf(),
         url: String = ""
-    ): Result<FuelJson, FuelError> = coroutineScope {
+    ): T = coroutineScope {
         val path = url.ifEmpty { "$baseUrl$endpoint" }
         if (System.currentTimeMillis() > tokenValidUntil) refreshToken()
 
         return@coroutineScope (Dispatchers.IO) {
-            val (request, response, result) = Fuel.get(path, params)
-                .header("Authorization", "$tokenType $accessToken")
-                .responseJson()
-
-//            println("request request: $request")
-//            println("request response: $response")
-//            println("request result: $result")
-
-            result
+            client.request(path) {
+                method = HttpMethod.Get
+                header("Authorization", "$tokenType $accessToken")
+                params.forEach {
+                    parameter(it.first, it.second)
+                }
+            } as T
         }
     }
 
     private suspend fun requestPost(
         endpoint: String,
         params: Parameters = listOf(),
-        requestBody: String
+        bodyObject: JsonObject
     ) = coroutineScope {
         val path = "$baseUrl$endpoint"
         if (System.currentTimeMillis() > tokenValidUntil) refreshToken()
@@ -132,7 +164,7 @@ object Crunchyroll {
         withContext(Dispatchers.IO) {
             val response: HttpResponse = client.request(path) {
                 method = HttpMethod.Post
-                body = requestBody
+                body = bodyObject
                 header("Authorization", "$tokenType $accessToken")
                 contentType(ContentType.Application.Json)
                 params.forEach {
@@ -140,14 +172,14 @@ object Crunchyroll {
                 }
             }
 
-            Log.i(TAG, "Response status: ${response.status}")
+            Log.i(TAG, "Response: $response")
         }
     }
 
     private suspend fun requestPatch(
         endpoint: String,
         params: Parameters = listOf(),
-        requestBody: String
+        bodyObject: JsonObject
     ) = coroutineScope {
         val path = "$baseUrl$endpoint"
         if (System.currentTimeMillis() > tokenValidUntil) refreshToken()
@@ -155,7 +187,7 @@ object Crunchyroll {
         withContext(Dispatchers.IO) {
             val response: HttpResponse = client.request(path) {
                 method = HttpMethod.Patch
-                body = requestBody
+                body = bodyObject
                 header("Authorization", "$tokenType $accessToken")
                 contentType(ContentType.Application.Json)
                 params.forEach {
@@ -163,7 +195,7 @@ object Crunchyroll {
                 }
             }
 
-            Log.i(TAG, "Response status: ${response.status}")
+            Log.i(TAG, "Response: $response")
         }
     }
 
@@ -176,9 +208,15 @@ object Crunchyroll {
         if (System.currentTimeMillis() > tokenValidUntil) refreshToken()
 
         withContext(Dispatchers.IO) {
-            Fuel.delete(path, params)
-                .header("Authorization", "$tokenType $accessToken")
-                .response() // without a response, crunchy doesn't accept the request
+            val response: HttpResponse = client.request(path) {
+                method = HttpMethod.Delete
+                header("Authorization", "$tokenType $accessToken")
+                params.forEach {
+                    parameter(it.first, it.second)
+                }
+            }
+
+            Log.i(TAG, "Response : $response")
         }
     }
 
@@ -193,17 +231,15 @@ object Crunchyroll {
      */
     suspend fun index() {
         val indexEndpoint = "/index/v2"
-        val result = request(indexEndpoint)
 
-        result.component1()?.obj()?.getJSONObject("cms")?.let {
-            policy = it.get("policy").toString()
-            signature = it.get("signature").toString()
-            keyPairID = it.get("key_pair_id").toString()
-        }
+        val index: Index = requestGet(indexEndpoint)
+        policy = index.cms.policy
+        signature = index.cms.signature
+        keyPairID = index.cms.keyPairId
 
-        println("policy: $policy")
-        println("signature: $signature")
-        println("keyPairID: $keyPairID")
+        Log.i(TAG, "Policy : $policy")
+        Log.i(TAG, "Signature : $signature")
+        Log.i(TAG, "Key Pair ID : $keyPairID")
     }
 
     /**
@@ -214,18 +250,22 @@ object Crunchyroll {
      */
     suspend fun account() {
         val indexEndpoint = "/accounts/v1/me"
-        val result = request(indexEndpoint)
 
-        result.component1()?.obj()?.let {
-            accountID = it.get("account_id").toString()
+        val account: Account = try {
+            requestGet(indexEndpoint)
+        } catch (ex: SerializationException) {
+            Log.e(TAG, "SerializationException in account(). This is bad!", ex)
+            NoneAccount
         }
+
+        accountID = account.accountId
     }
 
     /**
      * General element/media functions: browse, search, objects, season_list
      */
 
-    // TODO locale de-DE, categories
+    // TODO categories
     /**
      * Browse the media available on crunchyroll.
      *
@@ -241,7 +281,12 @@ object Crunchyroll {
         n: Int = 10
     ): BrowseResult {
         val browseEndpoint = "/content/v1/browse"
-        val noneOptParams = listOf("sort_by" to sortBy.str, "start" to start, "n" to n)
+        val noneOptParams = listOf(
+            "locale" to locale,
+            "sort_by" to sortBy.str,
+            "start" to start,
+            "n" to n
+        )
 
         // if a season tag is present add it to the parameters
         val parameters = if (seasonTag.isNotEmpty()) {
@@ -250,10 +295,12 @@ object Crunchyroll {
             noneOptParams
         }
 
-        val result = request(browseEndpoint, parameters)
-        val browseResult = result.component1()?.obj()?.let {
-            json.decodeFromString(it.toString())
-        } ?: NoneBrowseResult
+        val browseResult: BrowseResult = try {
+            requestGet(browseEndpoint, parameters)
+        }catch (ex: SerializationException) {
+            Log.e(TAG, "SerializationException in browse().", ex)
+            NoneBrowseResult
+        }
 
         // add results to cache TODO improve
         browsingCache.clear()
@@ -269,13 +316,15 @@ object Crunchyroll {
         val searchEndpoint = "/content/v1/search"
         val parameters = listOf("q" to query, "n" to n, "locale" to locale, "type" to "series")
 
-        val result = request(searchEndpoint, parameters)
         // TODO episodes have thumbnails as image, and not poster_tall/poster_tall,
         // to work around this, for now only tv shows are supported
 
-        return result.component1()?.obj()?.let {
-            json.decodeFromString(it.toString())
-        } ?: NoneSearchResult
+        return try {
+            requestGet(searchEndpoint, parameters)
+        }catch (ex: SerializationException) {
+            Log.e(TAG, "SerializationException in search(), with query = \"$query\".", ex)
+            NoneSearchResult
+        }
     }
 
     /**
@@ -294,11 +343,12 @@ object Crunchyroll {
             "Key-Pair-Id" to keyPairID
         )
 
-        val result = request(episodesEndpoint, parameters)
-
-        return result.component1()?.obj()?.let {
-            json.decodeFromString(it.toString())
-        } ?: NoneCollection
+        return try {
+            requestGet(episodesEndpoint, parameters)
+        }catch (ex: SerializationException) {
+            Log.e(TAG, "SerializationException in objects().", ex)
+            NoneCollection
+        }
     }
 
     /**
@@ -309,11 +359,12 @@ object Crunchyroll {
         val seasonListEndpoint = "/content/v1/season_list"
         val parameters = listOf("locale" to locale)
 
-        val result = request(seasonListEndpoint, parameters)
-
-        return result.component1()?.obj()?.let {
-            json.decodeFromString(it.toString())
-        } ?: NoneDiscSeasonList
+        return try {
+            requestGet(seasonListEndpoint, parameters)
+        }catch (ex: SerializationException) {
+            Log.e(TAG, "SerializationException in seasonList().", ex)
+            NoneDiscSeasonList
+        }
     }
 
     /**
@@ -332,11 +383,12 @@ object Crunchyroll {
             "Key-Pair-Id" to keyPairID
         )
 
-        val result = request(seriesEndpoint, parameters)
-
-        return result.component1()?.obj()?.let {
-            json.decodeFromString(it.toString())
-        } ?: NoneSeries
+        return try {
+            requestGet(seriesEndpoint, parameters)
+        }catch (ex: SerializationException) {
+            Log.e(TAG, "SerializationException in series().", ex)
+            NoneSeries
+        }
     }
 
     /**
@@ -349,15 +401,16 @@ object Crunchyroll {
             "locale" to locale
         )
 
-        val result = request(upNextSeriesEndpoint, parameters)
-
-        return result.component1()?.obj()?.let {
-            json.decodeFromString(it.toString())
-        } ?: NoneUpNextSeriesItem
+        return try {
+            requestGet(upNextSeriesEndpoint, parameters)
+        }catch (ex: SerializationException) {
+            Log.e(TAG, "SerializationException in upNextSeries().", ex)
+            NoneUpNextSeriesItem
+        }
     }
 
     suspend fun seasons(seriesId: String): Seasons {
-        val episodesEndpoint = "/cms/v2/$country/M3/crunchyroll/seasons"
+        val seasonsEndpoint = "/cms/v2/$country/M3/crunchyroll/seasons"
         val parameters = listOf(
             "series_id" to seriesId,
             "locale" to locale,
@@ -366,11 +419,12 @@ object Crunchyroll {
             "Key-Pair-Id" to keyPairID
         )
 
-        val result = request(episodesEndpoint, parameters)
-
-        return result.component1()?.obj()?.let {
-            json.decodeFromString(it.toString())
-        } ?: NoneSeasons
+        return try {
+            requestGet(seasonsEndpoint, parameters)
+        }catch (ex: SerializationException) {
+            Log.e(TAG, "SerializationException in seasons().", ex)
+            NoneSeasons
+        }
     }
 
     suspend fun episodes(seasonId: String): Episodes {
@@ -383,19 +437,21 @@ object Crunchyroll {
             "Key-Pair-Id" to keyPairID
         )
 
-        val result = request(episodesEndpoint, parameters)
-
-        return result.component1()?.obj()?.let {
-            json.decodeFromString(it.toString())
-        } ?: NoneEpisodes
+        return try {
+            requestGet(episodesEndpoint, parameters)
+        }catch (ex: SerializationException) {
+            Log.e(TAG, "SerializationException in episodes().", ex)
+            NoneEpisodes
+        }
     }
 
     suspend fun playback(url: String): Playback {
-        val result = request("", url = url)
-
-        return result.component1()?.obj()?.let {
-            json.decodeFromString(it.toString())
-        } ?: NonePlayback
+        return try {
+            requestGet("", url = url)
+        }catch (ex: SerializationException) {
+            Log.e(TAG, "SerializationException in playback(), with url = $url.", ex)
+            NonePlayback
+        }
     }
 
     /**
@@ -412,10 +468,13 @@ object Crunchyroll {
         val watchlistSeriesEndpoint = "/content/v1/watchlist/$accountID/$seriesId"
         val parameters = listOf("locale" to locale)
 
-        val result = request(watchlistSeriesEndpoint, parameters)
-        // if needed implement parsing
-
-        return result.component1()?.obj()?.has(seriesId) ?: false
+        return try {
+            (requestGet(watchlistSeriesEndpoint, parameters) as JsonObject)
+                .containsKey(seriesId)
+        }catch (ex: SerializationException) {
+            Log.e(TAG, "SerializationException in isWatchlist() with seriesId = $seriesId", ex)
+            false
+        }
     }
 
     /**
@@ -431,7 +490,7 @@ object Crunchyroll {
             put("content_id", seriesId)
         }
 
-        requestPost(watchlistPostEndpoint, parameters, json.toString())
+        requestPost(watchlistPostEndpoint, parameters, json)
     }
 
     /**
@@ -458,11 +517,12 @@ object Crunchyroll {
         val playheadsEndpoint = "/content/v1/playheads/$accountID/${episodeIDs.joinToString(",")}"
         val parameters = listOf("locale" to locale)
 
-        val result = request(playheadsEndpoint, parameters)
-
-        return result.component1()?.obj()?.let {
-            json.decodeFromString(it.toString())
-        } ?: emptyMap()
+        return try {
+            requestGet(playheadsEndpoint, parameters)
+        }catch (ex: SerializationException) {
+            Log.e(TAG, "SerializationException in upNextSeries().", ex)
+            emptyMap()
+        }
     }
 
     suspend fun postPlayheads(episodeId: String, playhead: Int) {
@@ -474,7 +534,7 @@ object Crunchyroll {
             put("playhead", playhead)
         }
 
-        requestPost(playheadsEndpoint, parameters, json.toString())
+        requestPost(playheadsEndpoint, parameters, json)
     }
 
     /**
@@ -491,10 +551,12 @@ object Crunchyroll {
         val watchlistEndpoint = "/content/v1/$accountID/watchlist"
         val parameters = listOf("locale" to locale, "n" to n)
 
-        val result = request(watchlistEndpoint, parameters)
-        val list: ContinueWatchingList = result.component1()?.obj()?.let {
-            json.decodeFromString(it.toString())
-        } ?: NoneContinueWatchingList
+        val list: ContinueWatchingList = try {
+            requestGet(watchlistEndpoint, parameters)
+        }catch (ex: SerializationException) {
+            Log.e(TAG, "SerializationException in watchlist().", ex)
+            NoneContinueWatchingList
+        }
 
         val objects = list.items.map{ it.panel.episodeMetadata.seriesId }
         return objects(objects)
@@ -510,10 +572,12 @@ object Crunchyroll {
         val watchlistEndpoint = "/content/v1/$accountID/up_next_account"
         val parameters = listOf("locale" to locale, "n" to n)
 
-        val result = request(watchlistEndpoint, parameters)
-        return result.component1()?.obj()?.let {
-            json.decodeFromString(it.toString())
-        } ?: NoneContinueWatchingList
+        return try {
+            requestGet(watchlistEndpoint, parameters)
+        }catch (ex: SerializationException) {
+            Log.e(TAG, "SerializationException in upNextAccount().", ex)
+            NoneContinueWatchingList
+        }
     }
 
     /**
@@ -523,10 +587,12 @@ object Crunchyroll {
     suspend fun profile(): Profile {
         val profileEndpoint = "/accounts/v1/me/profile"
 
-        val result = request(profileEndpoint)
-        return result.component1()?.obj()?.let {
-            json.decodeFromString(it.toString())
-        } ?: NoneProfile
+        return try {
+            requestGet(profileEndpoint)
+        }catch (ex: SerializationException) {
+            Log.e(TAG, "SerializationException in profile().", ex)
+            NoneProfile
+        }
     }
 
     suspend fun postPrefSubLanguage(languageTag: String) {
@@ -535,7 +601,7 @@ object Crunchyroll {
             put("preferred_content_subtitle_language", languageTag)
         }
 
-        requestPatch(profileEndpoint, requestBody = json.toString())
+        requestPatch(profileEndpoint, bodyObject = json)
     }
 
 }

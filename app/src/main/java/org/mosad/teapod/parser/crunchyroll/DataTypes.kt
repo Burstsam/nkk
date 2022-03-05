@@ -29,6 +29,33 @@ enum class SortBy(val str: String) {
 }
 
 /**
+ * index, account. This must pe present for the app to work!
+ */
+@Serializable
+data class Index(
+    @SerialName("cms") val cms: CMS,
+    @SerialName("service_available") val serviceAvailable: Boolean,
+)
+
+@Serializable
+data class CMS(
+    @SerialName("bucket") val bucket: String,
+    @SerialName("policy") val policy: String,
+    @SerialName("signature") val signature: String,
+    @SerialName("key_pair_id") val keyPairId: String,
+    @SerialName("expires") val expires: String,
+)
+
+@Serializable
+data class Account(
+    @SerialName("account_id") val accountId: String,
+    @SerialName("external_id") val externalId: String,
+    @SerialName("email_verified") val emailVerified: Boolean,
+    @SerialName("created") val created: String,
+)
+val NoneAccount = Account("", "", false, "")
+
+/**
  * search, browse, DiscSeasonList, Watchlist, ContinueWatchingList data types all use Collection
  */
 
@@ -47,10 +74,10 @@ typealias ContinueWatchingList = Collection<ContinueWatchingItem>
 
 @Serializable
 data class UpNextSeriesItem(
-    val playhead: Int,
-    val fully_watched: Boolean,
-    val never_watched: Boolean,
-    val panel: EpisodePanel,
+    @SerialName("playhead") val playhead: Int,
+    @SerialName("fully_watched") val fullyWatched: Boolean,
+    @SerialName("never_watched") val neverWatched: Boolean,
+    @SerialName("panel") val panel: EpisodePanel,
 )
 
 /**
@@ -140,7 +167,7 @@ val NoneBrowseResult = BrowseResult(0, emptyList())
 val NoneDiscSeasonList = DiscSeasonList(0, emptyList())
 val NoneContinueWatchingList = ContinueWatchingList(0, emptyList())
 
-val NoneUpNextSeriesItem =UpNextSeriesItem(0, false, false, NoneEpisodePanel)
+val NoneUpNextSeriesItem = UpNextSeriesItem(0, false, false, NoneEpisodePanel)
 
 /**
  * Series data type
