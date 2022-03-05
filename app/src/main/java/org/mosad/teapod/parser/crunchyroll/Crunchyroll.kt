@@ -1,16 +1,34 @@
+/**
+ * Teapod
+ *
+ * Copyright 2020-2022  <seil0@mosad.xyz>
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
+ * MA 02110-1301, USA.
+ *
+ */
+
 package org.mosad.teapod.parser.crunchyroll
 
 import android.util.Log
-import com.github.kittinunf.fuel.Fuel
-import com.github.kittinunf.fuel.core.FuelError
-import com.github.kittinunf.fuel.core.Parameters
-import com.github.kittinunf.fuel.json.FuelJson
-import com.github.kittinunf.fuel.json.responseJson
-import com.github.kittinunf.result.Result
 import io.ktor.client.*
+import io.ktor.client.call.*
 import io.ktor.client.features.json.*
 import io.ktor.client.features.json.serializer.*
 import io.ktor.client.request.*
+import io.ktor.client.request.forms.*
 import io.ktor.client.statement.*
 import io.ktor.http.*
 import kotlinx.coroutines.*
@@ -35,8 +53,7 @@ object Crunchyroll {
     }
     private const val baseUrl = "https://beta-api.crunchyroll.com"
 
-    private var accessToken = ""
-    private var tokenType = ""
+    private lateinit var token: Token
     private var tokenValidUntil: Long = 0
 
     private var accountID = ""
@@ -44,10 +61,6 @@ object Crunchyroll {
     private var policy = ""
     private var signature = ""
     private var keyPairID = ""
-
-    // TODO temp helper vary
-    private var locale: String = Preferences.preferredLocal.toLanguageTag()
-    private var country: String = Preferences.preferredLocal.country
 
     private val browsingCache = arrayListOf<Item>()
 
@@ -61,39 +74,24 @@ object Crunchyroll {
      */
     fun login(username: String, password: String): Boolean = runBlocking {
         val tokenEndpoint = "/auth/v1/token"
-        val formData = listOf(
-            "username" to username,
-            "password" to password,
-            "grant_type" to "password",
-            "scope" to "offline_access"
-        )
+        val formData = Parameters.build {
+            append("username", username)
+            append("password", password)
+            append("grant_type", "password")
+            append("scope", "offline_access")
+        }
 
-        var success: Boolean // is false
+        var success = false// is false
         withContext(Dispatchers.IO) {
-            val (request, response, result) = Fuel.post("$baseUrl$tokenEndpoint", parameters = formData)
-                .header("Content-Type", "application/x-www-form-urlencoded")
-                .appendHeader(
-                    "Authorization",
-                    "Basic "
-                )
-                .responseJson()
-
-            // TODO fix JSONException: No value for
-            result.component1()?.obj()?.let {
-                accessToken = it.get("access_token").toString()
-                tokenType = it.get("token_type").toString()
-
-                // token will be invalid 1 sec
-                val expiresIn = (it.get("expires_in").toString().toLong() - 1)
-                tokenValidUntil = System.currentTimeMillis() + (expiresIn * 1000)
+            // TODO handle exceptions
+            val response: HttpResponse = client.submitForm("$baseUrl$tokenEndpoint", formParameters = formData) {
+                header("Authorization", "Basic ")
             }
+            token = response.receive()
+            tokenValidUntil = System.currentTimeMillis() + (token.expiresIn * 1000)
 
-//            println("request: $request")
-//            println("response: $response")
-//            println("response: $result")
-
-            Log.i(TAG, "login complete with code ${response.statusCode}")
-            success = (response.statusCode == 200)
+            Log.i(TAG, "login complete with code ${response.status}")
+            success = (response.status == HttpStatusCode.OK)
         }
 
         return@runBlocking success
@@ -110,22 +108,22 @@ object Crunchyroll {
     private suspend inline fun <reified T> request(
         url: String,
         httpMethod: HttpMethod,
-        params: Parameters = listOf(),
-        bodyA: Any = Any()
+        params: List<Pair<String, Any?>> = listOf(),
+        bodyObject: Any = Any()
     ): T = coroutineScope {
         if (System.currentTimeMillis() > tokenValidUntil) refreshToken()
 
         return@coroutineScope (Dispatchers.IO) {
             val response: T = client.request(url) {
                 method = httpMethod
-                body = bodyA
-                header("Authorization", "$tokenType $accessToken")
+                header("Authorization", "${token.tokenType} ${token.accessToken}")
                 params.forEach {
                     parameter(it.first, it.second)
                 }
 
-                // for json body set content type
-                if (bodyA is JsonObject) {
+                // for json set body and content type
+                if (bodyObject is JsonObject) {
+                    body = bodyObject
                     contentType(ContentType.Application.Json)
                 }
             }
@@ -136,88 +134,45 @@ object Crunchyroll {
 
     private suspend inline fun <reified T> requestGet(
         endpoint: String,
-        params: Parameters = listOf(),
+        params: List<Pair<String, Any?>> = listOf(),
         url: String = ""
-    ): T = coroutineScope {
+    ): T {
         val path = url.ifEmpty { "$baseUrl$endpoint" }
-        if (System.currentTimeMillis() > tokenValidUntil) refreshToken()
 
-        return@coroutineScope (Dispatchers.IO) {
-            client.request(path) {
-                method = HttpMethod.Get
-                header("Authorization", "$tokenType $accessToken")
-                params.forEach {
-                    parameter(it.first, it.second)
-                }
-            } as T
-        }
+        return request(path, HttpMethod.Get, params)
     }
 
     private suspend fun requestPost(
         endpoint: String,
-        params: Parameters = listOf(),
+        params: List<Pair<String, Any?>> = listOf(),
         bodyObject: JsonObject
-    ) = coroutineScope {
+    ) {
         val path = "$baseUrl$endpoint"
-        if (System.currentTimeMillis() > tokenValidUntil) refreshToken()
 
-        withContext(Dispatchers.IO) {
-            val response: HttpResponse = client.request(path) {
-                method = HttpMethod.Post
-                body = bodyObject
-                header("Authorization", "$tokenType $accessToken")
-                contentType(ContentType.Application.Json)
-                params.forEach {
-                    parameter(it.first, it.second)
-                }
-            }
-
-            Log.i(TAG, "Response: $response")
-        }
+        val response: HttpResponse = request(path, HttpMethod.Post, params, bodyObject)
+        Log.i(TAG, "Response: $response")
     }
 
     private suspend fun requestPatch(
         endpoint: String,
-        params: Parameters = listOf(),
+        params: List<Pair<String, Any?>> = listOf(),
         bodyObject: JsonObject
-    ) = coroutineScope {
+    ) {
         val path = "$baseUrl$endpoint"
-        if (System.currentTimeMillis() > tokenValidUntil) refreshToken()
 
-        withContext(Dispatchers.IO) {
-            val response: HttpResponse = client.request(path) {
-                method = HttpMethod.Patch
-                body = bodyObject
-                header("Authorization", "$tokenType $accessToken")
-                contentType(ContentType.Application.Json)
-                params.forEach {
-                    parameter(it.first, it.second)
-                }
-            }
-
-            Log.i(TAG, "Response: $response")
-        }
+        val response: HttpResponse = request(path, HttpMethod.Patch, params, bodyObject)
+        Log.i(TAG, "Response: $response")
     }
 
     private suspend fun requestDelete(
         endpoint: String,
-        params: Parameters = listOf(),
+        params: List<Pair<String, Any?>> = listOf(),
         url: String = ""
     ) = coroutineScope {
         val path = url.ifEmpty { "$baseUrl$endpoint" }
-        if (System.currentTimeMillis() > tokenValidUntil) refreshToken()
 
-        withContext(Dispatchers.IO) {
-            val response: HttpResponse = client.request(path) {
-                method = HttpMethod.Delete
-                header("Authorization", "$tokenType $accessToken")
-                params.forEach {
-                    parameter(it.first, it.second)
-                }
-            }
-
-            Log.i(TAG, "Response : $response")
-        }
+        val response: HttpResponse = request(path, HttpMethod.Delete, params)
+        Log.i(TAG, "Response: $response")
     }
 
     /**
@@ -282,7 +237,7 @@ object Crunchyroll {
     ): BrowseResult {
         val browseEndpoint = "/content/v1/browse"
         val noneOptParams = listOf(
-            "locale" to locale,
+            "locale" to Preferences.preferredLocale.toLanguageTag(),
             "sort_by" to sortBy.str,
             "start" to start,
             "n" to n
@@ -314,7 +269,12 @@ object Crunchyroll {
      */
     suspend fun search(query: String, n: Int = 10): SearchResult {
         val searchEndpoint = "/content/v1/search"
-        val parameters = listOf("q" to query, "n" to n, "locale" to locale, "type" to "series")
+        val parameters = listOf(
+            "locale" to Preferences.preferredLocale.toLanguageTag(),
+            "q" to query,
+            "n" to n,
+            "type" to "series"
+        )
 
         // TODO episodes have thumbnails as image, and not poster_tall/poster_tall,
         // to work around this, for now only tv shows are supported
@@ -337,7 +297,7 @@ object Crunchyroll {
     suspend fun objects(objects: List<String>): Collection<Item> {
         val episodesEndpoint = "/cms/v2/DE/M3/crunchyroll/objects/${objects.joinToString(",")}"
         val parameters = listOf(
-            "locale" to locale,
+            "locale" to Preferences.preferredLocale.toLanguageTag(),
             "Signature" to signature,
             "Policy" to policy,
             "Key-Pair-Id" to keyPairID
@@ -357,7 +317,7 @@ object Crunchyroll {
     @Suppress("unused")
     suspend fun seasonList(): DiscSeasonList {
         val seasonListEndpoint = "/content/v1/season_list"
-        val parameters = listOf("locale" to locale)
+        val parameters = listOf("locale" to Preferences.preferredLocale.toLanguageTag())
 
         return try {
             requestGet(seasonListEndpoint, parameters)
@@ -375,9 +335,9 @@ object Crunchyroll {
      * series id == crunchyroll id?
      */
     suspend fun series(seriesId: String): Series {
-        val seriesEndpoint = "/cms/v2/$country/M3/crunchyroll/series/$seriesId"
+        val seriesEndpoint = "/cms/v2/${token.country}/M3/crunchyroll/series/$seriesId"
         val parameters = listOf(
-            "locale" to locale,
+            "locale" to Preferences.preferredLocale.toLanguageTag(),
             "Signature" to signature,
             "Policy" to policy,
             "Key-Pair-Id" to keyPairID
@@ -398,7 +358,7 @@ object Crunchyroll {
         val upNextSeriesEndpoint = "/content/v1/up_next_series"
         val parameters = listOf(
             "series_id" to seriesId,
-            "locale" to locale
+            "locale" to Preferences.preferredLocale.toLanguageTag()
         )
 
         return try {
@@ -410,10 +370,10 @@ object Crunchyroll {
     }
 
     suspend fun seasons(seriesId: String): Seasons {
-        val seasonsEndpoint = "/cms/v2/$country/M3/crunchyroll/seasons"
+        val seasonsEndpoint = "/cms/v2/${token.country}/M3/crunchyroll/seasons"
         val parameters = listOf(
             "series_id" to seriesId,
-            "locale" to locale,
+            "locale" to Preferences.preferredLocale.toLanguageTag(),
             "Signature" to signature,
             "Policy" to policy,
             "Key-Pair-Id" to keyPairID
@@ -428,10 +388,10 @@ object Crunchyroll {
     }
 
     suspend fun episodes(seasonId: String): Episodes {
-        val episodesEndpoint = "/cms/v2/$country/M3/crunchyroll/episodes"
+        val episodesEndpoint = "/cms/v2/${token.country}/M3/crunchyroll/episodes"
         val parameters = listOf(
             "season_id" to seasonId,
-            "locale" to locale,
+            "locale" to Preferences.preferredLocale.toLanguageTag(),
             "Signature" to signature,
             "Policy" to policy,
             "Key-Pair-Id" to keyPairID
@@ -466,7 +426,7 @@ object Crunchyroll {
      */
     suspend fun isWatchlist(seriesId: String): Boolean {
         val watchlistSeriesEndpoint = "/content/v1/watchlist/$accountID/$seriesId"
-        val parameters = listOf("locale" to locale)
+        val parameters = listOf("locale" to Preferences.preferredLocale.toLanguageTag())
 
         return try {
             (requestGet(watchlistSeriesEndpoint, parameters) as JsonObject)
@@ -484,7 +444,7 @@ object Crunchyroll {
      */
     suspend fun postWatchlist(seriesId: String) {
         val watchlistPostEndpoint = "/content/v1/watchlist/$accountID"
-        val parameters = listOf("locale" to locale)
+        val parameters = listOf("locale" to Preferences.preferredLocale.toLanguageTag())
 
         val json = buildJsonObject {
             put("content_id", seriesId)
@@ -500,7 +460,7 @@ object Crunchyroll {
      */
     suspend fun deleteWatchlist(seriesId: String) {
         val watchlistDeleteEndpoint = "/content/v1/watchlist/$accountID/$seriesId"
-        val parameters = listOf("locale" to locale)
+        val parameters = listOf("locale" to Preferences.preferredLocale.toLanguageTag())
 
         requestDelete(watchlistDeleteEndpoint, parameters)
     }
@@ -515,7 +475,7 @@ object Crunchyroll {
      */
     suspend fun playheads(episodeIDs: List<String>): PlayheadsMap {
         val playheadsEndpoint = "/content/v1/playheads/$accountID/${episodeIDs.joinToString(",")}"
-        val parameters = listOf("locale" to locale)
+        val parameters = listOf("locale" to Preferences.preferredLocale.toLanguageTag())
 
         return try {
             requestGet(playheadsEndpoint, parameters)
@@ -527,7 +487,7 @@ object Crunchyroll {
 
     suspend fun postPlayheads(episodeId: String, playhead: Int) {
         val playheadsEndpoint = "/content/v1/playheads/$accountID"
-        val parameters = listOf("locale" to locale)
+        val parameters = listOf("locale" to Preferences.preferredLocale.toLanguageTag())
 
         val json = buildJsonObject {
             put("content_id", episodeId)
@@ -549,7 +509,10 @@ object Crunchyroll {
      */
     suspend fun watchlist(n: Int = 20): Watchlist {
         val watchlistEndpoint = "/content/v1/$accountID/watchlist"
-        val parameters = listOf("locale" to locale, "n" to n)
+        val parameters = listOf(
+            "locale" to Preferences.preferredLocale.toLanguageTag(),
+            "n" to n
+        )
 
         val list: ContinueWatchingList = try {
             requestGet(watchlistEndpoint, parameters)
@@ -570,7 +533,10 @@ object Crunchyroll {
      */
     suspend fun upNextAccount(n: Int = 20): ContinueWatchingList {
         val watchlistEndpoint = "/content/v1/$accountID/up_next_account"
-        val parameters = listOf("locale" to locale, "n" to n)
+        val parameters = listOf(
+            "locale" to Preferences.preferredLocale.toLanguageTag(),
+            "n" to n
+        )
 
         return try {
             requestGet(watchlistEndpoint, parameters)

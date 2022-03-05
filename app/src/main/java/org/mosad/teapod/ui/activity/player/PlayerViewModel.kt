@@ -83,7 +83,7 @@ class PlayerViewModel(application: Application) : AndroidViewModel(application) 
     var currentPlayback = NonePlayback
 
     // current playback settings
-    var currentLanguage: Locale = Preferences.preferredLocal
+    var currentLanguage: Locale = Preferences.preferredLocale
         internal set
 
     init {

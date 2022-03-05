@@ -132,6 +132,7 @@
     <string name="save_key_user_login" translatable="false">org.mosad.teapod.user_login</string>
     <string name="save_key_user_password" translatable="false">org.mosad.teapod.user_password</string>
     <string name="save_key_prefer_secondary" translatable="false">org.mosad.teapod.prefer_secondary</string>
+    <string name="save_key_preferred_local" translatable="false">org.mosad.teapod.preferred_local</string>
     <string name="save_key_autoplay" translatable="false">org.mosad.teapod.autoplay</string>
     <string name="save_key_dev_settings" translatable="false">org.mosad.teapod.dev.settings</string>
     <string name="save_key_theme" translatable="false">org.mosad.teapod.theme</string>

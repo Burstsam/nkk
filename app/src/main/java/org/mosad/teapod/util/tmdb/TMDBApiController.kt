@@ -22,15 +22,17 @@
 
 package org.mosad.teapod.util.tmdb
 
-import com.github.kittinunf.fuel.Fuel
-import com.github.kittinunf.fuel.core.FuelError
-import com.github.kittinunf.fuel.core.Parameters
-import com.github.kittinunf.fuel.json.FuelJson
-import com.github.kittinunf.fuel.json.responseJson
-import com.github.kittinunf.result.Result
-import kotlinx.coroutines.*
-import kotlinx.serialization.ExperimentalSerializationApi
-import kotlinx.serialization.decodeFromString
+import android.util.Log
+import io.ktor.client.*
+import io.ktor.client.call.*
+import io.ktor.client.features.json.*
+import io.ktor.client.features.json.serializer.*
+import io.ktor.client.request.*
+import io.ktor.client.statement.*
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.coroutineScope
+import kotlinx.coroutines.invoke
+import kotlinx.serialization.SerializationException
 import kotlinx.serialization.json.Json
 import org.mosad.teapod.util.concatenate
 
@@ -41,8 +43,14 @@ import org.mosad.teapod.util.concatenate
  *
  */
 class TMDBApiController {
+    private val classTag = javaClass.name
 
     private val json = Json { ignoreUnknownKeys = true }
+    private val client = HttpClient {
+        install(JsonFeature) {
+            serializer = KotlinxSerializer(json)
+        }
+    }
 
     private val apiUrl = "https://api.themoviedb.org/3"
     private val apiKey = "de959cf9c07a08b5ca7cb51cda9a40c2"
@@ -52,19 +60,22 @@ class TMDBApiController {
         const val imageUrl = "https://image.tmdb.org/t/p/w500"
     }
 
-    private suspend fun request(
+    private suspend inline fun <reified T> request(
         endpoint: String,
-        parameters: Parameters = emptyList()
-    ): Result<FuelJson, FuelError> = coroutineScope {
+        parameters: List<Pair<String, Any?>> = emptyList()
+    ): T = coroutineScope {
         val path = "$apiUrl$endpoint"
         val params = concatenate(listOf("api_key" to apiKey, "language" to language), parameters)
 
         // TODO handle FileNotFoundException
         return@coroutineScope (Dispatchers.IO) {
-            val (_, _, result) = Fuel.get(path, params)
-                .responseJson()
+            val response: HttpResponse = client.get(path) {
+                params.forEach {
+                    parameter(it.first, it.second)
+                }
+            }
 
-            result
+            response.receive<T>()
         }
     }
 
@@ -78,10 +89,12 @@ class TMDBApiController {
         val searchEndpoint = "/search/multi"
         val parameters = listOf("query" to query, "include_adult" to false)
 
-        val result = request(searchEndpoint, parameters)
-        return result.component1()?.obj()?.let {
-            json.decodeFromString(it.toString())
-        } ?: NoneTMDBSearchMovie
+        return try {
+            request(searchEndpoint, parameters)
+        }catch (ex: SerializationException) {
+            Log.e(classTag, "SerializationException in searchMovie(), with query = $query.", ex)
+            NoneTMDBSearchMovie
+        }
     }
 
     /**
@@ -94,10 +107,12 @@ class TMDBApiController {
         val searchEndpoint = "/search/tv"
         val parameters = listOf("query" to query, "include_adult" to false)
 
-        val result = request(searchEndpoint, parameters)
-        return result.component1()?.obj()?.let {
-            json.decodeFromString(it.toString())
-        } ?: NoneTMDBSearchTVShow
+        return try {
+            request(searchEndpoint, parameters)
+        }catch (ex: SerializationException) {
+            Log.e(classTag, "SerializationException in searchTVShow(), with query = $query.", ex)
+            NoneTMDBSearchTVShow
+        }
     }
 
     /**
@@ -109,10 +124,12 @@ class TMDBApiController {
         val movieEndpoint = "/movie/$movieId"
 
         // TODO is FileNotFoundException handling needed?
-        val result = request(movieEndpoint)
-        return result.component1()?.obj()?.let {
-            json.decodeFromString(it.toString())
-        } ?: NoneTMDBMovie
+        return try {
+            request(movieEndpoint)
+        }catch (ex: SerializationException) {
+            Log.e(classTag, "SerializationException in getMovieDetails(), with movieId = $movieId.", ex)
+            NoneTMDBMovie
+        }
     }
 
     /**
@@ -124,10 +141,12 @@ class TMDBApiController {
         val tvShowEndpoint = "/tv/$tvId"
 
         // TODO is FileNotFoundException handling needed?
-        val result = request(tvShowEndpoint)
-        return result.component1()?.obj()?.let {
-            json.decodeFromString(it.toString())
-        } ?: NoneTMDBTVShow
+        return try {
+            request(tvShowEndpoint)
+        }catch (ex: SerializationException) {
+            Log.e(classTag, "SerializationException in getTVShowDetails(), with tvId = $tvId.", ex)
+            NoneTMDBTVShow
+        }
     }
 
     @Suppress("unused")
@@ -141,10 +160,12 @@ class TMDBApiController {
         val tvShowSeasonEndpoint = "/tv/$tvId/season/$seasonNumber"
 
         // TODO is FileNotFoundException handling needed?
-        val result = request(tvShowSeasonEndpoint)
-        return result.component1()?.obj()?.let {
-            json.decodeFromString(it.toString())
-        } ?: NoneTMDBTVSeason
+        return try {
+            request(tvShowSeasonEndpoint)
+        }catch (ex: SerializationException) {
+            Log.e(classTag, "SerializationException in getTVSeasonDetails(), with tvId = $tvId, seasonNumber = $seasonNumber.", ex)
+            NoneTMDBTVSeason
+        }
     }
 
 }

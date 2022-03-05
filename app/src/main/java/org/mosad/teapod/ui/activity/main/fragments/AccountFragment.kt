@@ -180,18 +180,21 @@ class AccountFragment : Fragment() {
         MaterialAlertDialogBuilder(requireContext())
             .setTitle(R.string.settings_content_language)
             .setSingleChoiceItems(items, initialSelection){ dialog, which ->
-                updatePrefContentLanguage(supportedLocals[which].toLanguageTag())
+                updatePrefContentLanguage(supportedLocals[which])
                 dialog.dismiss()
             }
             .show()
     }
 
     @kotlinx.coroutines.ExperimentalCoroutinesApi
-    private fun updatePrefContentLanguage(languageTag: String) {
+    private fun updatePrefContentLanguage(preferredLocale: Locale) {
         lifecycleScope.launch {
-            Crunchyroll.postPrefSubLanguage(languageTag)
+            Crunchyroll.postPrefSubLanguage(preferredLocale.toLanguageTag())
 
         }.invokeOnCompletion {
+            // update the local preferred content language
+            Preferences.savePreferredLocal(requireContext(), preferredLocale)
+
             // update profile since the language selection might have changed
             profile = lifecycleScope.async { Crunchyroll.profile() }
             profile.invokeOnCompletion {

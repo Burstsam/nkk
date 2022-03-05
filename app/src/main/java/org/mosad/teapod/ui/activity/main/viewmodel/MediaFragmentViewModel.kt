@@ -62,7 +62,7 @@ class MediaFragmentViewModel(application: Application) : AndroidViewModel(applic
         println(upNextSeries)
 
         // load the preferred season (preferred language, language per season, not per stream)
-        currentSeasonCrunchy = seasonsCrunchy.getPreferredSeason(Preferences.preferredLocal)
+        currentSeasonCrunchy = seasonsCrunchy.getPreferredSeason(Preferences.preferredLocale)
 
         // load episodes and metaDB in parallel (tmdb needs mediaType, which is set via episodes)
         listOf(

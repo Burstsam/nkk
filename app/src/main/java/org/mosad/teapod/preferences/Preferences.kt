@@ -10,7 +10,7 @@ object Preferences {
 
     var preferSecondary = false
         internal set
-    var preferredLocal = Locale.GERMANY
+    var preferredLocale: Locale = Locale.forLanguageTag("en-US") // TODO this should be saved (potential offline usage) but fetched on start
         internal set
     var autoplay = true
         internal set
@@ -33,6 +33,15 @@ object Preferences {
         }
 
         this.preferSecondary = preferSecondary
+    }
+
+    fun savePreferredLocal(context: Context, preferredLocale: Locale) {
+        with(getSharedPref(context).edit()) {
+            putString(context.getString(R.string.save_key_preferred_local), preferredLocale.toLanguageTag())
+            apply()
+        }
+
+        this.preferredLocale = preferredLocale
     }
 
     fun saveAutoplay(context: Context, autoplay: Boolean) {
@@ -70,6 +79,11 @@ object Preferences {
 
         preferSecondary = sharedPref.getBoolean(
             context.getString(R.string.save_key_prefer_secondary), false
+        )
+        preferredLocale = Locale.forLanguageTag(
+            sharedPref.getString(
+                context.getString(R.string.save_key_preferred_local), "en-US"
+            ) ?: "en-US"
         )
         autoplay = sharedPref.getBoolean(
             context.getString(R.string.save_key_autoplay), true

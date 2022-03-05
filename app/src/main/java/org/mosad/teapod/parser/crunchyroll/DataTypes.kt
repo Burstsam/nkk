@@ -1,3 +1,25 @@
+/**
+ * Teapod
+ *
+ * Copyright 2020-2022  <seil0@mosad.xyz>
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
+ * MA 02110-1301, USA.
+ *
+ */
+
 package org.mosad.teapod.parser.crunchyroll
 
 import kotlinx.serialization.SerialName
@@ -29,8 +51,19 @@ enum class SortBy(val str: String) {
 }
 
 /**
- * index, account. This must pe present for the app to work!
+ * token, index, account. This must pe present for the app to work!
  */
+@Serializable
+data class Token(
+    @SerialName("access_token") val accessToken: String,
+    @SerialName("refresh_token") val refreshToken: String,
+    @SerialName("expires_in") val expiresIn: Int,
+    @SerialName("token_type") val tokenType: String,
+    @SerialName("scope") val scope: String,
+    @SerialName("country") val country: String,
+    @SerialName("account_id") val accountId: String,
+)
+
 @Serializable
 data class Index(
     @SerialName("cms") val cms: CMS,

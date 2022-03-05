@@ -110,8 +110,8 @@ data class TMDBTVShow(
 
 // use null for nullable types, the gui needs to handle/implement a fallback for null values
 val NoneTMDB = TMDBBase(0, "", "", null, null)
-val NoneTMDBMovie = TMDBMovie(0, "", "", null, null, "", null, "")
-val NoneTMDBTVShow = TMDBTVShow(0, "", "", null, null, "", "", "")
+val NoneTMDBMovie = TMDBMovie(0, "", "", null, null, "1970-01-01", null, "")
+val NoneTMDBTVShow = TMDBTVShow(0, "", "", null, null, "1970-01-01", "1970-01-01", "")
 
 @Serializable
 data class TMDBTVSeason(

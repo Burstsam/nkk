@@ -14,7 +14,7 @@ android {
         minSdkVersion 23
         targetSdkVersion 30
         versionCode 4200 //00.04.200
-        versionName "1.0.0-alpha4"
+        versionName "1.0.0-alpha5"
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         resValue "string", "build_time", buildTime()
@@ -72,11 +72,6 @@ dependencies {
     implementation 'com.afollestad.material-dialogs:core:3.3.0'
     implementation 'com.afollestad.material-dialogs:bottomsheets:3.3.0'
 
-    implementation 'com.github.kittinunf.fuel:fuel:2.3.1'
-    implementation 'com.github.kittinunf.fuel:fuel-android:2.3.1'
-    implementation 'com.github.kittinunf.fuel:fuel-json:2.3.1'
-
-    // TODO replace fuel with ktor
     implementation "io.ktor:ktor-client-core:$ktor_version"
     implementation "io.ktor:ktor-client-android:$ktor_version"
     implementation "io.ktor:ktor-client-serialization:$ktor_version"
