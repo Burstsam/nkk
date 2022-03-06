@@ -44,9 +44,11 @@ import org.mosad.teapod.ui.activity.onboarding.OnboardingActivity
 import org.mosad.teapod.ui.activity.player.PlayerActivity
 import org.mosad.teapod.ui.components.LoginDialog
 import org.mosad.teapod.util.DataTypes
+import java.util.*
 import kotlin.system.measureTimeMillis
 
 class MainActivity : AppCompatActivity(), NavigationBarView.OnItemSelectedListener {
+    private val classTag = javaClass.name
 
     private lateinit var binding: ActivityMainBinding
     private var activeBaseFragment: Fragment = HomeFragment() // the currently active fragment, home at the start
@@ -146,16 +148,20 @@ class MainActivity : AppCompatActivity(), NavigationBarView.OnItemSelectedListen
                 runBlocking { initCrunchyroll().joinAll() }
             }
         }
-        Log.i(javaClass.name, "loading in $time ms")
+        Log.i(classTag, "loading in $time ms")
     }
 
     private fun initCrunchyroll(): List<Job> {
-        println("init")
-
         val scope = CoroutineScope(Dispatchers.IO + CoroutineName("InitialLoadingScope"))
         return listOf(
             scope.launch { Crunchyroll.index() },
-            scope.launch { Crunchyroll.account() }
+            scope.launch { Crunchyroll.account() },
+            scope.launch {
+                // update the local preferred content language, since it may have changed
+                val locale = Locale.forLanguageTag(Crunchyroll.profile().preferredContentSubtitleLanguage)
+                Preferences.savePreferredLocal(this@MainActivity, locale)
+
+            }
         )
     }
 
@@ -169,7 +175,7 @@ class MainActivity : AppCompatActivity(), NavigationBarView.OnItemSelectedListen
 //                Log.w(javaClass.name, "Login failed, please try again.")
 //            }
         }.negativeButton {
-            Log.i(javaClass.name, "Login canceled, exiting.")
+            Log.i(classTag, "Login canceled, exiting.")
             finish()
         }.show()
     }
