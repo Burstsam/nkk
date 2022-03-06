@@ -47,8 +47,6 @@ import org.mosad.teapod.parser.crunchyroll.NoneEpisodes
 import org.mosad.teapod.parser.crunchyroll.NonePlayback
 import org.mosad.teapod.preferences.Preferences
 import org.mosad.teapod.util.EpisodeMeta
-import org.mosad.teapod.util.Meta
-import org.mosad.teapod.util.TVShowMeta
 import org.mosad.teapod.util.tmdb.TMDBTVSeason
 import java.util.*
 
@@ -64,12 +62,12 @@ class PlayerViewModel(application: Application) : AndroidViewModel(application) 
     private val mediaSession = MediaSessionCompat(application, "TEAPOD_PLAYER_SESSION")
 
     val currentEpisodeChangedListener = ArrayList<() -> Unit>()
-    private val preferredLanguage = if (Preferences.preferSecondary) Locale.JAPANESE else Locale.GERMAN
     private var currentPlayhead: Long = 0
 
-    // tmdb/meta data TODO currently not implemented for cr
-    var mediaMeta: Meta? = null
-        internal set
+    // tmdb/meta data
+    // TODO meta data currently not implemented for cr
+//    var mediaMeta: Meta? = null
+//        internal set
     var tmdbTVSeason: TMDBTVSeason? =null
         internal set
     var currentEpisodeMeta: EpisodeMeta? = null
@@ -224,8 +222,9 @@ class PlayerViewModel(application: Application) : AndroidViewModel(application) 
                 currentPlayback.streams.adaptive_hls[fallbackLocal.toLanguageTag()]?.url
             }
             else -> {
+                // if no language tag is present use the first entry
                 currentLanguage = Locale.ROOT
-                currentPlayback.streams.adaptive_hls[Locale.ROOT.toLanguageTag()]?.url ?: ""
+                currentPlayback.streams.adaptive_hls.entries.first().value.url
             }
         }
         println("stream url: $url")
@@ -267,25 +266,25 @@ class PlayerViewModel(application: Application) : AndroidViewModel(application) 
         return episodes.items.lastOrNull()?.id == currentEpisode.id
     }
 
-    fun getEpisodeMetaByAoDMediaId(aodMediaId: Int): EpisodeMeta? {
-        val meta = mediaMeta
-        return if (meta is TVShowMeta) {
-            meta.episodes.firstOrNull { it.aodMediaId == aodMediaId }
-        } else {
-            null
-        }
-    }
-
     // TODO reimplement for cr
-    private suspend fun loadMediaMeta(aodId: Int): Meta? {
+//    fun getEpisodeMetaByAoDMediaId(aodMediaId: Int): EpisodeMeta? {
+//        val meta = mediaMeta
+//        return if (meta is TVShowMeta) {
+//            meta.episodes.firstOrNull { it.aodMediaId == aodMediaId }
+//        } else {
+//            null
+//        }
+//    }
+//
+//    private suspend fun loadMediaMeta(aodId: Int): Meta? {
 //        return if (media.type == DataTypes.MediaType.TVSHOW) {
 //            MetaDBController().getTVShowMetadata(aodId)
 //        } else {
 //            null
 //        }
-
-        return null
-    }
+//
+//        return null
+//    }
 
     /**
      * Update the playhead of the current episode, if currentPosition > 1000ms.

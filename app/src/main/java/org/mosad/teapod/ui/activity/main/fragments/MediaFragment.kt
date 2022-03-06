@@ -51,9 +51,6 @@ class MediaFragment(private val mediaIdStr: String) : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-
-        println("onViewCreated")
-
         binding.frameLoading.visibility = View.VISIBLE
 
         // tab layout and pager

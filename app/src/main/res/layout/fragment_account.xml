@@ -198,7 +198,7 @@
                         android:id="@+id/imageView3"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:contentDescription="@string/settings_secondary"
+                        android:contentDescription="@string/settings_prefer_subbed"
                         android:minWidth="48dp"
                         android:minHeight="48dp"
                         android:padding="9dp"
@@ -225,7 +225,7 @@
                                 android:layout_width="match_parent"
                                 android:layout_height="wrap_content"
                                 android:layout_weight="1"
-                                android:text="@string/settings_secondary"
+                                android:text="@string/settings_prefer_subbed"
                                 android:textSize="16sp" />
 
                             <TextView
@@ -234,7 +234,7 @@
                                 android:layout_height="wrap_content"
                                 android:layout_weight="1"
                                 android:maxLines="2"
-                                android:text="@string/settings_secondary_desc"
+                                android:text="@string/settings_prefer_subbed_desc"
                                 android:textColor="?textSecondary" />
                         </LinearLayout>
 

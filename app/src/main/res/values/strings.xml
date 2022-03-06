@@ -40,7 +40,7 @@
     <string name="component_poster_desc" translatable="false">episode poster</string>
     <string name="component_watched_desc" translatable="false">already watched</string>
 
-    <!-- settings fragment -->
+    <!-- account fragment -->
     <string name="account">Account</string>
     <string name="account_login_ex" translatable="false">user@example.com</string>
     <string name="account_login_desc">Tap to edit</string>
@@ -50,8 +50,8 @@
     <string name="settings_content_language">Preferred content language</string>
     <string name="settings_content_language_desc">English</string>
     <string name="settings_content_language_none">None</string>
-    <string name="settings_secondary">Prefer japanese (sub)</string>
-    <string name="settings_secondary_desc">Use japanese, if present</string>
+    <string name="settings_prefer_subbed">Prefer subbed</string>
+    <string name="settings_prefer_subbed_desc">Use original language, if present</string>
     <string name="settings_autoplay">Autoplay</string>
     <string name="settings_autoplay_desc">Play next episode automatically</string>
     <string name="theme">Theme</string>
@@ -131,6 +131,7 @@
     <string name="preference_file_key" translatable="false">org.mosad.teapod.preferences</string>
     <string name="save_key_user_login" translatable="false">org.mosad.teapod.user_login</string>
     <string name="save_key_user_password" translatable="false">org.mosad.teapod.user_password</string>
+    <!-- for legacy reasons the prefer subbed key is called prefer_secondary-->
     <string name="save_key_prefer_secondary" translatable="false">org.mosad.teapod.prefer_secondary</string>
     <string name="save_key_preferred_local" translatable="false">org.mosad.teapod.preferred_local</string>
     <string name="save_key_autoplay" translatable="false">org.mosad.teapod.autoplay</string>

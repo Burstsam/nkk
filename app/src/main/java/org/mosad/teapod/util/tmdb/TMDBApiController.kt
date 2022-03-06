@@ -34,6 +34,7 @@ import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.invoke
 import kotlinx.serialization.SerializationException
 import kotlinx.serialization.json.Json
+import org.mosad.teapod.preferences.Preferences
 import org.mosad.teapod.util.concatenate
 
 /**
@@ -54,7 +55,6 @@ class TMDBApiController {
 
     private val apiUrl = "https://api.themoviedb.org/3"
     private val apiKey = "de959cf9c07a08b5ca7cb51cda9a40c2"
-    private val language = "de"
 
     companion object{
         const val imageUrl = "https://image.tmdb.org/t/p/w500"
@@ -65,7 +65,10 @@ class TMDBApiController {
         parameters: List<Pair<String, Any?>> = emptyList()
     ): T = coroutineScope {
         val path = "$apiUrl$endpoint"
-        val params = concatenate(listOf("api_key" to apiKey, "language" to language), parameters)
+        val params = concatenate(
+            listOf("api_key" to apiKey, "language" to Preferences.preferredLocale.language),
+            parameters
+        )
 
         // TODO handle FileNotFoundException
         return@coroutineScope (Dispatchers.IO) {

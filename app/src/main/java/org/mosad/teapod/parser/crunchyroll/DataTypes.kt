@@ -224,22 +224,13 @@ data class Seasons(
     @SerialName("items") val items: List<Season>
 ) {
     fun getPreferredSeason(local: Locale): Season {
-        // try to get the the first seasons which matches the preferred local
-        items.forEach { season ->
-            if (season.title.startsWith("(${local.language})", true)) {
-                return season
-            }
-        }
-
-        // if there is no season with the preferred local, try to find a subbed season
-        items.forEach { season ->
-            if (season.isSubbed) {
-                return season
-            }
-        }
-
-        // if there is no preferred language season and no sub, use the first season
-        return items.first()
+        return items.firstOrNull { season ->
+            // try to get the the first seasons which matches the preferred local
+            season.slugTitle.endsWith("${local.displayLanguage}-dub", true)
+        } ?: items.firstOrNull { season ->
+            // if there is no season with the preferred local, try to find a subbed season
+            season.isSubbed
+        } ?: items.first() // if no preferred language and no sub, use the first season
     }
 }
 
@@ -247,6 +238,7 @@ data class Seasons(
 data class Season(
     @SerialName("id") val id: String,
     @SerialName("title") val title: String,
+    @SerialName("slug_title") val slugTitle: String,
     @SerialName("series_id") val seriesId: String,
     @SerialName("season_number") val seasonNumber: Int,
     @SerialName("is_subbed") val isSubbed: Boolean,
@@ -254,7 +246,7 @@ data class Season(
 )
 
 val NoneSeasons = Seasons(0, emptyList())
-val NoneSeason = Season("", "", "", 0, isSubbed = false, isDubbed = false)
+val NoneSeason = Season("", "", "", "", 0, isSubbed = false, isDubbed = false)
 
 
 /**

@@ -8,9 +8,9 @@ import java.util.*
 
 object Preferences {
 
-    var preferSecondary = false
-        internal set
     var preferredLocale: Locale = Locale.forLanguageTag("en-US") // TODO this should be saved (potential offline usage) but fetched on start
+        internal set
+    var preferSubbed = false
         internal set
     var autoplay = true
         internal set
@@ -26,15 +26,6 @@ object Preferences {
         )
     }
 
-    fun savePreferSecondary(context: Context, preferSecondary: Boolean) {
-        with(getSharedPref(context).edit()) {
-            putBoolean(context.getString(R.string.save_key_prefer_secondary), preferSecondary)
-            apply()
-        }
-
-        this.preferSecondary = preferSecondary
-    }
-
     fun savePreferredLocal(context: Context, preferredLocale: Locale) {
         with(getSharedPref(context).edit()) {
             putString(context.getString(R.string.save_key_preferred_local), preferredLocale.toLanguageTag())
@@ -42,6 +33,15 @@ object Preferences {
         }
 
         this.preferredLocale = preferredLocale
+    }
+
+    fun savePreferSecondary(context: Context, preferSubbed: Boolean) {
+        with(getSharedPref(context).edit()) {
+            putBoolean(context.getString(R.string.save_key_prefer_secondary), preferSubbed)
+            apply()
+        }
+
+        this.preferSubbed = preferSubbed
     }
 
     fun saveAutoplay(context: Context, autoplay: Boolean) {
@@ -77,13 +77,13 @@ object Preferences {
     fun load(context: Context) {
         val sharedPref = getSharedPref(context)
 
-        preferSecondary = sharedPref.getBoolean(
-            context.getString(R.string.save_key_prefer_secondary), false
-        )
         preferredLocale = Locale.forLanguageTag(
             sharedPref.getString(
                 context.getString(R.string.save_key_preferred_local), "en-US"
             ) ?: "en-US"
+        )
+        preferSubbed = sharedPref.getBoolean(
+            context.getString(R.string.save_key_prefer_secondary), false
         )
         autoplay = sharedPref.getBoolean(
             context.getString(R.string.save_key_autoplay), true

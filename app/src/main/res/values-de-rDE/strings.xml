@@ -42,8 +42,8 @@
     <string name="settings_content_language">Bevorzuge Inhaltssprache</string>
     <string name="settings_content_language_desc">Englisch</string>
     <string name="settings_content_language_none">Keine</string>
-    <string name="settings_secondary">Bevorzuge Japanisch (OmU)</string>
-    <string name="settings_secondary_desc">Japanisch verwenden, sofern vorhanden</string>
+    <string name="settings_prefer_subbed">Bevorzuge OmU</string>
+    <string name="settings_prefer_subbed_desc">Original Sprache verwenden, sofern vorhanden</string>
     <string name="settings_autoplay">Autoplay</string>
     <string name="settings_autoplay_desc">Nächste Episode automatisch abspielen</string>
     <string name="theme">Design</string>

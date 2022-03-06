@@ -85,7 +85,7 @@ class AccountFragment : Fragment() {
                 profile.await().preferredContentSubtitleLanguage
             ).displayLanguage
         }
-        binding.switchSecondary.isChecked = Preferences.preferSecondary
+        binding.switchSecondary.isChecked = Preferences.preferSubbed
         binding.switchAutoplay.isChecked = Preferences.autoplay
         binding.textThemeSelected.text = when (Preferences.theme) {
             Theme.DARK -> getString(R.string.theme_dark)
