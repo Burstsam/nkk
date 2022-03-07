@@ -226,7 +226,7 @@ data class Seasons(
     fun getPreferredSeason(local: Locale): Season {
         return items.firstOrNull { season ->
             // try to get the the first seasons which matches the preferred local
-            season.slugTitle.endsWith("${local.displayLanguage}-dub", true)
+            season.slugTitle.endsWith("${local.getDisplayLanguage(Locale.ENGLISH)}-dub", true)
         } ?: items.firstOrNull { season ->
             // if there is no season with the preferred local, try to find a subbed season
             season.isSubbed
