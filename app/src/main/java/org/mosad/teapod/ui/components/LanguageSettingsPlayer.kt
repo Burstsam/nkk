@@ -16,6 +16,7 @@ import org.mosad.teapod.databinding.PlayerLanguageSettingsBinding
 import org.mosad.teapod.ui.activity.player.PlayerViewModel
 import java.util.*
 
+// TODO port to DialogFragment
 class LanguageSettingsPlayer @JvmOverloads constructor(
     context: Context,
     attrs: AttributeSet? = null,
@@ -24,16 +25,17 @@ class LanguageSettingsPlayer @JvmOverloads constructor(
 ) : LinearLayout(context, attrs, defStyleAttr) {
 
     private val binding = PlayerLanguageSettingsBinding.inflate(LayoutInflater.from(context), this, true)
-    var onViewRemovedAction: (() -> Unit)? = null // TODO find a better solution for this
+    var onViewRemovedAction: (() -> Unit)? = null
 
-    private var currentLanguage = model?.currentLanguage ?: Locale.ROOT
+    private var selectedLocale = model?.currentLanguage ?: Locale.ROOT
 
     init {
-        model?.let {
-            model.currentEpisode.streams.forEach { stream ->
-                addLanguage(stream.language.displayName, stream.language == currentLanguage) {
-                    currentLanguage = stream.language
-                    updateSelectedLanguage(it as TextView)
+        model?.let { m ->
+            m.currentPlayback.streams.adaptive_hls.keys.forEach { languageTag ->
+                val locale = Locale.forLanguageTag(languageTag)
+                addLanguage(locale, locale == m.currentLanguage) { v ->
+                    selectedLocale = locale
+                    updateSelectedLanguage(v as TextView)
                 }
             }
         }
@@ -41,16 +43,16 @@ class LanguageSettingsPlayer @JvmOverloads constructor(
         binding.buttonCloseLanguageSettings.setOnClickListener { close() }
         binding.buttonCancel.setOnClickListener { close() }
         binding.buttonSelect.setOnClickListener {
-            model?.setLanguage(currentLanguage)
+            model?.setLanguage(selectedLocale)
             close()
         }
     }
 
-    private fun addLanguage(str: String, isSelected: Boolean, onClick: OnClickListener) {
+    private fun addLanguage(locale: Locale, isSelected: Boolean, onClick: OnClickListener) {
         val text = TextView(context).apply {
             height = 96
             gravity = Gravity.CENTER_VERTICAL
-            text = str
+            text = if (locale == Locale.ROOT) context.getString(R.string.no_subtitles) else locale.displayLanguage
             setTextSize(TypedValue.COMPLEX_UNIT_SP, 16f)
 
             if (isSelected) {

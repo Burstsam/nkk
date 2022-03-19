@@ -31,6 +31,7 @@ import com.afollestad.materialdialogs.customview.customView
 import com.afollestad.materialdialogs.customview.getCustomView
 import org.mosad.teapod.R
 
+// TODO rework and port away from MaterialDialog
 class LoginDialog(val context: Context, firstTry: Boolean) {
 
     private val dialog = MaterialDialog(context, BottomSheet())

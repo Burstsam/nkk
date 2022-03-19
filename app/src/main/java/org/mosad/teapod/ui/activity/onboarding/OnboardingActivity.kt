@@ -16,7 +16,7 @@ class OnboardingActivity : AppCompatActivity() {
     private lateinit var binding: ActivityOnboardingBinding
     private lateinit var pagerAdapter: FragmentStateAdapter
 
-    private val fragments = arrayOf(OnLoginFragment())
+    private val fragments = arrayOf(OnWelcomeFragment(), OnLoginFragment())
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)

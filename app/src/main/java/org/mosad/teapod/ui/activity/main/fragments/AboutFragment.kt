@@ -9,7 +9,7 @@ import android.view.ViewGroup
 import android.widget.Toast
 import androidx.annotation.RawRes
 import androidx.fragment.app.Fragment
-import com.afollestad.materialdialogs.MaterialDialog
+import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import org.mosad.teapod.BuildConfig
 import org.mosad.teapod.R
 import org.mosad.teapod.databinding.FragmentAboutBinding
@@ -68,9 +68,9 @@ class AboutFragment : Fragment() {
         }
 
         binding.linearLicense.setOnClickListener {
-            MaterialDialog(requireContext())
-                .title(text = License.GPL3.long)
-                .message(text = parseLicense(R.raw.gpl_3_full))
+            MaterialAlertDialogBuilder(requireContext())
+                .setTitle(License.GPL3.long)
+                .setMessage(parseLicense(R.raw.gpl_3_full))
                 .show()
         }
     }
@@ -113,9 +113,9 @@ class AboutFragment : Fragment() {
                 "https://github.com/google/material-design-icons", License.APACHE2),
             ThirdPartyComponent("Material Dialogs", "", "Aidan Follestad",
                 "https://github.com/afollestad/material-dialogs", License.APACHE2),
-            ThirdPartyComponent("Jsoup", "2009 - 2020", "Jonathan Hedley",
-                "https://jsoup.org/", License.MIT),
-            ThirdPartyComponent("kotlinx.coroutines", "2016 - 2019", "JetBrains",
+            ThirdPartyComponent("Ktor", "2014-2021", "JetBrains s.r.o and contributors",
+                "https://ktor.io/", License.APACHE2),
+            ThirdPartyComponent("kotlinx.coroutines", "2016-2021", "JetBrains s.r.o",
                 "https://github.com/Kotlin/kotlinx.coroutines", License.APACHE2),
             ThirdPartyComponent("Glide", "2014", "Google Inc.",
                 "https://github.com/bumptech/glide", License.BSD2),
@@ -132,9 +132,9 @@ class AboutFragment : Fragment() {
             License.MIT -> parseLicense(R.raw.mit_full)
         }
 
-        MaterialDialog(requireContext())
-            .title(text = license.long)
-            .message(text = licenseText)
+        MaterialAlertDialogBuilder(requireContext())
+            .setTitle(license.long)
+            .setMessage(licenseText)
             .show()
     }
 

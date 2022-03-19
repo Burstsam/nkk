@@ -1,3 +1,25 @@
+/**
+ * Teapod
+ *
+ * Copyright 2020-2022  <seil0@mosad.xyz>
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
+ * MA 02110-1301, USA.
+ *
+ */
+
 package org.mosad.teapod.ui.activity.player
 
 import android.animation.Animator
@@ -29,6 +51,7 @@ import kotlinx.android.synthetic.main.activity_player.*
 import kotlinx.android.synthetic.main.player_controls.*
 import kotlinx.coroutines.launch
 import org.mosad.teapod.R
+import org.mosad.teapod.parser.crunchyroll.NoneEpisode
 import org.mosad.teapod.preferences.Preferences
 import org.mosad.teapod.ui.components.EpisodesListPlayer
 import org.mosad.teapod.ui.components.LanguageSettingsPlayer
@@ -57,9 +80,9 @@ class PlayerActivity : AppCompatActivity() {
         setContentView(R.layout.activity_player)
         hideBars() // Initial hide the bars
 
-        model.loadMedia(
-            intent.getIntExtra(getString(R.string.intent_media_id), 0),
-            intent.getIntExtra(getString(R.string.intent_episode_id), 0)
+        model.loadMediaAsync(
+            intent.getStringExtra(getString(R.string.intent_season_id)) ?: "",
+            intent.getStringExtra(getString(R.string.intent_episode_id)) ?: ""
         )
         model.currentEpisodeChangedListener.add { onMediaChanged() }
         gestureDetector = GestureDetectorCompat(this, PlayerGestureListener())
@@ -120,11 +143,11 @@ class PlayerActivity : AppCompatActivity() {
 
         // when the intent changed, load the new media and play it
         intent?.let {
-            model.loadMedia(
-                it.getIntExtra(getString(R.string.intent_media_id), 0),
-                it.getIntExtra(getString(R.string.intent_episode_id), 0)
+            model.loadMediaAsync(
+                it.getStringExtra(getString(R.string.intent_season_id)) ?: "",
+                it.getStringExtra(getString(R.string.intent_episode_id)) ?: ""
             )
-            model.playEpisode(model.currentEpisode.mediaId, replace = true)
+            model.playCurrentMedia()
         }
     }
 
@@ -171,11 +194,6 @@ class PlayerActivity : AppCompatActivity() {
     }
 
     private fun initPlayer() {
-        if (model.media.aodId < 0) {
-            Log.e(javaClass.name, "No media was set.")
-            this.finish()
-        }
-
         initVideoView()
         initTimeUpdates()
 
@@ -206,14 +224,15 @@ class PlayerActivity : AppCompatActivity() {
                     else -> View.VISIBLE
                 }
 
-                if (state == ExoPlayer.STATE_ENDED && model.nextEpisodeId != null && Preferences.autoplay) {
+                if (state == ExoPlayer.STATE_ENDED && hasNextEpisode() && Preferences.autoplay) {
                     playNextEpisode()
                 }
             }
         })
-        
+
+        // revert back to the old behaviour (blocking init) in case there are any issues with async init
         // start playing the current episode, after all needed player components have been initialized
-        model.playEpisode(model.currentEpisode.mediaId, true)
+        //model.playCurrentMedia(model.currentPlayhead)
     }
 
     @SuppressLint("ClickableViewAccessibility")
@@ -251,9 +270,10 @@ class PlayerActivity : AppCompatActivity() {
     }
 
     private fun initGUI() {
-        if (model.media.type == DataTypes.MediaType.MOVIE) {
-            button_episodes.visibility = View.GONE
-        }
+        // TODO reimplement for cr
+//        if (model.media.type == DataTypes.MediaType.MOVIE) {
+//            button_episodes.visibility = View.GONE
+//        }
     }
 
     private fun initTimeUpdates() {
@@ -277,7 +297,7 @@ class PlayerActivity : AppCompatActivity() {
                 // if remaining time < 20 sec, a next ep is set, autoplay is enabled and not in pip:
                 // show next ep button
                 if (remainingTime in 1..20000) {
-                    if (!btnNextEpIsVisible && model.nextEpisodeId != null && Preferences.autoplay && !isInPiPMode()) {
+                    if (!btnNextEpIsVisible && hasNextEpisode() && Preferences.autoplay && !isInPiPMode()) {
                         showButtonNextEp()
                     }
                 } else if (btnNextEpIsVisible) {
@@ -329,24 +349,29 @@ class PlayerActivity : AppCompatActivity() {
     }
 
     /**
-     * update title text and next ep button visibility, set ignoreNextStateEnded
+     * This methode is called, if the current episode has changed.
+     * Update title text and next ep button visibility.
+     * If the currentEpisode changed to NoneEpisode, exit the activity.
      */
     private fun onMediaChanged() {
+        if (model.currentEpisode == NoneEpisode) {
+            Log.e(javaClass.name, "No media was set.")
+            this.finish()
+        }
+
         exo_text_title.text = model.getMediaTitle()
 
-        // hide the next ep button, if there is none
-        button_next_ep_c.visibility = if (model.nextEpisodeId == null) {
-            View.GONE
-        } else {
-            View.VISIBLE
-        }
+        // hide the next episode button, if there is none
+        button_next_ep_c.visibility = if (hasNextEpisode()) View.VISIBLE else View.GONE
+    }
 
-        // hide the episodes button, if the media type changed
-        button_episodes.visibility = if (model.media.type == DataTypes.MediaType.MOVIE) {
-            View.GONE
-        } else {
-            View.VISIBLE
-        }
+    /**
+     * Check if the current episode has a next episode.
+     *
+     * @return Boolean: true if there is a next episode, else false.
+     */
+    private fun hasNextEpisode(): Boolean {
+        return (model.currentEpisode.nextEpisodeId != null && !model.currentEpisodeIsLastEpisode())
     }
 
     /**

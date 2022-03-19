@@ -108,35 +108,7 @@
             </LinearLayout>
 
             <LinearLayout
-                android:id="@+id/linear_my_list"
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:orientation="vertical"
-                android:paddingBottom="7dp">
-
-                <TextView
-                    android:id="@+id/text_my_list"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:paddingStart="10dp"
-                    android:paddingTop="15dp"
-                    android:paddingEnd="5dp"
-                    android:paddingBottom="5dp"
-                    android:text="@string/my_list"
-                    android:textSize="16sp"
-                    android:textStyle="bold" />
-
-                <androidx.recyclerview.widget.RecyclerView
-                    android:id="@+id/recycler_my_list"
-                    android:layout_width="match_parent"
-                    android:layout_height="match_parent"
-                    android:orientation="horizontal"
-                    app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
-                    tools:listitem="@layout/item_media" />
-            </LinearLayout>
-
-            <LinearLayout
-                android:id="@+id/linear_new_episodes"
+                android:id="@+id/linear_up_next"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:orientation="vertical"
@@ -150,7 +122,7 @@
                     android:paddingTop="15dp"
                     android:paddingEnd="5dp"
                     android:paddingBottom="5dp"
-                    android:text="@string/new_episodes"
+                    android:text="@string/up_next"
                     android:textSize="16sp"
                     android:textStyle="bold" />
 
@@ -164,26 +136,26 @@
             </LinearLayout>
 
             <LinearLayout
-                android:id="@+id/linear_new_simulcasts"
+                android:id="@+id/linear_watchlist"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:orientation="vertical"
                 android:paddingBottom="7dp">
 
                 <TextView
-                    android:id="@+id/text_new_simulcasts"
+                    android:id="@+id/text_watchlist"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:paddingStart="10dp"
                     android:paddingTop="15dp"
                     android:paddingEnd="5dp"
                     android:paddingBottom="5dp"
-                    android:text="@string/new_simulcasts"
+                    android:text="@string/my_list"
                     android:textSize="16sp"
                     android:textStyle="bold" />
 
                 <androidx.recyclerview.widget.RecyclerView
-                    android:id="@+id/recycler_new_simulcasts"
+                    android:id="@+id/recycler_watchlist"
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
                     android:orientation="horizontal"

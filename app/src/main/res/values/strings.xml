@@ -7,6 +7,7 @@
 
     <!-- home fragment -->
     <string name="highlight_media">Highlight</string>
+    <string name="up_next">Up next</string>
     <string name="my_list">My list</string>
     <string name="new_episodes">New episodes</string>
     <string name="new_simulcasts">New simulcasts</string>
@@ -33,24 +34,25 @@
         <item quantity="one">%d Minute</item>
         <item quantity="other">%d Minutes</item>
     </plurals>
+    <string name="season_number_title" translatable="false">S%1$d - %2$s</string>
     <string name="similar_titles">Similar titles</string>
     <string name="component_episode_title">Ep. %1$s %2$s</string>
     <string name="component_episode_title_sub">Ep. %1$s %2$s (Sub)</string>
     <string name="component_poster_desc" translatable="false">episode poster</string>
     <string name="component_watched_desc" translatable="false">already watched</string>
 
-    <!-- settings fragment -->
+    <!-- account fragment -->
     <string name="account">Account</string>
     <string name="account_login_ex" translatable="false">user@example.com</string>
     <string name="account_login_desc">Tap to edit</string>
     <string name="account_subscription">Subscription %1$s</string>
     <string name="account_subscription_desc">Tap to extend</string>
-    <string name="info">Info</string>
-    <string name="info_about" translatable="false">Teapod by @Seil0</string>
-    <string name="info_about_desc">Version %1$s (%2$s)</string>
     <string name="settings">Settings</string>
-    <string name="settings_secondary">Prefer japanese (sub)</string>
-    <string name="settings_secondary_desc">Use the japanese, if present</string>
+    <string name="settings_content_language">Preferred content language</string>
+    <string name="settings_content_language_desc">English</string>
+    <string name="settings_content_language_none">None</string>
+    <string name="settings_prefer_subbed">Prefer subbed</string>
+    <string name="settings_prefer_subbed_desc">Use original language, if present</string>
     <string name="settings_autoplay">Autoplay</string>
     <string name="settings_autoplay_desc">Play next episode automatically</string>
     <string name="theme">Theme</string>
@@ -62,7 +64,9 @@
     <string name="import_data">import data</string>
     <string name="import_data_desc">import "My list" from a file</string>
     <string name="import_data_success">imported "My list" successfully</string>
-
+    <string name="info">Info</string>
+    <string name="info_about" translatable="false">Teapod by @Seil0</string>
+    <string name="info_about_desc">Version %1$s (%2$s)</string>
 
     <!-- about fragment -->
     <string name="version">Version</string>
@@ -73,7 +77,7 @@
     <string name="teapod_repo" translatable="false">git.mosad.xyz/Seil0/teapod</string>
     <string name="license">License</string>
     <string name="license_desc" translatable="false">GNU General Public License 3</string>
-    <string name="about_info">An unofficial app for anime on demand.</string>
+    <string name="about_info">An unofficial app for Crunchyroll.</string>
     <string name="tmdb_notice" translatable="false">This product uses the TMDb API but is not endorsed or certified by TMDb.</string>
     <string name="third_party_heading">Third Party Licenses</string>
     <string name="third_party_component_desc">© %1$s %2$s under %3$s</string>
@@ -92,17 +96,20 @@
     <string name="time_min_sec" translatable="false">%1$02d:%2$02d</string>
     <string name="time_hour_min_sec" translatable="false">%1$d:%2$02d:%3$02d</string>
     <string name="language">Language</string>
+    <string name="subtitles">Subtitles</string>
     <string name="episodes">Episodes</string>
     <string name="episode">Episode</string>
+    <string name="no_subtitles">None</string>
 
     <!-- Onboarding -->
     <string name="skip">Skip</string>
     <string name="next">Next</string>
     <string name="start">Start</string>
-    <string name="on_welcome">Welcome!\nTeapod is an unofficial App for AoD.</string>
+    <string name="on_welcome_heading">Welcome</string>
+    <string name="on_welcome">Teapod is an unofficial app for Crunchyroll, licensed under the terms and conditions of GPL 3.\n\nPlease note: Using Teapod may violate the ToS of Crunchyroll.</string>
     <string name="on_get_started">Get started</string>
     <string name="on_login_heading">Login</string>
-    <string name="on_login_desc">To use Teapod you need to log in with your AoD account. Your Login-Data will be stored encrypted on your device.</string>
+    <string name="on_login_desc">To use Teapod you have to log in with your Crunchyroll account. Your login data will be stored encrypted on your device.</string>
     <string name="on_login_failed">Could not login! Make sure Username and Password are correct and try again.</string>
 
     <!-- dialogs -->
@@ -124,12 +131,16 @@
     <string name="preference_file_key" translatable="false">org.mosad.teapod.preferences</string>
     <string name="save_key_user_login" translatable="false">org.mosad.teapod.user_login</string>
     <string name="save_key_user_password" translatable="false">org.mosad.teapod.user_password</string>
+    <!-- for legacy reasons the prefer subbed key is called prefer_secondary-->
     <string name="save_key_prefer_secondary" translatable="false">org.mosad.teapod.prefer_secondary</string>
+    <string name="save_key_preferred_local" translatable="false">org.mosad.teapod.preferred_local</string>
     <string name="save_key_autoplay" translatable="false">org.mosad.teapod.autoplay</string>
     <string name="save_key_dev_settings" translatable="false">org.mosad.teapod.dev.settings</string>
     <string name="save_key_theme" translatable="false">org.mosad.teapod.theme</string>
 
     <!-- intents & states -->
     <string name="intent_media_id" translatable="false">intent_media_id</string>
+    <string name="intent_season_id" translatable="false">intent_season_id</string>
     <string name="intent_episode_id" translatable="false">intent_episode_id</string>
+
 </resources>

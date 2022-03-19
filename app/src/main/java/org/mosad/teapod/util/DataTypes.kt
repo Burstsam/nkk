@@ -3,10 +3,10 @@ package org.mosad.teapod.util
 import java.util.Locale
 
 class DataTypes {
-    enum class MediaType {
-        OTHER,
-        MOVIE,
-        TVSHOW
+    enum class MediaType(val str: String) {
+        OTHER("other"),
+        MOVIE("movie"), // TODO
+        TVSHOW("series")
     }
 
     enum class Theme(val str: String) {
@@ -35,9 +35,9 @@ data class ThirdPartyComponent(
  * it is uses in the ItemMediaAdapter (RecyclerView)
  */
 data class ItemMedia(
-    val id: Int, // aod path id
+    val id: String,
     val title: String,
-    val posterUrl: String
+    val posterUrl: String,
 )
 
 // TODO replace playlist: List<AoDEpisode> with a map?
@@ -75,7 +75,7 @@ data class AoDEpisode(
      * @return the preferred stream, if not present use the first stream
      */
     fun getPreferredStream(language: Locale) = streams.firstOrNull { it.language == language }
-        ?: streams.first()
+        ?: Stream("", Locale.ROOT)
 }
 
 data class Stream(
@@ -111,7 +111,7 @@ val AoDEpisodeNone = AoDEpisode(
     "",
     "",
     -1,
-    false,
+    true,
     "",
     mutableListOf()
 )

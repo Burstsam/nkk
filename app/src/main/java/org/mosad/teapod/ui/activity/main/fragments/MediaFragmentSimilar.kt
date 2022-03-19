@@ -27,14 +27,14 @@ class MediaFragmentSimilar : Fragment()  {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        adapterSimilar = MediaItemAdapter(model.media.similar)
+        adapterSimilar = MediaItemAdapter(emptyList()) //(model.media.similar)
         binding.recyclerMediaSimilar.adapter = adapterSimilar
         binding.recyclerMediaSimilar.addItemDecoration(MediaItemDecoration(9))
 
         // set onItemClick only in adapter is initialized
         if (this::adapterSimilar.isInitialized) {
             adapterSimilar.onItemClick = { mediaId, _ ->
-                activity?.showFragment(MediaFragment(mediaId))
+                activity?.showFragment(MediaFragment("")) //(mediaId))
             }
         }
     }

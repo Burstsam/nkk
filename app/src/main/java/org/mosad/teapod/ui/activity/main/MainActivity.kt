@@ -1,7 +1,7 @@
 /**
  * Teapod
  *
- * Copyright 2020-2021  <seil0@mosad.xyz>
+ * Copyright 2020-2022  <seil0@mosad.xyz>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -29,13 +29,11 @@ import android.view.MenuItem
 import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.commit
-import com.afollestad.materialdialogs.MaterialDialog
-import com.afollestad.materialdialogs.callbacks.onDismiss
 import com.google.android.material.navigation.NavigationBarView
 import kotlinx.coroutines.*
 import org.mosad.teapod.R
 import org.mosad.teapod.databinding.ActivityMainBinding
-import org.mosad.teapod.parser.AoDParser
+import org.mosad.teapod.parser.crunchyroll.Crunchyroll
 import org.mosad.teapod.preferences.EncryptedPreferences
 import org.mosad.teapod.preferences.Preferences
 import org.mosad.teapod.ui.activity.main.fragments.AccountFragment
@@ -46,19 +44,16 @@ import org.mosad.teapod.ui.activity.onboarding.OnboardingActivity
 import org.mosad.teapod.ui.activity.player.PlayerActivity
 import org.mosad.teapod.ui.components.LoginDialog
 import org.mosad.teapod.util.DataTypes
-import org.mosad.teapod.util.MetaDBController
-import org.mosad.teapod.util.StorageController
-import org.mosad.teapod.util.exitAndRemoveTask
-import java.net.SocketTimeoutException
+import java.util.*
 import kotlin.system.measureTimeMillis
 
 class MainActivity : AppCompatActivity(), NavigationBarView.OnItemSelectedListener {
+    private val classTag = javaClass.name
 
     private lateinit var binding: ActivityMainBinding
     private var activeBaseFragment: Fragment = HomeFragment() // the currently active fragment, home at the start
 
     companion object {
-        var wasInitialized = false
         lateinit var instance: MainActivity
     }
 
@@ -69,7 +64,7 @@ class MainActivity : AppCompatActivity(), NavigationBarView.OnItemSelectedListen
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        if (!wasInitialized) { load() }
+        load() // start the initial loading
         theme.applyStyle(getThemeResource(), true)
 
         binding = ActivityMainBinding.inflate(layoutInflater)
@@ -138,55 +133,52 @@ class MainActivity : AppCompatActivity(), NavigationBarView.OnItemSelectedListen
      */
     private fun load() {
         val time = measureTimeMillis {
-            // start the initial loading
-            val loadingJob = CoroutineScope(Dispatchers.IO + CoroutineName("InitialLoadingScope"))
-                .async {
-                    launch { AoDParser.initialLoading() }
-                    launch { MetaDBController.list() }
-                }
-
             // load all saved stuff here
             Preferences.load(this)
             EncryptedPreferences.readCredentials(this)
-            StorageController.load(this)
 
-            // show onboarding
-            if (EncryptedPreferences.password.isEmpty()) {
+            // always initialize the api token
+            Crunchyroll.initBasicApiToken()
+
+            // show onboarding if no password is set, or login fails
+            if (EncryptedPreferences.password.isEmpty() || !Crunchyroll.login(
+                    EncryptedPreferences.login,
+                    EncryptedPreferences.password
+                )
+            ) {
                 showOnboarding()
             } else {
-                try {
-                    if (!AoDParser.login()) {
-                        showLoginDialog()
-                    }
-                } catch (ex: SocketTimeoutException) {
-                    Log.w(javaClass.name, "Timeout during login!")
-
-                    // show waring dialog before finishing
-                    MaterialDialog(this).show {
-                        title(R.string.dialog_timeout_head)
-                        message(R.string.dialog_timeout_desc)
-                        onDismiss { exitAndRemoveTask() }
-                    }
-                }
+                runBlocking { initCrunchyroll().joinAll() }
             }
-
-            runBlocking { loadingJob.await() } // wait for initial loading to finish
         }
-        Log.i(javaClass.name, "loading and login in $time ms")
+        Log.i(classTag, "loading in $time ms")
+    }
 
-        wasInitialized = true
+    private fun initCrunchyroll(): List<Job> {
+        val scope = CoroutineScope(Dispatchers.IO + CoroutineName("InitialLoadingScope"))
+        return listOf(
+            scope.launch { Crunchyroll.index() },
+            scope.launch { Crunchyroll.account() },
+            scope.launch {
+                // update the local preferred content language, since it may have changed
+                val locale = Locale.forLanguageTag(Crunchyroll.profile().preferredContentSubtitleLanguage)
+                Preferences.savePreferredLocal(this@MainActivity, locale)
+
+            }
+        )
     }
 
     private fun showLoginDialog() {
         LoginDialog(this, false).positiveButton {
             EncryptedPreferences.saveCredentials(login, password, context)
 
-            if (!AoDParser.login()) {
-                showLoginDialog()
-                Log.w(javaClass.name, "Login failed, please try again.")
-            }
+            // TODO
+//            if (!AoDParser.login()) {
+//                showLoginDialog()
+//                Log.w(javaClass.name, "Login failed, please try again.")
+//            }
         }.negativeButton {
-            Log.i(javaClass.name, "Login canceled, exiting.")
+            Log.i(classTag, "Login canceled, exiting.")
             finish()
         }.show()
     }
@@ -202,9 +194,9 @@ class MainActivity : AppCompatActivity(), NavigationBarView.OnItemSelectedListen
     /**
      * start the player as new activity
      */
-    fun startPlayer(mediaId: Int, episodeId: Int) {
+    fun startPlayer(seasonId: String, episodeId: String) {
         val intent = Intent(this, PlayerActivity::class.java).apply {
-            putExtra(getString(R.string.intent_media_id), mediaId)
+            putExtra(getString(R.string.intent_season_id), seasonId)
             putExtra(getString(R.string.intent_episode_id), episodeId)
         }
         startActivity(intent)

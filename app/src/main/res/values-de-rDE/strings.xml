@@ -7,6 +7,7 @@
 
     <!-- home fragment -->
     <string name="highlight_media">Highlight</string>
+    <string name="up_next">Weiterschauen</string>
     <string name="my_list">Meine Liste</string>
     <string name="new_episodes">Neue Episoden</string>
     <string name="new_simulcasts">Neue Simulcasts</string>
@@ -38,8 +39,11 @@
     <string name="info">Info</string>
     <string name="info_about_desc">Version %1$s (%2$s)</string>
     <string name="settings">Einstellungen</string>
-    <string name="settings_secondary">Bevorzuge Japanisch (OmU)</string>
-    <string name="settings_secondary_desc">Japanisch verwenden, sofern vorhanden</string>
+    <string name="settings_content_language">Bevorzuge Inhaltssprache</string>
+    <string name="settings_content_language_desc">Englisch</string>
+    <string name="settings_content_language_none">Keine</string>
+    <string name="settings_prefer_subbed">Bevorzuge OmU</string>
+    <string name="settings_prefer_subbed_desc">Original Sprache verwenden, sofern vorhanden</string>
     <string name="settings_autoplay">Autoplay</string>
     <string name="settings_autoplay_desc">Nächste Episode automatisch abspielen</string>
     <string name="theme">Design</string>
@@ -57,7 +61,7 @@
     <string name="authors">Autor</string>
     <string name="source">Quellcode</string>
     <string name="license">Lizenz</string>
-    <string name="about_info">Eine inoffizielle App für Anime on Demand.</string>
+    <string name="about_info">Eine inoffizielle App für Crunchyroll.</string>
     <string name="third_party_heading">Lizenzen von Drittanbietern</string>
     <string name="third_party_component_desc">© %1$s %2$s unter %3$s</string>
     <string name="dev_settings_enabled">Du bist jetzt ein Entwickler</string>
@@ -71,17 +75,20 @@
     <string name="next_episode">Nächste Folge</string>
     <string name="skip_opening">Intro überspringen</string>
     <string name="language">Sprache</string>
+    <string name="subtitles">Untertitel</string>
     <string name="episodes">Folgen</string>
     <string name="episode">Folge</string>
+    <string name="no_subtitles">Aus</string>
 
     <!-- Onboarding -->
     <string name="skip">Überspringen</string>
     <string name="next">Weiter</string>
     <string name="start">Fertig</string>
-    <string name="on_welcome">Willkommen!\nTeapod ist eine inoffizielle App für AoD.</string>
+    <string name="on_welcome_heading">Willkommen</string>
+    <string name="on_welcome">Teapod ist eine inoffizielle App für Crunchyroll, die unter den Bedingungen der GPL 3 lizenziert ist.\n\nHinweis: Die Benutzung von Teapod kann gegen die Nutzungsbedingungen von Crunchyroll verstoßen.</string>
     <string name="on_get_started">Los geht\'s</string>
     <string name="on_login_heading">Login</string>
-    <string name="on_login_desc">Um Teapod verwenden zu können musst du dich mit deinem AoD Account anmelden. Deine Login-Daten werden verschlüsselt auf deinem Gerät gespeichert.</string>
+    <string name="on_login_desc">Um Teapod verwenden zu können musst du dich mit deinem Crunchyroll Account anmelden. Deine Login-Daten werden verschlüsselt auf deinem Gerät gespeichert.</string>
     <string name="on_login_failed">Login nicht erfolgreich! Stelle sicher das deine Login-Daten korrekt sind und versuche es erneut.</string>
 
     <!-- dialogs -->

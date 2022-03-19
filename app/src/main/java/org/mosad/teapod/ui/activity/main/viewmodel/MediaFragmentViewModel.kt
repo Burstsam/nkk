@@ -1,14 +1,15 @@
 package org.mosad.teapod.ui.activity.main.viewmodel
 
 import android.app.Application
-import android.util.Log
 import androidx.lifecycle.AndroidViewModel
-import org.mosad.teapod.parser.AoDParser
-import org.mosad.teapod.util.*
+import androidx.lifecycle.viewModelScope
+import kotlinx.coroutines.joinAll
+import kotlinx.coroutines.launch
+import org.mosad.teapod.parser.crunchyroll.*
+import org.mosad.teapod.preferences.Preferences
 import org.mosad.teapod.util.DataTypes.MediaType
-import org.mosad.teapod.util.tmdb.TMDBApiController
-import org.mosad.teapod.util.tmdb.TMDBResult
-import org.mosad.teapod.util.tmdb.TMDBTVSeason
+import org.mosad.teapod.util.Meta
+import org.mosad.teapod.util.tmdb.*
 
 /**
  * handle media, next ep and tmdb
@@ -16,62 +17,149 @@ import org.mosad.teapod.util.tmdb.TMDBTVSeason
  */
 class MediaFragmentViewModel(application: Application) : AndroidViewModel(application) {
 
-    var media = AoDMediaNone
+//    var mediaCrunchy = NoneItem
+//        internal set
+    var seriesCrunchy = NoneSeries // movies are also series
         internal set
-    var nextEpisodeId = -1
+    var seasonsCrunchy = NoneSeasons
         internal set
+    var currentSeasonCrunchy = NoneSeason
+        internal set
+    var episodesCrunchy = NoneEpisodes
+        internal set
+    val currentEpisodesCrunchy = arrayListOf<Episode>() // used for EpisodeItemAdapter (easier updates)
 
-    var tmdbResult: TMDBResult? = null // TODO rename
+    // additional media info
+    val currentPlayheads: MutableMap<String, PlayheadObject> = mutableMapOf()
+    var isWatchlist = false
         internal set
-    var tmdbTVSeason: TMDBTVSeason? =null
+    var upNextSeries = NoneUpNextSeriesItem
+
+    // TMDB stuff
+    var mediaType = MediaType.OTHER
+        internal set
+    var tmdbResult: TMDBResult = NoneTMDB // TODO rename
+        internal set
+    var tmdbTVSeason: TMDBTVSeason = NoneTMDBTVSeason
         internal set
     var mediaMeta: Meta? = null
         internal set
 
     /**
-     * set media, tmdb and nextEpisode
-     * TODO run aod and tmdb load parallel
+     * @param crunchyId the crunchyroll series id
      */
-    suspend fun load(aodId: Int) {
+
+    suspend fun loadCrunchy(crunchyId: String) {
+        // load series and seasons info in parallel
+        listOf(
+            viewModelScope.launch { seriesCrunchy = Crunchyroll.series(crunchyId) },
+            viewModelScope.launch { seasonsCrunchy = Crunchyroll.seasons(crunchyId) },
+            viewModelScope.launch { isWatchlist = Crunchyroll.isWatchlist(crunchyId) },
+            viewModelScope.launch { upNextSeries = Crunchyroll.upNextSeries(crunchyId) }
+        ).joinAll()
+//        println("series: $seriesCrunchy")
+//        println("seasons: $seasonsCrunchy")
+        println(upNextSeries)
+
+        // load the preferred season (preferred language, language per season, not per stream)
+        currentSeasonCrunchy = seasonsCrunchy.getPreferredSeason(Preferences.preferredLocale)
+
+        // load episodes and metaDB in parallel (tmdb needs mediaType, which is set via episodes)
+        listOf(
+            viewModelScope.launch { episodesCrunchy = Crunchyroll.episodes(currentSeasonCrunchy.id) },
+            viewModelScope.launch { mediaMeta = null }, // TODO metaDB
+        ).joinAll()
+//        println("episodes: $episodesCrunchy")
+
+        currentEpisodesCrunchy.clear()
+        currentEpisodesCrunchy.addAll(episodesCrunchy.items)
+
+        // set media type
+        mediaType = episodesCrunchy.items.firstOrNull()?.let {
+            if (it.episodeNumber != null) MediaType.TVSHOW else MediaType.MOVIE
+        } ?: MediaType.OTHER
+
+        // load playheads and tmdb in parallel
+        listOf(
+            viewModelScope.launch {
+                // get playheads (including fully watched state)
+                val episodeIDs = episodesCrunchy.items.map { it.id }
+                currentPlayheads.clear()
+                currentPlayheads.putAll(Crunchyroll.playheads(episodeIDs))
+            },
+            viewModelScope.launch { loadTmdbInfo() } // use tmdb search to get media info
+        ).joinAll()
+    }
+
+    /**
+     * Load the tmdb info for the selected media.
+     * The TMDB search return a media type, use this to get the details (movie/tv show and season)
+     */
+    private suspend fun loadTmdbInfo() {
         val tmdbApiController = TMDBApiController()
-        media = AoDParser.getMediaById(aodId)
 
-        // check if metaDB knows the title
-        val tmdbId: Int = if (MetaDBController.mediaList.media.contains(aodId)) {
-            // load media info from metaDB
-            val metaDB = MetaDBController()
-            mediaMeta = when (media.type) {
-                MediaType.MOVIE -> metaDB.getMovieMetadata(media.aodId)
-                MediaType.TVSHOW -> metaDB.getTVShowMetadata(media.aodId)
-                else -> null
+        val tmdbSearchResult = when(mediaType) {
+            MediaType.MOVIE -> tmdbApiController.searchMovie(seriesCrunchy.title)
+            MediaType.TVSHOW -> tmdbApiController.searchTVShow(seriesCrunchy.title)
+            else -> NoneTMDBSearch
+        }
+        println(tmdbSearchResult)
+
+        tmdbResult = if (tmdbSearchResult.results.isNotEmpty()) {
+            when (val result = tmdbSearchResult.results.first()) {
+                is TMDBSearchResultMovie -> tmdbApiController.getMovieDetails(result.id)
+                is TMDBSearchResultTVShow -> tmdbApiController.getTVShowDetails(result.id)
+                else -> NoneTMDB
             }
+        } else NoneTMDB
 
-            mediaMeta?.tmdbId ?: -1
+        println(tmdbResult)
+
+        // currently not used
+//        tmdbTVSeason = if (tmdbResult is TMDBTVShow) {
+//            tmdbApiController.getTVSeasonDetails(tmdbResult.id, 0)
+//        } else NoneTMDBTVSeason
+    }
+
+    /**
+     * Set currentSeasonCrunchy based on the season id. Also set the new seasons episodes.
+     *
+     * @param seasonId the id of the season to set
+     */
+    suspend fun setCurrentSeason(seasonId: String) {
+        // return if the id hasn't changed (performance)
+        if (currentSeasonCrunchy.id == seasonId) return
+
+        // set currentSeasonCrunchy to the new season with id == seasonId, if the id isn't found,
+        // don't change the current season (this should/can never happen)
+        currentSeasonCrunchy = seasonsCrunchy.items.firstOrNull {
+            it.id == seasonId
+        } ?: currentSeasonCrunchy
+
+        episodesCrunchy = Crunchyroll.episodes(currentSeasonCrunchy.id)
+        currentEpisodesCrunchy.clear()
+        currentEpisodesCrunchy.addAll(episodesCrunchy.items)
+    }
+
+    suspend fun setWatchlist() {
+        isWatchlist = if (isWatchlist) {
+            Crunchyroll.deleteWatchlist(seriesCrunchy.id)
+            false
         } else {
-            // use tmdb search to get media info
-            mediaMeta = null // set mediaMeta to null, if metaDB doesn't know the media
-            tmdbApiController.search(stripTitleInfo(media.title), media.type)
+            Crunchyroll.postWatchlist(seriesCrunchy.id)
+            true
         }
+    }
 
-        tmdbResult = when (media.type) {
-            MediaType.MOVIE -> tmdbApiController.getMovieDetails(tmdbId)
-            MediaType.TVSHOW -> tmdbApiController.getTVShowDetails(tmdbId)
-            else -> null
-        }
-
-        // get season info, if metaDB knows the tv show
-        tmdbTVSeason = if (media.type == MediaType.TVSHOW && mediaMeta != null) {
-            val tvShowMeta = mediaMeta as TVShowMeta
-            tmdbApiController.getTVSeasonDetails(tvShowMeta.tmdbId, tvShowMeta.tmdbSeasonNumber)
-        } else {
-            null
-        }
-
-        if (media.type == MediaType.TVSHOW) {
-            //nextEpisode = media.episodes.firstOrNull{ !it.watched } ?: media.episodes.first()
-            nextEpisodeId = media.playlist.firstOrNull { !it.watched }?.mediaId
-                ?: media.playlist.first().mediaId
-        }
+    suspend fun updateOnResume() {
+        joinAll(
+            viewModelScope.launch {
+                val episodeIDs = episodesCrunchy.items.map { it.id }
+                currentPlayheads.clear()
+                currentPlayheads.putAll(Crunchyroll.playheads(episodeIDs))
+            },
+            viewModelScope.launch { upNextSeries = Crunchyroll.upNextSeries(seriesCrunchy.id) }
+        )
     }
 
     /**
@@ -79,36 +167,11 @@ class MediaFragmentViewModel(application: Application) : AndroidViewModel(applic
      * if no matching is found, use first episode
      */
     fun updateNextEpisode(episodeId: Int) {
-        if (media.type == MediaType.MOVIE) return // return if movie
-
-        nextEpisodeId = media.playlist.firstOrNull { it.index > media.getEpisodeById(episodeId).index }?.mediaId
-            ?: media.playlist.first().mediaId
-    }
-
-    // remove unneeded info from the media title before searching
-    private fun stripTitleInfo(title: String): String {
-        return title.replace("(Sub)", "")
-            .replace(Regex("-?\\s?[0-9]+.\\s?(Staffel|Season)"), "")
-            .replace(Regex("(Staffel|Season)\\s?[0-9]+"), "")
-            .trim()
-    }
-
-    /** guess Season from title
-     * if the title ends with a number, that could be the season
-     * if the title ends with Regex("-?\\s?[0-9]+.\\s?(Staffel|Season)") or
-     * Regex("(Staffel|Season)\\s?[0-9]+"), that is the season information
-     */
-    private fun guessSeasonFromTitle(title: String): Int {
-        val helpTitle = title.replace("(Sub)", "").trim()
-        Log.d("test", "helpTitle: $helpTitle")
-
-        return if (helpTitle.last().isDigit()) {
-            helpTitle.last().digitToInt()
-        } else {
-            Regex("([0-9]+.\\s?(Staffel|Season))|((Staffel|Season)\\s?[0-9]+)")
-                .find(helpTitle)
-                ?.value?.filter { it.isDigit() }?.toInt() ?: 1
-        }
+        // TODO reimplement if needed
+//        if (media.type == MediaType.MOVIE) return // return if movie
+//
+//        nextEpisodeId = media.playlist.firstOrNull { it.index > media.getEpisodeById(episodeId).index }?.mediaId
+//            ?: media.playlist.first().mediaId
     }
 
 }

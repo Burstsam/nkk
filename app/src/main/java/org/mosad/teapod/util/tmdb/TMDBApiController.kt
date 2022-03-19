@@ -1,7 +1,7 @@
 /**
  * Teapod
  *
- * Copyright 2020-2021  <seil0@mosad.xyz>
+ * Copyright 2020-2022  <seil0@mosad.xyz>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -23,114 +23,151 @@
 package org.mosad.teapod.util.tmdb
 
 import android.util.Log
-import com.google.gson.Gson
-import com.google.gson.JsonParser
-import kotlinx.coroutines.*
-import org.mosad.teapod.util.DataTypes.MediaType
-import java.io.FileNotFoundException
-import java.net.URL
-import java.net.URLEncoder
+import io.ktor.client.*
+import io.ktor.client.call.*
+import io.ktor.client.features.json.*
+import io.ktor.client.features.json.serializer.*
+import io.ktor.client.request.*
+import io.ktor.client.statement.*
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.coroutineScope
+import kotlinx.coroutines.invoke
+import kotlinx.serialization.SerializationException
+import kotlinx.serialization.json.Json
+import org.mosad.teapod.preferences.Preferences
+import org.mosad.teapod.util.concatenate
 
 /**
  * Controller for tmdb api integration.
  * Data types are in TMDBDataTypes. For the type definitions see:
  * https://developers.themoviedb.org/3/getting-started/introduction
  *
- * TODO evaluate Klaxon
  */
 class TMDBApiController {
+    private val classTag = javaClass.name
+
+    private val json = Json { ignoreUnknownKeys = true }
+    private val client = HttpClient {
+        install(JsonFeature) {
+            serializer = KotlinxSerializer(json)
+        }
+    }
 
     private val apiUrl = "https://api.themoviedb.org/3"
-    private val searchMovieUrl = "$apiUrl/search/movie"
-    private val searchTVUrl = "$apiUrl/search/tv"
-    private val detailsMovieUrl = "$apiUrl/movie"
-    private val detailsTVUrl = "$apiUrl/tv"
     private val apiKey = "de959cf9c07a08b5ca7cb51cda9a40c2"
-    private val language = "de"
-    private val preparedParameters = "?api_key=$apiKey&language=$language"
 
     companion object{
         const val imageUrl = "https://image.tmdb.org/t/p/w500"
     }
 
-    @Suppress("BlockingMethodInNonBlockingContext")
-    /**
-     * Search for a media(movie or tv show) in tmdb
-     * @param query The query text
-     * @param type The media type (movie or tv show)
-     * @return The media tmdb id, or -1 if not found
-     */
-    suspend fun search(query: String, type: MediaType): Int = withContext(Dispatchers.IO) {
-        val searchUrl = when (type) {
-            MediaType.MOVIE -> searchMovieUrl
-            MediaType.TVSHOW -> searchTVUrl
-            else -> {
-                Log.e(javaClass.name, "Wrong Type: $type")
-                return@withContext -1
+    private suspend inline fun <reified T> request(
+        endpoint: String,
+        parameters: List<Pair<String, Any?>> = emptyList()
+    ): T = coroutineScope {
+        val path = "$apiUrl$endpoint"
+        val params = concatenate(
+            listOf("api_key" to apiKey, "language" to Preferences.preferredLocale.language),
+            parameters
+        )
+
+        // TODO handle FileNotFoundException
+        return@coroutineScope (Dispatchers.IO) {
+            val response: HttpResponse = client.get(path) {
+                params.forEach {
+                    parameter(it.first, it.second)
+                }
             }
-        }
 
-        val url = URL("$searchUrl$preparedParameters&query=${URLEncoder.encode(query, "UTF-8")}")
-        val response = JsonParser.parseString(url.readText()).asJsonObject
-        val sortedResults = response.get("results").asJsonArray.toList().sortedBy {
-            it.asJsonObject.get("title")?.asString
+            response.receive<T>()
         }
-
-        return@withContext sortedResults.firstOrNull()?.asJsonObject?.get("id")?.asInt ?: -1
     }
 
-    @Suppress("BlockingMethodInNonBlockingContext")
+    /**
+     * Search for a movie in tmdb
+     * @param query The query text (movie title)
+     * @return A TMDBSearch<TMDBSearchResultMovie> object, or
+     * NoneTMDBSearchMovie if nothing was found
+     */
+    suspend fun searchMovie(query: String): TMDBSearch<TMDBSearchResultMovie> {
+        val searchEndpoint = "/search/multi"
+        val parameters = listOf("query" to query, "include_adult" to false)
+
+        return try {
+            request(searchEndpoint, parameters)
+        }catch (ex: SerializationException) {
+            Log.e(classTag, "SerializationException in searchMovie(), with query = $query.", ex)
+            NoneTMDBSearchMovie
+        }
+    }
+
+    /**
+     * Search for a tv show in tmdb
+     * @param query The query text (tv show title)
+     * @return A TMDBSearch<TMDBSearchResultTVShow> object, or
+     * NoneTMDBSearchTVShow if nothing was found
+     */
+    suspend fun searchTVShow(query: String): TMDBSearch<TMDBSearchResultTVShow> {
+        val searchEndpoint = "/search/tv"
+        val parameters = listOf("query" to query, "include_adult" to false)
+
+        return try {
+            request(searchEndpoint, parameters)
+        }catch (ex: SerializationException) {
+            Log.e(classTag, "SerializationException in searchTVShow(), with query = $query.", ex)
+            NoneTMDBSearchTVShow
+        }
+    }
+
     /**
      * Get details for a movie from tmdb
      * @param movieId The tmdb ID of the movie
-     * @return A tmdb movie object, or null if not found
+     * @return A TMDBMovie object, or NoneTMDBMovie if not found
      */
-    suspend fun getMovieDetails(movieId: Int): TMDBMovie? = withContext(Dispatchers.IO) {
-        val url = URL("$detailsMovieUrl/$movieId?api_key=$apiKey&language=$language")
+    suspend fun getMovieDetails(movieId: Int): TMDBMovie {
+        val movieEndpoint = "/movie/$movieId"
 
-        return@withContext try {
-            val json = url.readText()
-            Gson().fromJson(json, TMDBMovie::class.java)
-        } catch (ex: FileNotFoundException) {
-            Log.w(javaClass.name, "Waring: The requested media was not found. Requested ID: $movieId", ex)
-            null
+        // TODO is FileNotFoundException handling needed?
+        return try {
+            request(movieEndpoint)
+        }catch (ex: SerializationException) {
+            Log.e(classTag, "SerializationException in getMovieDetails(), with movieId = $movieId.", ex)
+            NoneTMDBMovie
         }
     }
 
-    @Suppress("BlockingMethodInNonBlockingContext")
     /**
      * Get details for a tv show from tmdb
      * @param tvId The tmdb ID of the tv show
-     * @return A tmdb tv show object, or null if not found
+     * @return A TMDBTVShow object, or NoneTMDBTVShow if not found
      */
-    suspend fun getTVShowDetails(tvId: Int): TMDBTVShow? = withContext(Dispatchers.IO) {
-        val url = URL("$detailsTVUrl/$tvId?api_key=$apiKey&language=$language")
+    suspend fun getTVShowDetails(tvId: Int): TMDBTVShow {
+        val tvShowEndpoint = "/tv/$tvId"
 
-        return@withContext try {
-            val json = url.readText()
-            Gson().fromJson(json, TMDBTVShow::class.java)
-        } catch (ex: FileNotFoundException) {
-            Log.w(javaClass.name, "Waring: The requested media was not found. Requested ID: $tvId", ex)
-            null
+        // TODO is FileNotFoundException handling needed?
+        return try {
+            request(tvShowEndpoint)
+        }catch (ex: SerializationException) {
+            Log.e(classTag, "SerializationException in getTVShowDetails(), with tvId = $tvId.", ex)
+            NoneTMDBTVShow
         }
     }
 
-    @Suppress("BlockingMethodInNonBlockingContext")
+    @Suppress("unused")
     /**
      * Get details for a tv show season from tmdb
      * @param tvId The tmdb ID of the tv show
      * @param seasonNumber The tmdb season number
-     * @return A tmdb tv season object, or null if not found
+     * @return A TMDBTVSeason object, or NoneTMDBTVSeason if not found
      */
-    suspend fun getTVSeasonDetails(tvId: Int, seasonNumber: Int): TMDBTVSeason? = withContext(Dispatchers.IO) {
-        val url = URL("$detailsTVUrl/$tvId/season/$seasonNumber?api_key=$apiKey&language=$language")
+    suspend fun getTVSeasonDetails(tvId: Int, seasonNumber: Int): TMDBTVSeason {
+        val tvShowSeasonEndpoint = "/tv/$tvId/season/$seasonNumber"
 
-        return@withContext try {
-            val json = url.readText()
-            Gson().fromJson(json, TMDBTVSeason::class.java)
-        } catch (ex: FileNotFoundException) {
-            Log.w(javaClass.name, "Waring: The requested media was not found. Requested ID: $tvId, Season: $seasonNumber", ex)
-            null
+        // TODO is FileNotFoundException handling needed?
+        return try {
+            request(tvShowSeasonEndpoint)
+        }catch (ex: SerializationException) {
+            Log.e(classTag, "SerializationException in getTVSeasonDetails(), with tvId = $tvId, seasonNumber = $seasonNumber.", ex)
+            NoneTMDBTVSeason
         }
     }
 
