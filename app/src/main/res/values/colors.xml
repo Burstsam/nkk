@@ -26,4 +26,5 @@
     <color name="controlHighlightDark">#11ffffff</color>
 
     <color name="ic_launcher_background">#ffffff</color>
+    <color name="ic_splash_background">#ffffff</color>
 </resources>
