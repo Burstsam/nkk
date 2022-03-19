@@ -68,8 +68,8 @@ dependencies {
 
     implementation 'com.github.bumptech.glide:glide:4.12.0'
     implementation 'jp.wasabeef:glide-transformations:4.3.0'
-    implementation 'com.afollestad.material-dialogs:core:3.3.0'
-    implementation 'com.afollestad.material-dialogs:bottomsheets:3.3.0'
+    implementation 'com.afollestad.material-dialogs:core:3.3.0' // TODO remove once unused
+    implementation 'com.afollestad.material-dialogs:bottomsheets:3.3.0' // TODO remove once unused
 
     implementation "io.ktor:ktor-client-core:$ktor_version"
     implementation "io.ktor:ktor-client-android:$ktor_version"

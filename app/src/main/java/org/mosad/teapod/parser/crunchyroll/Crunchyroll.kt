@@ -52,6 +52,8 @@ object Crunchyroll {
         }
     }
     private const val baseUrl = "https://beta-api.crunchyroll.com"
+    private const val basicApiTokenUrl = "https://gitlab.com/-/snippets/2274956/raw/main/snippetfile1.txt"
+    private var basicApiToken: String = ""
 
     private lateinit var token: Token
     private var tokenValidUntil: Long = 0
@@ -63,6 +65,19 @@ object Crunchyroll {
     private var keyPairID = ""
 
     private val browsingCache = arrayListOf<Item>()
+
+    /**
+     * Load the pai token, see:
+     * https://git.mosad.xyz/mosad/NonePublicIssues/issues/1
+     *
+     * TODO handle empty file
+     */
+    fun initBasicApiToken() = runBlocking {
+        withContext(Dispatchers.IO) {
+            basicApiToken = (client.get(basicApiTokenUrl) as HttpResponse).readText()
+            Log.i(TAG, "basic auth token: $basicApiToken")
+        }
+    }
 
     /**
      * Login to the crunchyroll API.
@@ -85,7 +100,7 @@ object Crunchyroll {
         withContext(Dispatchers.IO) {
             // TODO handle exceptions
             val response: HttpResponse = client.submitForm("$baseUrl$tokenEndpoint", formParameters = formData) {
-                header("Authorization", "Basic ")
+                header("Authorization", "Basic $basicApiToken")
             }
             token = response.receive()
             tokenValidUntil = System.currentTimeMillis() + (token.expiresIn * 1000)

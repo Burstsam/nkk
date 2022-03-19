@@ -137,6 +137,9 @@ class MainActivity : AppCompatActivity(), NavigationBarView.OnItemSelectedListen
             Preferences.load(this)
             EncryptedPreferences.readCredentials(this)
 
+            // always initialize the api token
+            Crunchyroll.initBasicApiToken()
+
             // show onboarding if no password is set, or login fails
             if (EncryptedPreferences.password.isEmpty() || !Crunchyroll.login(
                     EncryptedPreferences.login,
