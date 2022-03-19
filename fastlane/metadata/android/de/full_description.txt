@@ -1,11 +1,10 @@
-Teapod ist eine inoffizielle App für Anime-on-Demand (AoD).
+Teapod ist eine inoffizielle App für Crunchyroll.
 
-* Schau dir alle Titel von AoD auf deinem Android Gerät an
+* Schau dir alle Titel von Crunchyroll auf deinem Android Gerät an
 * Nativer Player auf Basis des ExoPayers
 * Bevorzuge die OmU Version über die App-Einstellungen
-* Speicher deine lieblings Anime in "Meine Liste"
 
-Um Teapod zu verwenden musst du dich mit deinem AoD Account anmelden.
-Dieses Projekt ist in keiner Weise mit Anime-on-Demand verbunden.
+Um Teapod zu verwenden musst du dich mit deinem Crunchyroll Account anmelden.
+Dieses Projekt ist in keiner Weise mit Crunchyroll verbunden.
 
 Bitte melde Fehler und Probleme an support@mosad.xyz
