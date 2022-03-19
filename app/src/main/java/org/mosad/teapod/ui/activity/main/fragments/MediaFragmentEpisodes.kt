@@ -11,6 +11,7 @@ import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.lifecycleScope
 import kotlinx.coroutines.launch
+import org.mosad.teapod.R
 import org.mosad.teapod.databinding.FragmentMediaEpisodesBinding
 import org.mosad.teapod.ui.activity.main.MainActivity
 import org.mosad.teapod.ui.activity.main.viewmodel.MediaFragmentViewModel
@@ -47,7 +48,11 @@ class MediaFragmentEpisodes : Fragment() {
         if (model.seasonsCrunchy.total < 2) {
             binding.buttonSeasonSelection.visibility = View.GONE
         } else {
-            binding.buttonSeasonSelection.text = model.currentSeasonCrunchy.title
+            binding.buttonSeasonSelection.text = getString(
+                R.string.season_number_title,
+                model.currentSeasonCrunchy.seasonNumber,
+                model.currentSeasonCrunchy.title
+            )
             binding.buttonSeasonSelection.setOnClickListener { v ->
                 showSeasonSelection(v)
             }
@@ -64,7 +69,12 @@ class MediaFragmentEpisodes : Fragment() {
         // TODO replace with Exposed dropdown menu: https://material.io/components/menus/android#exposed-dropdown-menus
         val popup = PopupMenu(requireContext(), v)
         model.seasonsCrunchy.items.forEach { season ->
-            popup.menu.add(season.title).also {
+            popup.menu.add(getString(
+                    R.string.season_number_title,
+                    season.seasonNumber,
+                    season.title
+                )
+            ).also {
                 it.setOnMenuItemClickListener {
                     onSeasonSelected(season.id)
                     false
@@ -86,7 +96,11 @@ class MediaFragmentEpisodes : Fragment() {
         // load the new season
         lifecycleScope.launch {
             model.setCurrentSeason(seasonId)
-            binding.buttonSeasonSelection.text = model.currentSeasonCrunchy.title
+            binding.buttonSeasonSelection.text = getString(
+                R.string.season_number_title,
+                model.currentSeasonCrunchy.seasonNumber,
+                model.currentSeasonCrunchy.title
+            )
             adapterRecEpisodes.notifyDataSetChanged()
         }
     }

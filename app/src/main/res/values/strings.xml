@@ -34,6 +34,7 @@
         <item quantity="one">%d Minute</item>
         <item quantity="other">%d Minutes</item>
     </plurals>
+    <string name="season_number_title" translatable="false">S%1$d - %2$s</string>
     <string name="similar_titles">Similar titles</string>
     <string name="component_episode_title">Ep. %1$s %2$s</string>
     <string name="component_episode_title_sub">Ep. %1$s %2$s (Sub)</string>
@@ -66,7 +67,6 @@
     <string name="info">Info</string>
     <string name="info_about" translatable="false">Teapod by @Seil0</string>
     <string name="info_about_desc">Version %1$s (%2$s)</string>
-
 
     <!-- about fragment -->
     <string name="version">Version</string>
