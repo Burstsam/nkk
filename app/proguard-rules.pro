@@ -24,10 +24,6 @@
 
 -keep class org.json.** { *; }
 
-#Gson
--keepattributes Signature
--dontwarn sun.misc.**
-
 # kotlinx.serialization
 # Keep `Companion` object fields of serializable classes.
 # This avoids serializer lookup through `getDeclaredClasses` as done for named companion objects.

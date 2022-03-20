@@ -425,7 +425,6 @@ class PlayerActivity : AppCompatActivity() {
             val seekTime = (it.openingStart + it.openingDuration) - model.player.currentPosition
             model.seekToOffset(seekTime)
         }
-
     }
 
     /**

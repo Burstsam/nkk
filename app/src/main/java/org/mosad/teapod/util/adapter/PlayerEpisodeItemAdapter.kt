@@ -12,7 +12,7 @@ import org.mosad.teapod.databinding.ItemEpisodePlayerBinding
 import org.mosad.teapod.parser.crunchyroll.Episodes
 import org.mosad.teapod.util.tmdb.TMDBTVEpisode
 
-class PlayerEpisodeItemAdapter(private val episodes: Episodes, private val tmdbEpisodes: List<TMDBTVEpisode>?) : RecyclerView.Adapter<PlayerEpisodeItemAdapter.EpisodeViewHolder>() {
+class PlayerEpisodeItemAdapter(private val episodes: Episodes) : RecyclerView.Adapter<PlayerEpisodeItemAdapter.EpisodeViewHolder>() {
 
     var onImageClick: ((seasonId: String, episodeId: String) -> Unit)? = null
     var currentSelected: Int = -1 // -1, since position should never be < 0
@@ -39,8 +39,6 @@ class PlayerEpisodeItemAdapter(private val episodes: Episodes, private val tmdbE
         holder.binding.textEpisodeTitle2.text = titleText
         holder.binding.textEpisodeDesc2.text = if (ep.description.isNotEmpty()) {
             ep.description
-        } else if (tmdbEpisodes != null && position < tmdbEpisodes.size){
-            tmdbEpisodes[position].overview
         } else {
             ""
         }

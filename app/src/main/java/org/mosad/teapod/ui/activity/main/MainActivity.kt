@@ -45,6 +45,7 @@ import org.mosad.teapod.ui.activity.onboarding.OnboardingActivity
 import org.mosad.teapod.ui.activity.player.PlayerActivity
 import org.mosad.teapod.ui.components.LoginDialog
 import org.mosad.teapod.util.DataTypes
+import org.mosad.teapod.util.metadb.MetaDBController
 import java.util.*
 import kotlin.system.measureTimeMillis
 
@@ -141,6 +142,9 @@ class MainActivity : AppCompatActivity(), NavigationBarView.OnItemSelectedListen
             Preferences.load(this)
             EncryptedPreferences.readCredentials(this)
 
+            // load meta db at the start, it doesn't depend on any third party
+            val metaJob = initMetaDB()
+
             // always initialize the api token
             Crunchyroll.initBasicApiToken()
 
@@ -152,14 +156,17 @@ class MainActivity : AppCompatActivity(), NavigationBarView.OnItemSelectedListen
             ) {
                 showOnboarding()
             } else {
-                runBlocking { initCrunchyroll().joinAll() }
+                runBlocking {
+                    initCrunchyroll().joinAll()
+                    metaJob.join() // meta loading should be done here
+                }
             }
         }
         Log.i(classTag, "loading in $time ms")
     }
 
     private fun initCrunchyroll(): List<Job> {
-        val scope = CoroutineScope(Dispatchers.IO + CoroutineName("InitialLoadingScope"))
+        val scope = CoroutineScope(Dispatchers.IO + CoroutineName("InitialCrunchyLoading"))
         return listOf(
             scope.launch { Crunchyroll.index() },
             scope.launch { Crunchyroll.account() },
@@ -170,6 +177,11 @@ class MainActivity : AppCompatActivity(), NavigationBarView.OnItemSelectedListen
 
             }
         )
+    }
+
+    private fun initMetaDB(): Job {
+        val scope = CoroutineScope(Dispatchers.IO + CoroutineName("InitialMetaDBLoading"))
+        return scope.launch { MetaDBController.list() }
     }
 
     private fun showLoginDialog() {
