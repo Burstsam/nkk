@@ -50,8 +50,8 @@
     <string name="theme_light">Hell</string>
     <string name="theme_dark">Dunkel</string>
     <string name="dev_settings">Entwickler Einstellungen</string>
-    <string name="disable_playhead_updates">Playhead Updates</string>
-    <string name="disable_playhead_updates_desc">Fortschritt bei Episoden auf cr updaten</string>
+    <string name="update_playhead">Playhead Updates</string>
+    <string name="update_playhead_desc">Fortschritt bei Episoden auf cr updaten</string>
     <string name="export_data">Daten exportieren</string>
     <string name="export_data_desc">Speichere "Meine Liste" in eine Datei</string>
     <string name="import_data">Daten importieren</string>

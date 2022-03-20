@@ -59,8 +59,8 @@
     <string name="theme_light">Light</string>
     <string name="theme_dark">Dark</string>
     <string name="dev_settings">Developer Settings</string>
-    <string name="disable_playhead_updates">Playhead updates</string>
-    <string name="disable_playhead_updates_desc">Update episode playhead on cr</string>
+    <string name="update_playhead">Playhead updates</string>
+    <string name="update_playhead_desc">Update episode playhead on cr</string>
     <string name="export_data">export data</string>
     <string name="export_data_desc">export "My list" to a file</string>
     <string name="import_data">import data</string>

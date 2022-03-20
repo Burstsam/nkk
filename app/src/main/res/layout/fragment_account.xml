@@ -243,6 +243,7 @@
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:checked="true"
+                            android:contentDescription="@string/settings_prefer_subbed"
                             app:layout_constraintBottom_toBottomOf="parent"
                             app:layout_constraintEnd_toEndOf="parent"
                             app:layout_constraintTop_toTopOf="parent" />
@@ -304,6 +305,7 @@
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:checked="true"
+                            android:contentDescription="@string/settings_autoplay"
                             app:layout_constraintBottom_toBottomOf="parent"
                             app:layout_constraintEnd_toEndOf="parent"
                             app:layout_constraintTop_toTopOf="parent" />
@@ -390,6 +392,7 @@
                         android:id="@+id/imageView5"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
+                        android:contentDescription="@string/update_playhead"
                         android:minWidth="48dp"
                         android:minHeight="48dp"
                         android:padding="9dp"
@@ -399,8 +402,7 @@
 
                     <androidx.constraintlayout.widget.ConstraintLayout
                         android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:layout_weight="1">
+                        android:layout_height="wrap_content">
 
                         <LinearLayout
                             android:id="@+id/linearLayout4"
@@ -416,14 +418,14 @@
                                 android:id="@+id/text_update_playhead"
                                 android:layout_width="match_parent"
                                 android:layout_height="wrap_content"
-                                android:text="@string/disable_playhead_updates"
+                                android:text="@string/update_playhead"
                                 android:textSize="16sp" />
 
                             <TextView
                                 android:id="@+id/text_update_playhead_desc"
                                 android:layout_width="match_parent"
                                 android:layout_height="wrap_content"
-                                android:text="@string/disable_playhead_updates_desc"
+                                android:text="@string/update_playhead_desc"
                                 android:textColor="?textSecondary" />
                         </LinearLayout>
 
@@ -432,6 +434,7 @@
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:checked="true"
+                            android:contentDescription="@string/update_playhead"
                             app:layout_constraintBottom_toBottomOf="parent"
                             app:layout_constraintEnd_toEndOf="parent"
                             app:layout_constraintTop_toTopOf="parent" />
@@ -447,7 +450,8 @@
                     android:foreground="?android:selectableItemBackground"
                     android:gravity="center"
                     android:orientation="horizontal"
-                    android:padding="7dp">
+                    android:padding="7dp"
+                    android:visibility="gone">
 
                     <ImageView
                         android:id="@+id/image_export_data"
@@ -492,7 +496,8 @@
                     android:foreground="?android:selectableItemBackground"
                     android:gravity="center"
                     android:orientation="horizontal"
-                    android:padding="7dp">
+                    android:padding="7dp"
+                    android:visibility="gone">
 
                     <ImageView
                         android:id="@+id/image_import_data"
