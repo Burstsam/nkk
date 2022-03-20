@@ -19,6 +19,10 @@ object Preferences {
     var theme = DataTypes.Theme.DARK
         internal set
 
+    // dev settings
+    var updatePlayhead = true
+        internal set
+
     private fun getSharedPref(context: Context): SharedPreferences {
         return context.getSharedPreferences(
             context.getString(R.string.preference_file_key),
@@ -71,6 +75,15 @@ object Preferences {
         this.theme = theme
     }
 
+    fun saveUpdatePlayhead(context: Context, updatePlayhead: Boolean) {
+        with(getSharedPref(context).edit()) {
+            putBoolean(context.getString(R.string.save_key_update_playhead), updatePlayhead)
+            apply()
+        }
+
+        this.updatePlayhead = updatePlayhead
+    }
+
     /**
      * initially load the stored values
      */
@@ -95,6 +108,11 @@ object Preferences {
             sharedPref.getString(
                 context.getString(R.string.save_key_theme), DataTypes.Theme.DARK.toString()
             ) ?:  DataTypes.Theme.DARK.toString()
+        )
+
+        // dev settings
+        updatePlayhead = sharedPref.getBoolean(
+            context.getString(R.string.save_key_update_playhead), true
         )
     }
 

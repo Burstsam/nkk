@@ -59,6 +59,8 @@
     <string name="theme_light">Light</string>
     <string name="theme_dark">Dark</string>
     <string name="dev_settings">Developer Settings</string>
+    <string name="disable_playhead_updates">Playhead updates</string>
+    <string name="disable_playhead_updates_desc">Update episode playhead on cr</string>
     <string name="export_data">export data</string>
     <string name="export_data_desc">export "My list" to a file</string>
     <string name="import_data">import data</string>
@@ -137,6 +139,8 @@
     <string name="save_key_autoplay" translatable="false">org.mosad.teapod.autoplay</string>
     <string name="save_key_dev_settings" translatable="false">org.mosad.teapod.dev.settings</string>
     <string name="save_key_theme" translatable="false">org.mosad.teapod.theme</string>
+    <!-- dev settings -->
+    <string name="save_key_update_playhead" translatable="false">org.mosad.teapod.update_playhead</string>
 
     <!-- intents & states -->
     <string name="intent_media_id" translatable="false">intent_media_id</string>

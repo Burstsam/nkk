@@ -500,6 +500,12 @@ object Crunchyroll {
         }
     }
 
+    /**
+     * Post the playhead to crunchy (playhead position,watched state)
+     *
+     * @param episodeId A episode ID as strings.
+     * @param playhead The episodes playhead in seconds.
+     */
     suspend fun postPlayheads(episodeId: String, playhead: Int) {
         val playheadsEndpoint = "/content/v1/playheads/$accountID"
         val parameters = listOf("locale" to Preferences.preferredLocale.toLanguageTag())

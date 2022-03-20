@@ -93,6 +93,7 @@ class AccountFragment : Fragment() {
         }
 
         binding.linearDevSettings.isVisible = Preferences.devSettings
+        binding.switchUpdatePlayhead.isChecked = Preferences.updatePlayhead
 
         binding.textInfoAboutDesc.text = getString(R.string.info_about_desc, BuildConfig.VERSION_NAME, getString(R.string.build_time))
 
@@ -128,6 +129,10 @@ class AccountFragment : Fragment() {
 
         binding.linearInfo.setOnClickListener {
             activity?.showFragment(AboutFragment())
+        }
+
+        binding.switchUpdatePlayhead.setOnClickListener {
+            Preferences.saveUpdatePlayhead(requireContext(), binding.switchUpdatePlayhead.isChecked)
         }
 
         binding.linearExportData.setOnClickListener {

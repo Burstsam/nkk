@@ -292,7 +292,7 @@ class PlayerViewModel(application: Application) : AndroidViewModel(application) 
     private fun updatePlayhead() {
         val playhead = (player.currentPosition / 1000)
 
-        if (playhead > 0) {
+        if (playhead > 0 && Preferences.updatePlayhead) {
             viewModelScope.launch { Crunchyroll.postPlayheads(currentEpisode.id, playhead.toInt()) }
             Log.i(javaClass.name, "Set playhead for episode ${currentEpisode.id} to $playhead sec.")
         }
