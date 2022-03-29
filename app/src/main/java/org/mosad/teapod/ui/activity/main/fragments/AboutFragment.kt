@@ -107,8 +107,6 @@ class AboutFragment : Fragment() {
                 "https://github.com/material-components/material-components-android", License.APACHE2),
             ThirdPartyComponent("ExoPlayer", "2014 - 2020", "The Android Open Source Project",
                 "https://github.com/google/ExoPlayer", License.APACHE2),
-            ThirdPartyComponent("Gson", "2008", "Google Inc.",
-                "https://github.com/google/gson", License.APACHE2),
             ThirdPartyComponent("Material design icons", "2020", "Google Inc.",
                 "https://github.com/google/material-design-icons", License.APACHE2),
             ThirdPartyComponent("Material Dialogs", "", "Aidan Follestad",

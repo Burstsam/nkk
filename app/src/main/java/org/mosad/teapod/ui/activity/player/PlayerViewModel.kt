@@ -46,8 +46,10 @@ import org.mosad.teapod.parser.crunchyroll.NoneEpisode
 import org.mosad.teapod.parser.crunchyroll.NoneEpisodes
 import org.mosad.teapod.parser.crunchyroll.NonePlayback
 import org.mosad.teapod.preferences.Preferences
-import org.mosad.teapod.util.EpisodeMeta
-import org.mosad.teapod.util.tmdb.TMDBTVSeason
+import org.mosad.teapod.util.metadb.EpisodeMeta
+import org.mosad.teapod.util.metadb.Meta
+import org.mosad.teapod.util.metadb.MetaDBController
+import org.mosad.teapod.util.metadb.TVShowMeta
 import java.util.*
 
 /**
@@ -56,6 +58,7 @@ import java.util.*
  * the next episode will be update and the callback is handled.
  */
 class PlayerViewModel(application: Application) : AndroidViewModel(application) {
+    private val classTag = javaClass.name
 
     val player = SimpleExoPlayer.Builder(application).build()
     private val dataSourceFactory = DefaultDataSourceFactory(application, Util.getUserAgent(application, "Teapod"))
@@ -65,13 +68,12 @@ class PlayerViewModel(application: Application) : AndroidViewModel(application) 
     private var currentPlayhead: Long = 0
 
     // tmdb/meta data
-    // TODO meta data currently not implemented for cr
-//    var mediaMeta: Meta? = null
-//        internal set
-    var tmdbTVSeason: TMDBTVSeason? =null
+    var mediaMeta: Meta? = null
         internal set
     var currentEpisodeMeta: EpisodeMeta? = null
         internal set
+//    var tmdbTVSeason: TMDBTVSeason? =null
+//        internal set
 
     // crunchyroll episodes/playback
     var episodes = NoneEpisodes
@@ -108,7 +110,7 @@ class PlayerViewModel(application: Application) : AndroidViewModel(application) 
         mediaSession.release()
         player.release()
 
-        Log.d(javaClass.name, "Released player")
+        Log.d(classTag, "Released player")
     }
 
     /**
@@ -124,22 +126,12 @@ class PlayerViewModel(application: Application) : AndroidViewModel(application) 
 
     fun loadMediaAsync(seasonId: String, episodeId: String) = viewModelScope.launch {
         episodes = Crunchyroll.episodes(seasonId)
+        mediaMeta = loadMediaMeta(episodes.items.first().seriesId)
+
+        Log.d(classTag, "meta: $mediaMeta")
 
         setCurrentEpisode(episodeId)
         playCurrentMedia(currentPlayhead)
-
-        // TODO reimplement for cr
-        // run async as it should be loaded by the time the episodes a
-//        viewModelScope.launch {
-//            // get tmdb season info, if metaDB knows the tv show
-//            if (media.type == DataTypes.MediaType.TVSHOW && mediaMeta != null) {
-//                val tvShowMeta = mediaMeta as TVShowMeta
-//                tmdbTVSeason = TMDBApiController().getTVSeasonDetails(tvShowMeta.tmdbId, tvShowMeta.tmdbSeasonNumber)
-//            }
-//        }
-//
-//        currentEpisodeMeta = getEpisodeMetaByAoDMediaId(currentEpisodeAoD.mediaId)
-//        currentLanguage = currentEpisodeAoD.getPreferredStream(preferredLanguage).language
     }
 
     fun setLanguage(language: Locale) {
@@ -174,6 +166,15 @@ class PlayerViewModel(application: Application) : AndroidViewModel(application) 
             episode.id == episodeId
         } ?: NoneEpisode
 
+        // update current episode meta
+        currentEpisodeMeta = if (mediaMeta is TVShowMeta && currentEpisode.episodeNumber != null) {
+            (mediaMeta as TVShowMeta)
+                .seasons[currentEpisode.seasonNumber - 1]
+                .episodes[currentEpisode.episodeNumber!! - 1]
+        } else {
+            null
+        }
+
         // update player gui (title, next ep button) after currentEpisode has changed
         currentEpisodeChangedListener.forEach { it() }
 
@@ -195,9 +196,7 @@ class PlayerViewModel(application: Application) : AndroidViewModel(application) 
                 }
             )
         }
-        println("loaded playback ${currentEpisode.playback}")
-
-        // TODO update metadata and language (it should not be needed to update the language here!)
+        Log.i(classTag, "playback: ${currentEpisode.playback}")
 
         if (startPlayback) {
             playCurrentMedia()
@@ -227,7 +226,7 @@ class PlayerViewModel(application: Application) : AndroidViewModel(application) 
                 currentPlayback.streams.adaptive_hls.entries.first().value.url
             }
         }
-        println("stream url: $url")
+        Log.d(classTag, "stream url: $url")
 
         // create the media source object
         val mediaSource = HlsMediaSource.Factory(dataSourceFactory).createMediaSource(
@@ -266,25 +265,9 @@ class PlayerViewModel(application: Application) : AndroidViewModel(application) 
         return episodes.items.lastOrNull()?.id == currentEpisode.id
     }
 
-    // TODO reimplement for cr
-//    fun getEpisodeMetaByAoDMediaId(aodMediaId: Int): EpisodeMeta? {
-//        val meta = mediaMeta
-//        return if (meta is TVShowMeta) {
-//            meta.episodes.firstOrNull { it.aodMediaId == aodMediaId }
-//        } else {
-//            null
-//        }
-//    }
-//
-//    private suspend fun loadMediaMeta(aodId: Int): Meta? {
-//        return if (media.type == DataTypes.MediaType.TVSHOW) {
-//            MetaDBController().getTVShowMetadata(aodId)
-//        } else {
-//            null
-//        }
-//
-//        return null
-//    }
+    private suspend fun loadMediaMeta(crSeriesId: String): Meta? {
+        return MetaDBController.getTVShowMetadata(crSeriesId)
+    }
 
     /**
      * Update the playhead of the current episode, if currentPosition > 1000ms.

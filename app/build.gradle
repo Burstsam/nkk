@@ -60,7 +60,6 @@ dependencies {
     implementation 'androidx.lifecycle:lifecycle-viewmodel-ktx:2.4.1'
 
     implementation 'com.google.android.material:material:1.5.0'
-    implementation 'com.google.code.gson:gson:2.8.8' // TODO remove, still used by metadb
     implementation 'com.google.android.exoplayer:exoplayer-core:2.15.0'
     implementation 'com.google.android.exoplayer:exoplayer-hls:2.15.0'
     implementation 'com.google.android.exoplayer:exoplayer-dash:2.15.0'

@@ -8,7 +8,7 @@ import kotlinx.coroutines.launch
 import org.mosad.teapod.parser.crunchyroll.*
 import org.mosad.teapod.preferences.Preferences
 import org.mosad.teapod.util.DataTypes.MediaType
-import org.mosad.teapod.util.Meta
+import org.mosad.teapod.util.metadb.Meta
 import org.mosad.teapod.util.tmdb.*
 
 /**
@@ -59,7 +59,7 @@ class MediaFragmentViewModel(application: Application) : AndroidViewModel(applic
         ).joinAll()
 //        println("series: $seriesCrunchy")
 //        println("seasons: $seasonsCrunchy")
-        println(upNextSeries)
+//        println(upNextSeries)
 
         // load the preferred season (preferred language, language per season, not per stream)
         currentSeasonCrunchy = seasonsCrunchy.getPreferredSeason(Preferences.preferredLocale)

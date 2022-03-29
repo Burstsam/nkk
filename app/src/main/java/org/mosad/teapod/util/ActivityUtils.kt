@@ -36,7 +36,12 @@ fun Activity.hideBars() {
             setDecorFitsSystemWindows(false)
             insetsController?.apply {
                 hide(WindowInsets.Type.statusBars() or WindowInsets.Type.navigationBars())
-                systemBarsBehavior = WindowInsetsController.BEHAVIOR_SHOW_BARS_BY_SWIPE
+                systemBarsBehavior = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+                    WindowInsetsController.BEHAVIOR_DEFAULT
+                } else {
+                    @Suppress("deprecation")
+                    WindowInsetsController.BEHAVIOR_SHOW_BARS_BY_SWIPE
+                }
             }
         } else {
             @Suppress("deprecation")
