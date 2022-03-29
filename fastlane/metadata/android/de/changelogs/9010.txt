@@ -1,0 +1,4 @@
+Dies ist der zweite beta Release von Teapod 1.0.0 mit Unterstützung für Cunchyroll.
+
+* Unterstützung für Crunchyroll hinzugefügt (Ein premium Account wird benötigt)
+* Crunchyroll metadb Unterstützung hinzugefügt

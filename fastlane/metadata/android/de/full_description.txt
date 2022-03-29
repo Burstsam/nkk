@@ -3,8 +3,13 @@ Teapod ist eine inoffizielle App für Crunchyroll.
 * Schau dir alle Titel von Crunchyroll auf deinem Android Gerät an
 * Nativer Player auf Basis des ExoPayers
 * Bevorzuge die OmU Version über die App-Einstellungen
+* Picture in Picture Modus
+* Überspringe das Intro/Ending dank der TeapodMetaDB Integration
 
 Um Teapod zu verwenden musst du dich mit deinem Crunchyroll Account anmelden.
 Dieses Projekt ist in keiner Weise mit Crunchyroll verbunden.
+
+TeapodMetaDB unterstützt ausschliesslich Serien, für die Metadaten vorliegen.
+Hilf mit, die Datenbank auszubauen: https://gitlab.com/Seil0/teapodmetadb
 
 Bitte melde Fehler und Probleme an support@mosad.xyz
