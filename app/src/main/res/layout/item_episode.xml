@@ -43,6 +43,8 @@
             android:layout_height="match_parent"
             android:layout_marginStart="7dp"
             android:layout_weight="1"
+            android:ellipsize="end"
+            android:maxLines="3"
             android:text="@string/component_episode_title"
             android:textColor="?textPrimary"
             android:textSize="16sp" />

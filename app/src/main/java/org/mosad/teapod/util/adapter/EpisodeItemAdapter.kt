@@ -73,13 +73,6 @@ class EpisodeItemAdapter(
         return episodes.size
     }
 
-    fun updateWatchedState(watched: Boolean, position: Int) {
-        // use getOrNull as there could be a index out of bound when running this in onResume()
-
-        // TODO
-        //episodes.getOrNull(position)?.watched = watched
-    }
-
     inner class EpisodeViewHolder(val binding: ItemEpisodeBinding) :
         RecyclerView.ViewHolder(binding.root) {
         init {
