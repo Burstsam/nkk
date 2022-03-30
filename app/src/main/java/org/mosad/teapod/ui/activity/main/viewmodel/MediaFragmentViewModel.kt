@@ -8,7 +8,6 @@ import kotlinx.coroutines.launch
 import org.mosad.teapod.parser.crunchyroll.*
 import org.mosad.teapod.preferences.Preferences
 import org.mosad.teapod.util.DataTypes.MediaType
-import org.mosad.teapod.util.metadb.Meta
 import org.mosad.teapod.util.tmdb.*
 
 /**
@@ -42,8 +41,6 @@ class MediaFragmentViewModel(application: Application) : AndroidViewModel(applic
         internal set
     var tmdbTVSeason: TMDBTVSeason = NoneTMDBTVSeason
         internal set
-    var mediaMeta: Meta? = null
-        internal set
 
     /**
      * @param crunchyId the crunchyroll series id
@@ -57,20 +54,14 @@ class MediaFragmentViewModel(application: Application) : AndroidViewModel(applic
             viewModelScope.launch { isWatchlist = Crunchyroll.isWatchlist(crunchyId) },
             viewModelScope.launch { upNextSeries = Crunchyroll.upNextSeries(crunchyId) }
         ).joinAll()
-//        println("series: $seriesCrunchy")
-//        println("seasons: $seasonsCrunchy")
-//        println(upNextSeries)
 
         // load the preferred season (preferred language, language per season, not per stream)
         currentSeasonCrunchy = seasonsCrunchy.getPreferredSeason(Preferences.preferredLocale)
 
-        // load episodes and metaDB in parallel (tmdb needs mediaType, which is set via episodes)
-        listOf(
-            viewModelScope.launch { episodesCrunchy = Crunchyroll.episodes(currentSeasonCrunchy.id) },
-            viewModelScope.launch { mediaMeta = null }, // TODO metaDB
-        ).joinAll()
-//        println("episodes: $episodesCrunchy")
+        // Note: if we need to query metaDB, do it now
 
+        // load episodes and metaDB in parallel (tmdb needs mediaType, which is set via episodes)
+        viewModelScope.launch { episodesCrunchy = Crunchyroll.episodes(currentSeasonCrunchy.id) }.join()
         currentEpisodesCrunchy.clear()
         currentEpisodesCrunchy.addAll(episodesCrunchy.items)
 
@@ -103,7 +94,7 @@ class MediaFragmentViewModel(application: Application) : AndroidViewModel(applic
             MediaType.TVSHOW -> tmdbApiController.searchTVShow(seriesCrunchy.title)
             else -> NoneTMDBSearch
         }
-        println(tmdbSearchResult)
+//        println(tmdbSearchResult)
 
         tmdbResult = if (tmdbSearchResult.results.isNotEmpty()) {
             when (val result = tmdbSearchResult.results.first()) {
@@ -112,8 +103,7 @@ class MediaFragmentViewModel(application: Application) : AndroidViewModel(applic
                 else -> NoneTMDB
             }
         } else NoneTMDB
-
-        println(tmdbResult)
+//        println(tmdbResult)
 
         // currently not used
 //        tmdbTVSeason = if (tmdbResult is TMDBTVShow) {
@@ -139,6 +129,11 @@ class MediaFragmentViewModel(application: Application) : AndroidViewModel(applic
         episodesCrunchy = Crunchyroll.episodes(currentSeasonCrunchy.id)
         currentEpisodesCrunchy.clear()
         currentEpisodesCrunchy.addAll(episodesCrunchy.items)
+
+        // update playheads playheads (including fully watched state)
+        val episodeIDs = episodesCrunchy.items.map { it.id }
+        currentPlayheads.clear()
+        currentPlayheads.putAll(Crunchyroll.playheads(episodeIDs))
     }
 
     suspend fun setWatchlist() {
@@ -160,18 +155,6 @@ class MediaFragmentViewModel(application: Application) : AndroidViewModel(applic
             },
             viewModelScope.launch { upNextSeries = Crunchyroll.upNextSeries(seriesCrunchy.id) }
         )
-    }
-
-    /**
-     * get the next episode based on episodeId
-     * if no matching is found, use first episode
-     */
-    fun updateNextEpisode(episodeId: Int) {
-        // TODO reimplement if needed
-//        if (media.type == MediaType.MOVIE) return // return if movie
-//
-//        nextEpisodeId = media.playlist.firstOrNull { it.index > media.getEpisodeById(episodeId).index }?.mediaId
-//            ?: media.playlist.first().mediaId
     }
 
 }
