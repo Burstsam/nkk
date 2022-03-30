@@ -32,6 +32,8 @@ import io.ktor.client.request.forms.*
 import io.ktor.client.statement.*
 import io.ktor.http.*
 import kotlinx.coroutines.*
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
 import kotlinx.serialization.SerializationException
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonObject
@@ -57,6 +59,7 @@ object Crunchyroll {
 
     private lateinit var token: Token
     private var tokenValidUntil: Long = 0
+    private val tokeRefreshMutex = Mutex()
 
     private var accountID = ""
 
@@ -126,7 +129,10 @@ object Crunchyroll {
         params: List<Pair<String, Any?>> = listOf(),
         bodyObject: Any = Any()
     ): T = coroutineScope {
-        if (System.currentTimeMillis() > tokenValidUntil) refreshToken()
+        // TODO find a better way to make token refresh thread safe, currently it's blocking
+        tokeRefreshMutex.withLock {
+            if (System.currentTimeMillis() > tokenValidUntil) refreshToken()
+        }
 
         return@coroutineScope (Dispatchers.IO) {
             val response: T = client.request(url) {
@@ -280,7 +286,12 @@ object Crunchyroll {
     }
 
     /**
-     * TODO
+     * Search fo a query term.
+     * Note: currently this function only supports series/tv shows.
+     *
+     * @param query The query term as String
+     * @param n The maximum number of results to return, default = 10
+     * @return A **[SearchResult]** object
      */
     suspend fun search(query: String, n: Int = 10): SearchResult {
         val searchEndpoint = "/content/v1/search"
@@ -367,7 +378,10 @@ object Crunchyroll {
     }
 
     /**
-     * TODO
+     * Get the next episode for a series.
+     *
+     * @param seriesId The series id for which to call up next
+     * @return A **[UpNextSeriesItem]** with a Panel representing the up next episode
      */
     suspend fun upNextSeries(seriesId: String): UpNextSeriesItem {
         val upNextSeriesEndpoint = "/content/v1/up_next_series"
