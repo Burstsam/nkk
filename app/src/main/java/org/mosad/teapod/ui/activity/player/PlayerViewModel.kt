@@ -31,11 +31,7 @@ import androidx.lifecycle.viewModelScope
 import com.google.android.exoplayer2.ExoPlayer
 import com.google.android.exoplayer2.MediaItem
 import com.google.android.exoplayer2.Player
-import com.google.android.exoplayer2.SimpleExoPlayer
 import com.google.android.exoplayer2.ext.mediasession.MediaSessionConnector
-import com.google.android.exoplayer2.source.hls.HlsMediaSource
-import com.google.android.exoplayer2.upstream.DefaultDataSourceFactory
-import com.google.android.exoplayer2.util.Util
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.joinAll
 import kotlinx.coroutines.launch
@@ -60,8 +56,7 @@ import java.util.*
 class PlayerViewModel(application: Application) : AndroidViewModel(application) {
     private val classTag = javaClass.name
 
-    val player = SimpleExoPlayer.Builder(application).build()
-    private val dataSourceFactory = DefaultDataSourceFactory(application, Util.getUserAgent(application, "Teapod"))
+    val player = ExoPlayer.Builder(application).build()
     private val mediaSession = MediaSessionCompat(application, "TEAPOD_PLAYER_SESSION")
 
     val currentEpisodeChangedListener = ArrayList<() -> Unit>()
@@ -196,7 +191,7 @@ class PlayerViewModel(application: Application) : AndroidViewModel(application) 
                 }
             )
         }
-        Log.i(classTag, "playback: ${currentEpisode.playback}")
+        Log.d(classTag, "playback: ${currentEpisode.playback}")
 
         if (startPlayback) {
             playCurrentMedia()
@@ -226,16 +221,13 @@ class PlayerViewModel(application: Application) : AndroidViewModel(application) 
                 currentPlayback.streams.adaptive_hls.entries.first().value.url
             }
         }
-        Log.d(classTag, "stream url: $url")
+        Log.i(classTag, "stream url: $url")
 
-        // create the media source object
-        val mediaSource = HlsMediaSource.Factory(dataSourceFactory).createMediaSource(
-            MediaItem.fromUri(Uri.parse(url))
-        )
-
-        // the actual player playback code
-        player.setMediaSource(mediaSource)
+        // create the media item
+        val mediaItem = MediaItem.fromUri(Uri.parse(url))
+        player.setMediaItem(mediaItem)
         player.prepare()
+
         if (seekPosition > 0) player.seekTo(seekPosition)
         player.playWhenReady = true
     }
