@@ -113,6 +113,8 @@ class AboutFragment : Fragment() {
                 "https://ktor.io/", License.APACHE2),
             ThirdPartyComponent("kotlinx.coroutines", "2016-2021", "JetBrains s.r.o",
                 "https://github.com/Kotlin/kotlinx.coroutines", License.APACHE2),
+            ThirdPartyComponent(" kotlinx.serialization", "2017-2021", "JetBrains s.r.o",
+                "https://github.com/Kotlin/kotlinx.serialization", License.APACHE2),
             ThirdPartyComponent("Glide", "2014", "Google Inc.",
                 "https://github.com/bumptech/glide", License.BSD2),
             ThirdPartyComponent("Glide Transformations", "2020", "Wasabeef",

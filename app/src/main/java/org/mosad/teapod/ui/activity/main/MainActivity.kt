@@ -43,7 +43,6 @@ import org.mosad.teapod.ui.activity.main.fragments.LibraryFragment
 import org.mosad.teapod.ui.activity.main.fragments.SearchFragment
 import org.mosad.teapod.ui.activity.onboarding.OnboardingActivity
 import org.mosad.teapod.ui.activity.player.PlayerActivity
-import org.mosad.teapod.ui.components.LoginModalBottomSheet
 import org.mosad.teapod.util.DataTypes
 import org.mosad.teapod.util.metadb.MetaDBController
 import java.util.*
@@ -182,22 +181,6 @@ class MainActivity : AppCompatActivity(), NavigationBarView.OnItemSelectedListen
     private fun initMetaDB(): Job {
         val scope = CoroutineScope(Dispatchers.IO + CoroutineName("InitialMetaDBLoading"))
         return scope.launch { MetaDBController.list() }
-    }
-
-    private fun showLoginDialog() {
-        val loginModal = LoginModalBottomSheet().apply {
-            positiveAction = {
-                EncryptedPreferences.saveCredentials(login, password, requireContext())
-
-                // TODO only dismiss if login was successful
-                this.dismiss()
-            }
-            negativeAction = {
-                Log.i(classTag, "Login canceled, exiting.")
-                finish()
-            }
-        }
-        loginModal.show(this.supportFragmentManager, LoginModalBottomSheet.TAG)
     }
 
     /**

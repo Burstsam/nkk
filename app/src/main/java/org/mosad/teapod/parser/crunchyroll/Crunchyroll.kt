@@ -25,6 +25,7 @@ package org.mosad.teapod.parser.crunchyroll
 import android.util.Log
 import io.ktor.client.*
 import io.ktor.client.call.*
+import io.ktor.client.features.*
 import io.ktor.client.features.json.*
 import io.ktor.client.features.json.serializer.*
 import io.ktor.client.request.*
@@ -102,14 +103,27 @@ object Crunchyroll {
         var success = false// is false
         withContext(Dispatchers.IO) {
             // TODO handle exceptions
-            val response: HttpResponse = client.submitForm("$baseUrl$tokenEndpoint", formParameters = formData) {
-                header("Authorization", "Basic $basicApiToken")
-            }
-            token = response.receive()
-            tokenValidUntil = System.currentTimeMillis() + (token.expiresIn * 1000)
+            Log.i(TAG, "getting token ...")
 
-            Log.i(TAG, "login complete with code ${response.status}")
-            success = (response.status == HttpStatusCode.OK)
+            val status = try {
+                val response: HttpResponse = client.submitForm("$baseUrl$tokenEndpoint", formParameters = formData) {
+                    header("Authorization", "Basic $basicApiToken")
+                }
+                token = response.receive()
+                tokenValidUntil = System.currentTimeMillis() + (token.expiresIn * 1000)
+                response.status
+            } catch (ex: ClientRequestException) {
+                val status = ex.response.status
+                if (status == HttpStatusCode.Unauthorized) {
+                    Log.e(TAG, "Could not complete login: " +
+                            "${status.value} ${status.description}. " +
+                            "Propably wrong username or password")
+                }
+
+                status
+            }
+            Log.i(TAG, "Login complete with code $status")
+            success = (status == HttpStatusCode.OK)
         }
 
         return@runBlocking success
