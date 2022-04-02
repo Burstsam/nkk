@@ -5,6 +5,7 @@
     <color name="colorPrimaryLight">#99dc45</color>
     <color name="colorPrimaryDark">#317a00</color>
     <color name="colorAccent">#607d8b</color>
+    <color name="imagePlacholder">#c2c2c2</color>
 
     <!-- light theme colors -->
     <color name="themePrimaryLight">#ffffff</color>

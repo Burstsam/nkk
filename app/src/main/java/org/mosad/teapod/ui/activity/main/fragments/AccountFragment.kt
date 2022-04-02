@@ -1,12 +1,9 @@
 package org.mosad.teapod.ui.activity.main.fragments
 
-import android.app.Activity
-import android.content.Intent
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
@@ -24,7 +21,7 @@ import org.mosad.teapod.parser.crunchyroll.supportedLocals
 import org.mosad.teapod.preferences.EncryptedPreferences
 import org.mosad.teapod.preferences.Preferences
 import org.mosad.teapod.ui.activity.main.MainActivity
-import org.mosad.teapod.ui.components.LoginDialog
+import org.mosad.teapod.ui.components.LoginModalBottomSheet
 import org.mosad.teapod.util.DataTypes.Theme
 import org.mosad.teapod.util.showFragment
 import org.mosad.teapod.util.toDisplayString
@@ -35,28 +32,6 @@ class AccountFragment : Fragment() {
     private lateinit var binding: FragmentAccountBinding
     private var profile: Deferred<Profile> = lifecycleScope.async {
         Crunchyroll.profile()
-    }
-
-    private val getUriExport = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
-        if (result.resultCode == Activity.RESULT_OK) {
-            result.data?.data?.also { uri ->
-                //StorageController.exportMyList(requireContext(), uri)
-            }
-        }
-    }
-
-    private val getUriImport = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
-        if (result.resultCode == Activity.RESULT_OK) {
-            result.data?.data?.also { uri ->
-//                val success = StorageController.importMyList(requireContext(), uri)
-//                if (success == 0) {
-//                    Toast.makeText(
-//                        context, getString(R.string.import_data_success),
-//                        Toast.LENGTH_SHORT
-//                    ).show()
-//                }
-            }
-        }
     }
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
@@ -102,7 +77,7 @@ class AccountFragment : Fragment() {
 
     private fun initActions() {
         binding.linearAccountLogin.setOnClickListener {
-            showLoginDialog(true)
+            showLoginDialog()
         }
 
         binding.linearAccountSubscription.setOnClickListener {
@@ -136,36 +111,29 @@ class AccountFragment : Fragment() {
         }
 
         binding.linearExportData.setOnClickListener {
-            val i = Intent(Intent.ACTION_CREATE_DOCUMENT).apply {
-                addCategory(Intent.CATEGORY_OPENABLE)
-                type = "text/json"
-                putExtra(Intent.EXTRA_TITLE, "my-list.json")
-            }
-            getUriExport.launch(i)
+            // unused
         }
 
         binding.linearImportData.setOnClickListener {
-            val i = Intent(Intent.ACTION_OPEN_DOCUMENT).apply {
-                addCategory(Intent.CATEGORY_OPENABLE)
-                type = "*/*"
-            }
-            getUriImport.launch(i)
+            // unused
         }
     }
 
-    private fun showLoginDialog(firstTry: Boolean) {
-        LoginDialog(requireContext(), firstTry).positiveButton {
-            EncryptedPreferences.saveCredentials(login, password, context)
-
-            // TODO
-//            if (!AoDParser.login()) {
-//                showLoginDialog(false)
-//                Log.w(javaClass.name, "Login failed, please try again.")
-//            }
-        }.show {
+    private fun showLoginDialog() {
+        val loginModal = LoginModalBottomSheet().apply {
             login = EncryptedPreferences.login
             password = ""
+            positiveAction = {
+                EncryptedPreferences.saveCredentials(login, password, requireContext())
+
+                // TODO only dismiss if login was successful
+                this.dismiss()
+            }
+            negativeAction = {
+                this.dismiss()
+            }
         }
+        activity?.let { loginModal.show(it.supportFragmentManager, LoginModalBottomSheet.TAG) }
     }
 
     private fun showContentLanguageSelection() {

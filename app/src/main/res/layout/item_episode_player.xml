@@ -16,7 +16,7 @@
             android:layout_height="108dp"
             android:contentDescription="@string/component_poster_desc"
             app:shapeAppearance="@style/ShapeAppearance.Teapod.RoundedPoster"
-            app:srcCompat="@color/md_disabled_text_dark_theme" />
+            app:srcCompat="@color/imagePlacholder" />
 
         <ImageView
             android:id="@+id/image_episode_play"

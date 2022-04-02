@@ -109,8 +109,6 @@ class AboutFragment : Fragment() {
                 "https://github.com/google/ExoPlayer", License.APACHE2),
             ThirdPartyComponent("Material design icons", "2020", "Google Inc.",
                 "https://github.com/google/material-design-icons", License.APACHE2),
-            ThirdPartyComponent("Material Dialogs", "", "Aidan Follestad",
-                "https://github.com/afollestad/material-dialogs", License.APACHE2),
             ThirdPartyComponent("Ktor", "2014-2021", "JetBrains s.r.o and contributors",
                 "https://ktor.io/", License.APACHE2),
             ThirdPartyComponent("kotlinx.coroutines", "2016-2021", "JetBrains s.r.o",

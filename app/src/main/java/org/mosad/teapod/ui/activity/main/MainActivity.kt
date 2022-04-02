@@ -43,7 +43,7 @@ import org.mosad.teapod.ui.activity.main.fragments.LibraryFragment
 import org.mosad.teapod.ui.activity.main.fragments.SearchFragment
 import org.mosad.teapod.ui.activity.onboarding.OnboardingActivity
 import org.mosad.teapod.ui.activity.player.PlayerActivity
-import org.mosad.teapod.ui.components.LoginDialog
+import org.mosad.teapod.ui.components.LoginModalBottomSheet
 import org.mosad.teapod.util.DataTypes
 import org.mosad.teapod.util.metadb.MetaDBController
 import java.util.*
@@ -185,18 +185,19 @@ class MainActivity : AppCompatActivity(), NavigationBarView.OnItemSelectedListen
     }
 
     private fun showLoginDialog() {
-        LoginDialog(this, false).positiveButton {
-            EncryptedPreferences.saveCredentials(login, password, context)
+        val loginModal = LoginModalBottomSheet().apply {
+            positiveAction = {
+                EncryptedPreferences.saveCredentials(login, password, requireContext())
 
-            // TODO
-//            if (!AoDParser.login()) {
-//                showLoginDialog()
-//                Log.w(javaClass.name, "Login failed, please try again.")
-//            }
-        }.negativeButton {
-            Log.i(classTag, "Login canceled, exiting.")
-            finish()
-        }.show()
+                // TODO only dismiss if login was successful
+                this.dismiss()
+            }
+            negativeAction = {
+                Log.i(classTag, "Login canceled, exiting.")
+                finish()
+            }
+        }
+        loginModal.show(this.supportFragmentManager, LoginModalBottomSheet.TAG)
     }
 
     /**
