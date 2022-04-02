@@ -57,6 +57,9 @@
     <string name="import_data">Daten importieren</string>
     <string name="import_data_desc">Lade "Meine Liste" aus einer Datei</string>
     <string name="import_data_success">"Meine Liste" erfolgreich importiert</string>
+    <string name="edit_login_credentials">Anmeldedaten bearbeiten</string>
+    <string name="edit_login_credentials_desc">Bearbeite deine Crunchyroll Anmeldedaten. Die Anmeldedaten weden verschüsselt aud deinem Gerät gespeichert.</string>
+    <string name="edit_login_credentials_fail">Benutzername oder Passwort ungültig. Bitte versuche es erneut.</string>
 
     <!-- about fragment -->
     <string name="version">Version</string>
@@ -103,7 +106,7 @@
 
     <!-- etc -->
     <string name="login">Login</string>
-    <string name="login_desc">Um Teapod zu benutzen musst du eingeloggt sein. Die Login-Daten weden verschüsselt aud deinem Gerät gespeichert.</string>
+    <string name="login_desc">Um Teapod zu benutzen musst du eingeloggt sein. Die Anmeldedaten weden verschüsselt aud deinem Gerät gespeichert.</string>
     <string name="login_failed_desc">Login nicht erfolgreich. Bitte versuche es erneut.</string>
     <string name="password">Passwort</string>
 </resources>

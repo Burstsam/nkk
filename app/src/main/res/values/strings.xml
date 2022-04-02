@@ -69,6 +69,9 @@
     <string name="info">Info</string>
     <string name="info_about" translatable="false">Teapod by @Seil0</string>
     <string name="info_about_desc">Version %1$s (%2$s)</string>
+    <string name="edit_login_credentials">Edit credentials</string>
+    <string name="edit_login_credentials_desc">Edit your crunchyroll login credentials. The credentials will be stored encrypted on your device.</string>
+    <string name="edit_login_credentials_fail">Invalid login or password. Please try again.</string>
 
     <!-- about fragment -->
     <string name="version">Version</string>
